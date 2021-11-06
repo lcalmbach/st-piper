@@ -1,0 +1,13 @@
+{
+    "info": {
+        "intro_text": "### Introduction\n\nThe application Fontus allows users to upload groundwater datasets in a defined format and plot and analyze it. At the beginning a sample dataset is loaded, demonstrating the possiblities of  the program without further formatting. If you want to analyse your own data, the *data-loader* option needs to be selected. In this menu option, your data can be uploaded, columns mapped to internal parameters."
+    },
+    "data": {
+        "menu_options": ["Current Dataset", "Load New Dataset", "Map Columns", "Test"] 
+
+    },
+    "piper":{
+        "menu_options": ["Show Piper plot", "Plot settings"]
+
+    }
+}
