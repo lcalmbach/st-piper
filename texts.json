@@ -1,13 +1,36 @@
 {
+    "main": {
+        "menu_options": ["Info", "Load data", "Piper", "Time Series"]
+    },
     "info": {
         "intro_text": "### Introduction\n\nThe application Fontus allows users to upload groundwater datasets in a defined format and plot and analyze it. At the beginning a sample dataset is loaded, demonstrating the possiblities of  the program without further formatting. If you want to analyse your own data, the *data-loader* option needs to be selected. In this menu option, your data can be uploaded, columns mapped to internal parameters."
     },
+
     "data": {
-        "menu_options": ["Current Dataset", "Load New Dataset", "Map Columns", "Test"] 
+        "menu_options": ["Current Dataset", "Load New Dataset", "Map Columns", "Test"], 
+        "step0_title":"Load dataset",
+        "step0_info":"Load the dataset by dragging the file into the upload field below or by clicking the *Browse* button and selecting the file to be loaded. Define the format for this dataset:\n\n-One sample per row has a single sampling event in each row and every column represents a parameter (e.g. Ca, Mg, Na, etc.\n\n-One value per row uses one row for every measured parameter. Typically for this format the following columns are found: Station identifier, sampling date, sample-no, parameter, value. Optionally additinal columns may be added depending on the number and type of parameters. For parameters found in low concentration and often undetect, the detection limit is often stated. For parameters for which alias names exist, the CAS-Registry number is often provided etc.",
+        "value_per_row_import": {
+            "step1_title":"Identify Station Columns",
+            "step1_info":"In the imported columns below, identify all columns that belong the the sampling station. A column representing a unique station name or code is mandatory. Also coordinates (lat/long in decimal degrees) are mandatory, if maps should be created. Additional non mandatory parmeters may include: station-type, geology, nearest location, landuse etc.",
+            "step2_title":"Identify Sample Columns",
+            "step2_info":"In the imported columns below, identify all columns that belong the the sample event. Sample columns must include a sampling date column. Other sample parameters may include a unique sample code, sampling personel information, comments related to the sampling event etc. If a dataset includes only one sample per station and no field related to the sampling event, check the `no columns related to the sample` checkbox",
+            "step3_title":"Identify Value Metadata Columns",
+            "step3_info":"The format *One value per row* requires a minimum of the following columns:\n\n-parameter name\n\n-value column\n\nHowever the advantage of this format is, that it may contain additional parameters such as a parameter code (often the CAS-Nr), the detection limit, the unit of measurment, the method of measurement, information on whether the parameter was detected etc.\n\nIn the columns below, columns that hold such information must be marked with the respective information.",
+            "step4_title":"Match Parameters",
+            "step4_info":"Fontus has metadata on a number of frequently used parameters, found in groundwater data. The metadata includes information required for certain analyses, for example the piper diagram needs know which parameters correspond to the main cations and anions and converts the concentration typically given in mg/L to meq/L%. Fontus assumes that every expression appearin in the parameter column is a parameter, however in order to use features such as conversion to mmmol/L or meq/L, these parameters must be matched to the Fontus internal parameters."
+        }
 
     },
+
     "piper":{
         "menu_options": ["Show Piper plot", "Plot settings"]
-
     }
+    ,
+    "time_series":{
+        "menu_options": ["Show time series", "Plot settings"]
+    }
+
+    
+
 }

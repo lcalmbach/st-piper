@@ -48,8 +48,8 @@ def main():
         st.session_state.parameters_metadata = get_parameters()
         st.session_state.current_dataset = get_data()
         st.session_state.config = cn.cfg
-        st.write(st.session_state.parameters_metadata)
-    MENU_OPTIONS = ['Info', 'Load data', 'Piper']
+        st.session_state.step = 0
+    MENU_OPTIONS = texts_dict["main"]["menu_options"]
 
     st.sidebar.markdown(f"### {APP_NAME}")
     menu_action = st.sidebar.selectbox('Menu', MENU_OPTIONS)

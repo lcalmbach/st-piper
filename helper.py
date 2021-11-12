@@ -21,3 +21,6 @@ def get_random_filename(prefix: str, ext: str):
 def get_parameter_columns(column_type: str):
     df = pd.DataFrame(cn.PARAMETERS).query('type=@column_type')
     return list
+
+def isnan(text):
+    return text != text

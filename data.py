@@ -1,10 +1,14 @@
+from logging import NullHandler
+from numpy import NAN
 import streamlit as st
 import pandas as pd
 import const as cn
-import helper
 import dataretrieval.nwis as nwis
 from st_aggrid import AgGrid
+import numpy as np
+from value_per_row_import import Value_per_row_import
 
+texts_dict = ""
 
 def check_data_format(df):
     ok = True
@@ -49,7 +53,6 @@ def show_current_dataset():
     st.markdown("#### Current dataset")
     AgGrid(st.session_state.current_dataset)
 
-    
     df_metadata = pd.DataFrame(df.columns)
     df_metadata.columns = ['column']
     df_metadata['parameter'] = df_metadata['column']
@@ -59,65 +62,31 @@ def show_current_dataset():
     AgGrid((df_metadata))
 
 
-def map_parameters(df):
-    lst_without_not_used = df.columns
-    lst_with_not_used =  ['Not Used']
-    lst_with_not_used.extend(df.columns)
-    station_column = st.selectbox("station column", lst_without_not_used)
-    value_column = st.selectbox("value column", lst_without_not_used)
-    parameter_column = st.selectbox("parameter name column", lst_without_not_used)
-    casnr_column = st.selectbox("CasNr column", lst_with_not_used)
-    
-    stations = df[station_column].unique()
-    parameters = pd.DataFrame(df[parameter_column].unique())
-    parameters['key'] = lst_with_not_used[0]
-    parameters.columns = ['parameter','key']
-    parameters = parameters[parameters["parameter"].notnull()]
-    if casnr_column != lst_with_not_used[0]:
-        pass
-
-    pmd = st.session_state.parameters_metadata
-    num_pmd = pmd.query("type == 'chem'")
-    lst = ['Not Used']
-    lst.extend(list(num_pmd['name']))
-    st.markdown("#### Map parameters")
-    parameters = parameters.set_index('parameter')
-    for idx, par in parameters.iterrows():
-        parameters.loc[idx]['key'] = st.selectbox(idx, options=lst)
-    parameters = parameters[parameters['key'] != 'Not Used']
-    return parameters, station_column, value_column,parameter_column
-
-
-def unmelt_data(df,parameters, station_column, value_column,parameter_column):
-    df = df.pivot(index=station_column, columns=parameter_column)
-
 def load_new_dataset():
-    uploaded_file = st.file_uploader("Choose a file")
-    if uploaded_file is not None:
-        df = pd.read_csv(uploaded_file, sep=";")
-        file_format = st.sidebar.selectbox('sample format', cn.SAMPLE_FORMATS)
-        if file_format == cn.SAMPLE_FORMATS[0]:
-            df = calc_meql(df)
-            df = calc_pct(df)
+    if st.session_state.step == 0:
+        st.session_state.file_format = st.selectbox('sample format', cn.SAMPLE_FORMATS)
+        uploaded_file = st.file_uploader("Choose a file")
+        if uploaded_file is not None:
+            st.session_state.df_raw = pd.read_csv(uploaded_file, sep=";")
+            if st.button("Import Data"):
+                if st.session_state.file_format == cn.SAMPLE_FORMATS[0]:
+                    #mapped_parameters, sample_par_map = map_parameters(df, file_format)
+                    df = calc_meql(st.session_state.df_raw)
+                    df = calc_pct(st.session_state.df_raw)
+                elif st.session_state.file_format == cn.SAMPLE_FORMATS[1]:
+                    imp = Value_per_row_import(st.session_state.df_raw, texts_dict['value_per_row_import'])
+                    imp.run_step()
+                    # mapped_parameters, sample_par_map = map_parameters(df, file_format)   
+    else:
+        if st.session_state.file_format == cn.SAMPLE_FORMATS[0]:
+            pass
+            #mapped_parameters, sample_par_map = map_parameters(df, file_format)
+            #df = calc_meql(df)
+            #df = calc_pct(df)
+        elif st.session_state.file_format == cn.SAMPLE_FORMATS[1]:
+            imp = Value_per_row_import(st.session_state.df_raw, texts_dict['value_per_row_import'])
+            imp.run_step()
 
-        if file_format == cn.SAMPLE_FORMATS[1]:  
-            parameters, station_column, value_column,parameter_column = map_parameters(df)  
-            st.write(parameters)
-            if st.button('Transform'):
-                df = df[[station_column, parameter_column, value_column]]
-                st.write(df)
-                df = unmelt_data(df,parameters, station_column, value_column, parameter_column)
-
-        ok, err_msg = check_data_format(df)
-        if ok:
-            st.write(f"{len(df)} records imported")
-            AgGrid(df.head(1000))
-            st.session_state.current_dataset = df
-        else:
-            warning_msg = f"This file could not be loaded, the following error occurred: '{err_msg}'"
-            st.warning(warning_msg)
-    
-        
 
 def nwis_test():
     sites = ['331915112400601','332023112372901','320834110580401']
@@ -129,7 +98,11 @@ def nwis_test():
     st.write(wellDf.head())
     st.write(wellDf[['p00025','p00003','p00010']])
 
-def show_menu(texts_dict: dict):
+
+def show_menu(td: dict):
+    global texts_dict
+
+    texts_dict = td
     MENU_OPTIONS = texts_dict["menu_options"]
     menu_action = st.sidebar.selectbox('Options', MENU_OPTIONS)
     if menu_action == MENU_OPTIONS[0]:
