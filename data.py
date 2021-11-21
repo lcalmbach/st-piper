@@ -48,42 +48,34 @@ def calc_pct(df:pd.DataFrame):
     return df
 
 
-def show_current_dataset():
-    df = st.session_state.current_dataset
-    st.markdown("#### Current dataset")
-    AgGrid(st.session_state.current_dataset)
-
-    df_metadata = pd.DataFrame(df.columns)
-    df_metadata.columns = ['column']
-    df_metadata['parameter'] = df_metadata['column']
-    df_metadata['column'].str.lower()
-    df_metadata['fmw'] = df_metadata['column'].str.lower()
-    st.markdown("#### Parameters")
-    AgGrid((df_metadata))
-
-
 def load_new_dataset():
+    def import_file():
+        ok = True
+        if st.session_state.file_format == cn.SAMPLE_FORMATS[1]:
+            #mapped_parameters, sample_par_map = map_parameters(df, file_format)
+            df = calc_meql(st.session_state.df_raw)
+            df = calc_pct(st.session_state.df_raw)
+        elif st.session_state.file_format == cn.SAMPLE_FORMATS[2]:
+            imp = Value_per_row_import(st.session_state.df_raw, texts_dict['value_per_row_import'])
+            imp.run_step()
+        return ok
+
     if st.session_state.step == 0:
-        st.session_state.file_format = st.selectbox('sample format', cn.SAMPLE_FORMATS)
-        uploaded_file = st.file_uploader("Choose a file")
-        if uploaded_file is not None:
-            st.session_state.df_raw = pd.read_csv(uploaded_file, sep=";")
-            if st.button("Import Data"):
-                if st.session_state.file_format == cn.SAMPLE_FORMATS[0]:
-                    #mapped_parameters, sample_par_map = map_parameters(df, file_format)
-                    df = calc_meql(st.session_state.df_raw)
-                    df = calc_pct(st.session_state.df_raw)
-                elif st.session_state.file_format == cn.SAMPLE_FORMATS[1]:
-                    imp = Value_per_row_import(st.session_state.df_raw, texts_dict['value_per_row_import'])
-                    imp.run_step()
-                    # mapped_parameters, sample_par_map = map_parameters(df, file_format)   
+        st.session_state.file_format = st.selectbox('Sample format', cn.SAMPLE_FORMATS)
+        st.session_state.separator = st.selectbox('Separator character', cn.SEPARATORS)
+        if st.session_state.file_format != "<specify format>":
+            uploaded_file = st.file_uploader("Choose a file")
+            if uploaded_file is not None:
+                st.session_state.df_raw = pd.read_csv(uploaded_file, sep=st.session_state.separator)
+                if st.button("Import Data"):
+                    ok = import_file()
     else:
-        if st.session_state.file_format == cn.SAMPLE_FORMATS[0]:
+        if st.session_state.file_format == cn.SAMPLE_FORMATS[1]:
             pass
             #mapped_parameters, sample_par_map = map_parameters(df, file_format)
             #df = calc_meql(df)
             #df = calc_pct(df)
-        elif st.session_state.file_format == cn.SAMPLE_FORMATS[1]:
+        elif st.session_state.file_format == cn.SAMPLE_FORMATS[2]:
             imp = Value_per_row_import(st.session_state.df_raw, texts_dict['value_per_row_import'])
             imp.run_step()
 
@@ -99,6 +91,12 @@ def nwis_test():
     st.write(wellDf[['p00025','p00003','p00010']])
 
 
+def load_config():
+    pass
+
+def save_config():
+    pass
+
 def show_menu(td: dict):
     global texts_dict
 
@@ -106,11 +104,12 @@ def show_menu(td: dict):
     MENU_OPTIONS = texts_dict["menu_options"]
     menu_action = st.sidebar.selectbox('Options', MENU_OPTIONS)
     if menu_action == MENU_OPTIONS[0]:
-        show_current_dataset()
-    if menu_action == MENU_OPTIONS[1]:
         load_new_dataset()
-    if menu_action == MENU_OPTIONS[3]:
-        nwis_test()
+    if menu_action == MENU_OPTIONS[1]:
+        load_config()
+    if menu_action == MENU_OPTIONS[2]:
+        save_config()
+    
     
 
     

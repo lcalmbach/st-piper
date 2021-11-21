@@ -16,7 +16,11 @@ class Value_per_row_import():
         self.station_columns = {}
         self.sample_columns = {}
         self.metadata_columns = {}
-        self.parameters = {}
+        if 'parameters' in st.session_state:
+            self.parameters = st.session_state.parameters
+        else:
+            self.parameters = pd.DataFrame()
+            st.session_state.parameters = pd.DataFrame()
         self._step = st.session_state['step']
         self.texts_dict = texts_dict
 
@@ -24,6 +28,7 @@ class Value_per_row_import():
     def step(self):
          return self._step
        
+
     @step.setter
     def step(self, s):
          self._step = s
@@ -38,30 +43,55 @@ class Value_per_row_import():
         return df_columns
 
 
-    def unmelt_data(self, df,parameters, sample_par_map):
-        idx = [sample_par_map['station_column'], sample_par_map['sample_date_collected_column']]
-        st.write(df)
+    def unmelt_data(self, df, par_col, value_col, sample_cols):
         df = pd.pivot_table(df,
-            values = sample_par_map['value_column'],
-            index=[sample_par_map['station_column'], sample_par_map['sample_date_collected_column']], 
-            columns=sample_par_map['parameter_column'],
-            aggfunc=np.mean
-        )
-        st.write(df)
+            values = value_col,
+            index = sample_cols, 
+            columns = par_col,
+            aggfunc = np.mean
+        ).reset_index()
         ok = len(df)> 0
         return df, ok
 
 
-    def map_parameter_with_casnr(self, df):
+    def map_parameter_with_casnr(self, df:pd.DataFrame())->pd.DataFrame():
+        """use mapped casnr fields in order to identify parameters automatically using 
+           the internal database table.
+
+        Args:
+            df (pd.DataFrame): [description]
+
+        Returns:
+            pd.DataFrame: column dataframe with matched parameters where valid 
+            casnr is available
+        """
         df_casnr = st.session_state.parameters_metadata.reset_index()
         df_casnr = df_casnr[df_casnr.casnr.notnull()]
+        df = df.reset_index(inplace=True)
         df_casnr = df_casnr[['key','casnr']].set_index('casnr')
         df = pd.merge(df, df_casnr, left_on='casnr', right_on='casnr', how='left')
-        df = df[['parameter','key_y']]
-        df.columns=['parameter','key']
+        df.reset_index(inplace=True)
+        df = df[['parameter','casnr','key_y']]
+        df.columns=['parameter','casnr','key']
+        df.loc[df['key'].isnull()]['key'] = cn.NOT_USED 
         df = df.set_index('parameter')
-        st.write(df)
         return df
+
+
+    def get_non_matched_options(self, options: list, df:pd.DataFrame())->list:
+        """Removes the options from the options list, that have already been assigned previously
+
+        Args:
+            options (list): list with all options
+            df (pd.DataFrame): grid with columns, having a key collumn
+
+        Returns:
+            list: list if options that have not been assigned yet
+        """
+        for idx, col in df.iterrows():
+            if (df.loc[idx]['key'] == idx):
+                options.remove(idx)
+        return options
 
 
     def map_parameters(self, df, file_format, step):
@@ -132,64 +162,73 @@ class Value_per_row_import():
 
             return parameters, par_map
     
-    def identify_station_columns(self):
+    def identify_station_columns(self, show_only_matched):
         st.markdown("**Preview**")
         st.write(self.df_raw.head())
         filtered_columns = self.all_columns[(self.all_columns['type']=='st') | (self.all_columns['type'].isnull())]
         options = ['Not used', 'Station identifier', 'Geopoint', 'Latitude', 'Longitude', 'Other station parameter']
         for idx, col in filtered_columns.iterrows():
-            self.all_columns.loc[idx]['key'] = st.selectbox(idx, options=options, index=options.index(self.all_columns.loc[idx]['key']))
-            if self.all_columns.loc[idx]['key']==options[0]:
-                self.all_columns.loc[idx]['type'] = None
-            else:
-                self.all_columns.loc[idx]['type'] = 'st'
-        st.write(self.all_columns)
+            if (self.all_columns.loc[idx]['key'] != cn.NOT_USED) or (not show_only_matched):
+                self.all_columns.loc[idx]['key'] = st.selectbox(idx, options=options, index=options.index(self.all_columns.loc[idx]['key']))
+                if self.all_columns.loc[idx]['key']==options[0]:
+                    self.all_columns.loc[idx]['type'] = None
+                else:
+                    self.all_columns.loc[idx]['type'] = 'st'
         st.session_state.all_columns = self.all_columns
 
-    def identify_sample_columns(self):
+    def identify_sample_columns(self,show_only_matched):
         st.markdown("**Preview**")
         st.write(self.df_raw.head())
-        has_no_sample_columns = st.checkbox("Dataset has not sample columns")
-        filtered_columns = self.all_columns[(self.all_columns['type']=='sa') | (self.all_columns['type'].isnull())]
-        st.write(filtered_columns)
-        options = ['Not used', 'Sample identifier', 'Sampling date', 'Sampling date', 'Sampling datetime','Other sample parameter']
-        for idx, col in filtered_columns.iterrows():
-            self.all_columns.loc[idx]['key'] = st.selectbox(idx, options=options, index=options.index(self.all_columns.loc[idx]['key']))
-            if self.all_columns.loc[idx]['key']==options[0]:
-                self.all_columns.loc[idx]['type'] = None
-            else:
-                self.all_columns.loc[idx]['type'] = 'sa'
-        st.write(self.all_columns)
-        st.session_state.all_columns = self.all_columns
+        st.session_state.has_sample_columns = st.checkbox("Dataset has not sample columns")
+        if not st.session_state.has_sample_columns:
+            filtered_columns = self.all_columns[(self.all_columns['type']=='sa') | (self.all_columns['type'].isnull())]
+            options = ['Not used', 'Sample identifier', 'Sampling date', 'Sampling date', 'Sampling datetime','Other sample parameter']
+            for idx, col in filtered_columns.iterrows():
+                if (self.all_columns.loc[idx]['key'] != cn.NOT_USED) or (not show_only_matched):
+                    self.all_columns.loc[idx]['key'] = st.selectbox(idx, options=options, index=options.index(self.all_columns.loc[idx]['key']))
+                    if self.all_columns.loc[idx]['key']==options[0]:
+                        self.all_columns.loc[idx]['type'] = None
+                    else:
+                        self.all_columns.loc[idx]['type'] = 'sa'
+            st.session_state.all_columns = self.all_columns
 
 
-    def identify_values_meta_data_columns(self):
+    def identify_values_meta_data_columns(self,show_only_matched)->list:
         st.markdown("**Preview**")
-        st.write(self.df_raw.head())
         filtered_columns = self.all_columns[(self.all_columns['type']=='md') | (self.all_columns['type'].isnull())]
-        st.write(filtered_columns)
-        options = ['Not used', 'Parameter', 'Value', 'CAS-Nr','Detection limit']
+        options = ['Not used', 'Parameter', 'Value', '<DL qualifier', '<DL qualifier + value', 'Unit', 'CAS-Nr','Detection limit', 'Method', 'Comment']
+        # options = self.get_non_matched_options(options, filtered_columns)
         for idx, col in filtered_columns.iterrows():
-            self.all_columns.loc[idx]['key'] = st.selectbox(idx, options=options, index=options.index(self.all_columns.loc[idx]['key']))
-            if self.all_columns.loc[idx]['key']==options[0]:
-                self.all_columns.loc[idx]['type'] = None
-            else:
-                self.all_columns.loc[idx]['type'] = 'md'
-        st.write(self.all_columns)
+            if (self.all_columns.loc[idx]['key'] != cn.NOT_USED) or (not show_only_matched):
+                self.all_columns.loc[idx]['key'] = st.selectbox(idx, options=options, index=options.index(self.all_columns.loc[idx]['key']))
+                if self.all_columns.loc[idx]['key']==options[0]:
+                    self.all_columns.loc[idx]['type'] = None
+                else:
+                    self.all_columns.loc[idx]['type'] = 'md'
         st.session_state.all_columns = self.all_columns
     
-    def match_parameters(self):
-        show_matched_only = st.sidebar.checkbox("Show matched parameters only")
-        parameter_col = self.all_columns[self.all_columns['key']=='Parameter'].index 
-        parameter_col = pd.DataFrame(parameter_col).iloc[0]['column_name']
-        casnr_col = self.all_columns[self.all_columns['key']=='CAS-Nr'].index 
-        casnr_col = pd.DataFrame(casnr_col).iloc[0]['column_name']
+    def match_parameters(self, show_only_matched)->str:
+        def get_column_name(key):
+            if key in list(self.all_columns['key']):
+                result = self.all_columns[self.all_columns['key'] == key].index 
+                result = pd.DataFrame(result).iloc[0]['column_name']
+            else:
+                result = None
+            return 
 
-        parameters = pd.DataFrame(self.df_raw[[parameter_col, casnr_col]].drop_duplicates())
-        parameters['key'] = cn.NOT_USED
-        parameters.columns = ['parameter', 'casnr', 'key']
-        parameters = parameters[parameters['parameter'].notnull()]
-        parameters = self.map_parameter_with_casnr(parameters)
+        self.all_columns.reset_index(inplace=True)
+        self.all_columns.set_index('column_name', inplace=True)
+        parameter_col = get_column_name('Parameter')
+        casnr_col = get_column_name('CAS-Nr') 
+        if len(self.parameters) == 0:
+            self.parameters = pd.DataFrame(self.df_raw[[parameter_col, casnr_col]].drop_duplicates())
+            self.parameters.columns = ['parameter','casnr']
+            self.parameters['key'] = cn.NOT_USED
+        else:
+            self.parameters = st.session_state.parameters
+        st.write(self.parameters)
+        #self.parameters = self.parameters[self.parameters['parameter'].notnull()]
+        self.parameters = self.map_parameter_with_casnr(self.parameters)
             
         num_pmd = st.session_state.parameters_metadata.query("type == 'chem'")
         lookup_par_list = list(num_pmd.reset_index()['key'])
@@ -198,51 +237,104 @@ class Value_per_row_import():
         st.markdown("#### Map parameters")
 
         # automatically (if casnr is present) or manually map lookup parameter to dataset-parameters 
-        for idx, par in parameters.iterrows():
+        for idx, par in self.parameters.iterrows():
             # if an identical parameter erroneously uses various Casnr expressions the key is not unique anymore
             # and an error is thrown
-            try:
-                if not helper.isnan(parameters.loc[idx]['key']):
-                    id = lookup_par_list.index(parameters.loc[idx]['key'])+1
-                else:
+
+            if not (helper.isnan(par['key']) and show_only_matched):
+                try:
+                    if not helper.isnan(par['key']):
+                        id = lookup_par_list.index(self.parameters.loc[idx]['key'])+1
+                    else:
+                        id = 0
+                except:
                     id = 0
-            except:
-                id = 0
-            st.write(par['key'],type(par['key']), par['key'] != np.nan)
-            if not show_matched_only or par['key'] != np.nan:
-                parameters.loc[idx]['key'] = st.selectbox(idx, options=lst, index=id)
+                if not(show_only_matched) or (par['key'] != np.nan):
+                    self.parameters.loc[idx]['key'] = st.selectbox(idx, options=lst, index=id)
         # remove all unmapped parameters from dataframe
-        parameters = parameters[parameters['key'] != 'Not used']
+        # st.session_state.parameters = parameters[parameters['key'] != 'Not used']
+        st.session_state.parameters = self.parameters
 
 
-    def pivot_table(self, df):
-        sample_par_map = {}
-        mapped_parameters = self.init_all_columns(df)
-        df = df[[sample_par_map['station_column'], 
-            sample_par_map['sample_date_collected_column'], 
-            sample_par_map['parameter_column'], 
-            sample_par_map['value_column']]]
-        lst_parameters = list(mapped_parameters.index)
-        par_col_key = sample_par_map['parameter_column']
-        df=df[ df[par_col_key].isin(lst_parameters) ]
-        df = self.unmelt_data(df, lst_parameters, sample_par_map)
+    def pivot_table(self):
+        def filter_mapped_parameters(df) -> pd.DataFrame:
+            used_parameters = self.parameters.dropna(subset=['key']).reset_index()
+            used_parameters = self.parameters[self.parameters['key'] != cn.NOT_USED].reset_index()
+            used_parameters = list(used_parameters['parameter'])
+            df = df[ df[par_col].isin(used_parameters) ]
+            return df, used_parameters
+
+        def get_cols_dict() -> dict:
+            mapped_parameters = st.session_state.all_columns
+            mapped_parameters.reset_index(inplace=True)
+            mapped_parameters.set_index('key',inplace=True)
+            return mapped_parameters['column_name'].to_dict()
+        
+        def get_parameter_list()->list:
+            mapped_parameters = st.session_state.parameters.reset_index()
+            return list(mapped_parameters['parameter'])
+        
+        def show_settings():
+            cols = st.columns([1,4])
+            with cols[0]:
+                st.markdown('Parameter column:')
+                st.markdown('Value column:')
+                st.markdown('Sample columns:')
+                st.markdown('Station columns:')
+            with cols[1]:
+                st.markdown(f"{par_col}")
+                st.markdown(f"{value_col}")
+                st.markdown(f"{','.join(sample_cols)}")
+                st.markdown(f"{','.join(station_cols)}")
+        
+        
+        cols_dict = get_cols_dict()
+        par_col = cols_dict['Parameter']
+        value_col = cols_dict['Value']
+        sample_cols = [cols_dict['Sampling date']]
+        station_cols = [cols_dict['Station identifier']]
+        show_settings()
+        
+        use_only_matched_parameters = st.checkbox("Use only matched parameters")
+        if use_only_matched_parameters:
+            df, used_parameters = filter_mapped_parameters(self.df_raw)
+        else:
+            df = self.df_raw
+            used_parameters = list(self.parameters.reset_index()['parameter'])
+        with st.expander("Used measured parameters"):
+            st.write(used_parameters)
+        if st.button("Unmelt table"):
+            df, ok = self.unmelt_data(df, par_col, value_col, sample_cols)
+            if ok:
+                st.session_state.major_ions_complete = helper.major_ions_complete(df)
+                if st.session_state.major_ions_complete:
+                    df = helper.complete_columns(df)
+                self.df_pivot = df
+                df.to_csv('data.csv', sep=';')
+                st.success("data was successfully transformed")
+            st.write(self.df_pivot)
 
 
     def run_step(self):
-        steps = ['Match Station columns', 'Match sample columns', 'Match Metadata columns', 'Match Parameters' ]
+        steps = ['Match station columns', 'Match sample columns', 'Match metadata columns', 'Match parameters', 'Pivot table' ]
         option_item_sel = st.sidebar.selectbox('Import steps', steps)
         self.step = steps.index(option_item_sel)+1
+        show_only_matched = st.sidebar.checkbox("Show only matched parameters")
+        
         title = self.texts_dict[f"step{self.step}_title"]
         info = self.texts_dict[f"step{self.step}_info"]
         st.markdown(f"#### Step {self.step}: {title}")
         with st.expander("Info"):
             st.markdown(info)
         if self.step == 1:
-            self.identify_station_columns()
+            self.identify_station_columns(show_only_matched)
         elif self.step == 2:
-            self.identify_sample_columns()
+            self.identify_sample_columns(show_only_matched)
         elif self.step == 3:
-            self.identify_values_meta_data_columns()
+            self.identify_values_meta_data_columns(show_only_matched)
         elif self.step == 4:
-            self.match_parameters()
+            self.match_parameters(show_only_matched)
+        elif self.step == 5:
+            self.pivot_table()
+            
 

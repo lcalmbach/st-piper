@@ -29,6 +29,16 @@ sin30 = math.sin(math.radians(30))
 cos30 = math.cos(math.radians(30))
 tan60 = math.tan(math.radians(60))
 
-SAMPLE_FORMATS = ["One row per sample", "One row per value"]
+SAMPLE_FORMATS = ["<specify format>", "One row per sample", "One row per value"]
 
 NOT_USED = 'Not used'
+NOT_USED = 'Not mapped'
+SEPARATORS = [';',',','\t']
+
+STATION_IDENTIFIER_COL = 'Station identifier'
+SAMPLE_IDENTIFIER_COL = 'Sample identifier'
+SAMPLE_DATE_COL = 'Sampling date'
+SAMPLE_TIME_COL = 'Sampling time'
+GEOPOINT_COL = 'Geopoint'
+LATITUDE_COL = 'Latitude'
+OTHER_STATION_COL = 'Other station column'
