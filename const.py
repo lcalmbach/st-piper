@@ -29,16 +29,60 @@ sin30 = math.sin(math.radians(30))
 cos30 = math.cos(math.radians(30))
 tan60 = math.tan(math.radians(60))
 
-SAMPLE_FORMATS = ["<specify format>", "One row per sample", "One row per value"]
+SAMPLE_FORMATS = ["One row per sample", "One row per value"]
 
 NOT_USED = 'Not used'
-NOT_USED = 'Not mapped'
+NOT_MAPPED = 'Not mapped'
 SEPARATORS = [';',',','\t']
 
+CTYPE_STATION = 'st'
+CTYPE_SAMPLE = 'sa'
+CTYPE_VAL_META = 'md'
+
 STATION_IDENTIFIER_COL = 'Station identifier'
+GEOPOINT_COL = 'Geopoint'
+LATITUDE_COL = 'Latitude'
+LONGITUDE_COL = 'Longitude'
+SAMPLING_DEPTH_COL = 'Depth'
+OTHER_STATION_COL = 'Other station column'
+STATION_COLUMNS_OPTIONS = [STATION_IDENTIFIER_COL, GEOPOINT_COL, LATITUDE_COL,
+    LONGITUDE_COL, SAMPLING_DEPTH_COL, OTHER_STATION_COL, NOT_USED]
+
 SAMPLE_IDENTIFIER_COL = 'Sample identifier'
 SAMPLE_DATE_COL = 'Sampling date'
 SAMPLE_TIME_COL = 'Sampling time'
-GEOPOINT_COL = 'Geopoint'
-LATITUDE_COL = 'Latitude'
-OTHER_STATION_COL = 'Other station column'
+OTHER_SAMPLE_COL = 'Other sample column' 
+SAMPLE_COLUMN_OPTIONS = [SAMPLE_IDENTIFIER_COL,SAMPLE_DATE_COL,SAMPLE_TIME_COL,OTHER_SAMPLE_COL, NOT_USED]
+
+PARAMETER_COL = 'Parameter'
+CASNR_COL = 'CAS-Nr'
+DL_COL = 'Detection limit'
+VALUE_NUM_COL = 'Numeric value'
+ND_QUAL_COL = '<DL qualifier'
+ND_QUAL_VALUE_COL = '<DL qualifier + numeric value' 
+UNIT_COL = 'Unit'
+METHOD_COL = 'Method'
+COMMENT_COL = 'Comment'
+CATEGORY_COL = 'Parameter group'
+META_COLUMN_OPTIONS = [NOT_USED, PARAMETER_COL, CASNR_COL,
+                       DL_COL, VALUE_NUM_COL, ND_QUAL_COL,
+                       ND_QUAL_VALUE_COL, UNIT_COL, METHOD_COL,
+                       COMMENT_COL, CATEGORY_COL]
+
+PAR_CALCIUM = 'ca'
+PAR_SODIUM = 'na'
+PAR_POTASSIUM = 'k'
+PAR_MAGNESIUM = 'mg'
+
+PAR_CHLORIDE = 'cl'
+PAR_SULFATE = 'so4'
+PAR_ALKALINITY = 'alk'
+
+PAR_TEMPERATURE = 'temp'
+PAR_COND = 'cond_25'
+PAR_PH = 'ph'
+
+DATE_FORMAT_LIST = ['%Y-%m-%d', '%Y/%m/%d', '%d.%m.%Y']
+ENCODINGS = ['utf8', 'cp1252']
+
+

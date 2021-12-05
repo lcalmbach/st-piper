@@ -1,20 +1,21 @@
 {
     "main": {
-        "menu_options": ["Info", "Manage data", "Samples", "Piper", "Time Series"]
     },
+
     "info": {
-        "intro_text": "### Introduction\n\nThe application Fontus allows users to upload groundwater datasets in a defined format and plot and analyze it. At the beginning a sample dataset is loaded, demonstrating the possiblities of  the program without further formatting. If you want to analyse your own data, the *data* option needs to be selected. In this menu option, your data can be uploaded, columns mapped to internal parameters in order to use plots with specific parameters such as the Piper plot."
+        "intro_text": "### Introduction\n\nThe application Fontus allows users to upload groundwater datasets in a defined format and plot and analyze it. At the beginning a sample dataset is loaded, demonstrating the possiblities of  the program without further formatting. If you want to analyse your own data, the *data* option needs to be selected. In this menu option, your data can be uploaded, columns mapped to internal parameters in order to use plots with specific parameters such as the Piper plot.",
+        "no_data_text": "Currently no data has been loaded. Please use the `Manager data` menu option to load a sample dataset or to upload your own data."
     },
 
     "data": {
-        "menu_options": ["Load New Dataset", "Load configuration", "Save configuration"], 
-        "step0_title":"Load dataset",
-        "step0_info":"Load the dataset by dragging the file into the upload field below or by clicking the *Browse* button and selecting the file to be loaded. Define the format for this dataset:\n\n-One sample per row has a single sampling event in each row and every column represents a parameter (e.g. Ca, Mg, Na, etc.\n\n-One value per row uses one row for every measured parameter. Typically for this format the following columns are found: Station identifier, sampling date, sample-no, parameter, value. Optionally additinal columns may be added depending on the number and type of parameters. For parameters found in low concentration and often undetect, the detection limit is often stated. For parameters for which alias names exist, the CAS-Registry number is often provided etc.",
+        "menu_options": ["Load Dataset (rows = values)", "Load Dataset (rows = samples)", "Save configuration"],
         "value_per_row_import": {
+            "step0_title":"Load Data From File",
+            "step0_info":"Define the column separator character of the csv file to be uploaded and upload the file.",
             "step1_title":"Identify Station Columns",
-            "step1_info":"In the imported columns below, identify all columns that belong the the sampling station. A column representing a unique station name or code is mandatory. Also coordinates (lat/long in decimal degrees) are mandatory, if maps should be created. Additional non mandatory parmeters may include: station-type, geology, nearest location, landuse etc.",
+            "step1_info":"In the imported columns below, identify all columns that belong the the sampling station. A column representing a unique station name or code is mandatory. Also coordinates (lat/long in decimal degrees) are mandatory, if maps should be created. Additional non mandatory parmeters may include: station-type, geology, nearest location, landuse etc. Use the *Show only matched parameters* checkbox option to limit the list of parameters to the ones that have been mapped.",
             "step2_title":"Identify Sample Columns",
-            "step2_info":"In the imported columns below, identify all columns that belong the the sample event. Sample columns must include a sampling date column. Other sample parameters may include a unique sample code, sampling personel information, comments related to the sampling event etc. If a dataset includes only one sample per station and no field related to the sampling event, check the `no columns related to the sample` checkbox",
+            "step2_info":"In the imported columns below, identify all columns that belong the the sample event. Sample columns must include a sampling date column. Other sample parameters may include a unique sample code, sampling personel information, comments related to the sampling event etc. If a dataset includes only one sample per station and no field related to the sampling event, check the *no columns related to the sample* checkbox.  Use the *Show only matched parameters* checkbox option to limit the list of parameters to the ones that have been mapped.",
             "step3_title":"Identify Value Metadata Columns",
             "step3_info":"The format *One value per row* requires a minimum of the following columns:\n\n-parameter name\n\n-value column\n\nHowever the advantage of this format is, that it may contain additional parameters such as a parameter code (often the CAS-Nr), the detection limit, the unit of measurment, the method of measurement, information on whether the parameter was detected etc.\n\nIn the columns below, columns that hold such information must be marked with the respective information.",
             "step4_title":"Match Parameters",
@@ -22,17 +23,23 @@
             "step5_title":"Pivot Table",
             "step5_info":"For some plots, data must be present in the one sample per row format, the current format is one sample per value and must be pivoted."
         }
-
     },
 
     "piper":{
         "menu_options": ["Show Piper plot", "Plot settings"]
-    }
-    ,
+    },
+
     "time_series":{
         "menu_options": ["Show time series", "Plot settings"]
     },
+    
     "samples": {
-        "menu_options": ["Load New Dataset", "Load configuration", "Save configuration"]
-    } 
+        "menu_options": ["Summary", "Sample detail"]
+    },
+    "stations": {
+        "menu_options": ["Summary", "Sampling events"]
+    },
+    "parameter": {
+        "menu_options": ["Summary", "Measured value detail"]
+    }
 }

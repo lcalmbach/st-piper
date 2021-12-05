@@ -462,15 +462,13 @@ def show_save_file_button(p):
                 mime="image/png"
             )
 
-def show_piper(data):
+def show_time_series(data):
     p = figure(width=800, height=int(800 * cn.sin60), 
         y_range=(-figure_padding_bottom, int((200+gap+figure_padding_top) * cn.sin60)), 
         tools=[HoverTool()],
         tooltips="X: @x <br>Y: @y",
         x_range=(-figure_padding_left, 200 + gap + figure_padding_right))
-    p = draw_triangles(p)
     p = draw_axis(p)
-    data_transformed = get_tranformed_data(data)
     p = draw_markers(p, data_transformed)
     st.bokeh_chart(p)
     show_save_file_button(p)
@@ -514,7 +512,6 @@ def filter(df: pd.DataFrame):
         to_date = st.sidebar.date_input("From date", max_date)
         if (from_date != min_date) or (to_date != max_date):
             df = df[(df[date_col].dt.date >= from_date) & (df[date_col].dt.date < to_date)]
-
     if len(sel_stations)>0:
         df = df[df[station_col].isin(sel_stations)]
     return df
@@ -524,7 +521,7 @@ def show_menu(texts_dict:dict):
     menu_action = st.sidebar.selectbox('Options', menu_options)
     data = filter(st.session_state.config.row_sample_df)
     if menu_action == menu_options[0]:
-        show_piper(data)
+        show_time_series(data)
     elif menu_action == menu_options[1]:
         show_settings(data)
     
