@@ -30,7 +30,7 @@
     },
 
     "time_series":{
-        "menu_options": ["Show time series", "Plot settings"]
+        "menu_options": ["Time series (multiple parameters)", "Time series (multiple stations)", "Plot settings"]
     },
     
     "samples": {

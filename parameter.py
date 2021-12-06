@@ -57,7 +57,6 @@ def show_filters(df):
     x = st.session_state.config.key2col()
     station_key = x[cn.STATION_IDENTIFIER_COL]
     par_col = x[cn.PARAMETER_COL]
-    #st.write(list(df[sample_key]))
     lst_stations = list(df[station_key].unique())
     stations = st.sidebar.multiselect("Station", options=lst_stations)
     date_from = st.sidebar.date_input("Date from")
@@ -117,7 +116,9 @@ def show_detail():
     elif operator == '==':
         df = df[df[value_col] == value]
 
-    st.write(f"### {parameter}")
+    title = f"{station}: {parameter}" if station != stations_list[0] else f"{parameter}" 
+    st.write(f"### {title}")
+    
     AgGrid((df))
 
 def show_menu(td: dict):

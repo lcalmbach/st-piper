@@ -4,10 +4,13 @@ import numpy as np
 import streamlit as st
 from bokeh.io import export_png, export_svgs
 from bokeh.plotting import figure, show
-from bokeh.models import ColumnDataSource, Range1d, LabelSet, Label, HoverTool, Arrow, NormalHead, OpenHead, VeeHead
+from bokeh.models import ColumnDataSource, Legend, Range1d, LabelSet, Label, HoverTool, Arrow, NormalHead, OpenHead, VeeHead
+from bokeh.palettes import Category10,Category20b
 from bokeh.core.enums import MarkerType, LineDash
 import helper
 import const as cn
+import itertools  
+
 
 gap = 20
 figure_padding_left = 10
@@ -28,12 +31,13 @@ arrow_size = 5
 image_file_format = 'png'
 
 
+
+
 def draw_markers(p, df):
     return p
 
-
-def show_save_file_button(p):
-    if st.button("Save png file"):
+def show_save_file_button(p, key):
+    if st.button("Save png file", key = key):
         filename = helper.get_random_filename('piper','png')
         export_png(p, filename=filename)
         helper.flash_text(f"the Piper plot has been saved to **{filename}** and is ready for download", 'info')
@@ -45,18 +49,50 @@ def show_save_file_button(p):
                 mime="image/png"
             )
 
-def show_time_series(data):
-    p = figure(width=800, height=int(800 * cn.sin60), 
-        y_range=(-figure_padding_bottom, int((200+gap+figure_padding_top) * cn.sin60)), 
-        tools=[HoverTool()],
-        tooltips="X: @x <br>Y: @y",
-        x_range=(-figure_padding_left, 200 + gap + figure_padding_right))
-    p = draw_markers(p, data)
-    st.bokeh_chart(p)
-    show_save_file_button(p)
+def show_time_series_multi_parameters():
+    def get_filter(df):
+        parameter_options = list(st.session_state.config.parameter_map_df.index)
+        parameter_options.sort()
+        sel_parameters = st.sidebar.multiselect('Parameter', parameter_options, parameter_options[0])
+        x = st.session_state.config.key2col()
+        station_col = x[cn.STATION_IDENTIFIER_COL]
+        par_col = x[cn.PARAMETER_COL]
+        value_col = x[cn.VALUE_NUM_COL]
+        date_col = x[cn.SAMPLE_DATE_COL]
+        lst_stations = list(df[station_col].unique())
+        sel_stations = st.sidebar.multiselect('Station', lst_stations, lst_stations[0])
+        return sel_parameters, sel_stations, station_col, date_col, par_col, value_col
+
+    def color_gen():
+        yield from itertools.cycle(Category10[10])
+
+    data = st.session_state.config.row_value_df
+    sel_parameters, sel_stations, station_col, date_col, par_col, value_col = get_filter(data)
+    
+    for station in sel_stations:
+        station_data = data[data[station_col] == station].sort_values(date_col)
+        p = figure(title= station,x_axis_type="datetime", toolbar_location="above", tools="hover", 
+            plot_width = 800, plot_height=350)
+        p.title.align = "center"
+        color = color_gen()
+        i=0
+        lines = []
+        legend_items = []
+        for par in sel_parameters:
+            df = station_data[station_data[par_col] == par]
+            x = p.line(date_col, value_col, line_color=next(color), line_width = 3, source=df)
+            legend_items.append((par,[x]))
+            i+=1
+
+        legend = Legend(items=legend_items, 
+            location=(0, 0), click_policy="hide")
+        p.add_layout(legend, 'right')
+
+        st.bokeh_chart(p)
+        show_save_file_button(p,station)
     
         
-def show_settings(df:pd.DataFrame):
+def show_settings():
     def show_axis_settings():
         
         with st.form("my_form1"):
@@ -81,15 +117,11 @@ def show_settings(df:pd.DataFrame):
 
 
 def show_menu(texts_dict:dict):
-    df = st.session_state.config.row_value_df
     menu_options = texts_dict["menu_options"]
-    parameter_options = list(st.session_state.config.parameter_map_df.index)
-    parameter_options.sort()
     menu_action = st.sidebar.selectbox('Options', menu_options)
-    sel_parameter = st.sidebar.selectbox('Parameter', parameter_options)
     if menu_action == menu_options[0]:
-        show_time_series(df)
+        show_time_series_multi_parameters()
     elif menu_action == menu_options[1]:
-        show_settings(df)
+        show_settings()
     
 
