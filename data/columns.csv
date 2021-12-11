@@ -1,0 +1,17 @@
+column_name;key;type
+Probenahmestelle;Station identifier;st
+Geo Point;Geopoint;st
+Probenahmedatum;Sampling date;sa
+Entnahmezeit;Not used;
+Gruppe;Not used;
+Parameter;Parameter;md
+Bestimmungsgrenze;Detection limit;md
+Wert;<DL qualifier + numeric value;md
+Einheit;Unit;md
+Probennummer;Not used;
+CAS-Bezeichnung;CAS-Nr;md
+BAFU-Bezeichnung;Not used;
+Allgemeine Parametergruppe;Parameter group;md
+Numeric value;Numeric value;md
+latitude;latitude;st
+longitude;longitude;st

@@ -1,0 +1,91 @@
+chemical	casnr	unit	value	comment
+TCDD, 2,3,7,8- (Dioxin)	1746-01-6	µg/L	0.00003	
+Dibromoethane, 1,2-  (Ethylene dibromide (EDB))	106-93-4	µg/L	0.05	
+Benzo[a]pyrene (PAH)	50-32-8	µg/L	0.2	
+Dibromochloropropane (DBCP)	96-12-8	µg/L	0.2	
+Heptachlor epoxide	1024-57-3	µg/L	0.2	
+Lindane	58-89-9	µg/L	0.2	
+Heptachlor	76-44-8	µg/L	0.4	
+Polychlorinated biphenyls (PCBs)	1336-36-3	µg/L	0.5	
+Hexachlorobenzene	118-74-1	µg/L	1	
+Pentachlorophenol	87-86-5	µg/L	1	
+Alachlor	15972-60-8	µg/L	2	
+Aldicarb sulfone	1646-88-4	µg/L	2	
+Chlordane	12798-03-6	µg/L	2	
+Endrin	72-20-8	µg/L	2	
+Mercury (inorganic)	7487-94-7	µg/L	2	
+Thallium	7440-28-0	µg/L	2	
+Vinyl chloride	75-01-4	µg/L	2	
+Aldicarb	116-06-3	µg/L	3	
+Atrazine	1912-24-9	µg/L	3	
+Toxaphene	8001-35-2	µg/L	3	
+Aldicarb sulfoxide	1646-87-3	µg/L	4	
+Beryllium	7440-41-7	µg/L	4	
+Beta particle and photon activity (formerly man-made radionuclides)		mrem/yr	4	
+Simazine	122-34-9	µg/L	4	
+Benzene	71-43-2	µg/L	5	
+Cadmium	7440-43-9	µg/L	5	
+Carbon tetrachloride	56-23-5	µg/L	5	
+Dichloroethane (EDC), 1,2-	107-06-2	µg/L	5	
+Dichloromethane	75-09-2	µg/L	5	
+Dichloropropane, 1,2-	78-87-5	µg/L	5	
+Radium 226 & 228 (combined)	7440-14-4	pCi/L	5	
+Tetrachloroethylene (PERC)	127-18-4	µg/L	5	
+Tetrachloroethylene (PERC)	127-18-4	µg/L	5	
+Trichloroethane, 1,1,2-	79-00-5	µg/L	5	
+Trichloroethylene	79-01-6	µg/L	5	
+Antimony	7440-36-0	µg/L	6	
+Di(2-ethylhexyl)phthalate	117-81-7	µg/L	6	
+Asbestos (fibers/l >10Fm length)	1332-21-4	MFL	7	
+Dichloroethylene, 1,1-	75-35-4	µg/L	7	
+Dichloroethylene, 1,1-	75-35-4	µg/L	7	
+Dinoseb	88-85-7	µg/L	7	
+Arsenic	7440-38-2	µg/L	10	
+Bromate	7789-38-0	µg/L	10	
+Gross alpha particle activity		 pCi/L	15	
+Diquat	85-00-7	µg/L	20	
+Uranium	7440-61-1	µg/L	30	
+Carbofuran	1563-66-2	µg/L	40	
+Methoxychlor	72-43-5	µg/L	40	
+Hexachlorocyclopentadiene	77-47-4	µg/L	50	
+Selenium	7782-49-2	µg/L	50	
+2(2,4,5-trichlorophenoxy) propionic acid, (2,4,5-TP or Silvex)	93-72-1	µg/L	50	
+Dichloroacetic acid	79-43-6	µg/L	60	
+Monochloroacetic acid	79-11-8	µg/L	60	
+Trichloroacetic acid	76-03-9	µg/L	60	
+Dichloroethylene, cis-1,2-	156-59-2	µg/L	70	
+Dichlorophenoxyacetic acid, 2,4- (2,4-D)	94-75-7	µg/L	70	
+Trichlorobenzene, 1,2,4-	120-82-1	µg/L	70	
+Dichlorobenzene, 1,4-	106-46-7	µg/L	75	
+Dichlorobenzene, 1,4-	106-46-7	µg/L	75	
+Bromodichloromethane	75-27-4	µg/L	80	
+Bromodichloromethane	75-27-4	µg/L	80	
+Bromoform	75-25-2	µg/L	80	
+Chloroform	67-66-3	µg/L	80	
+Dibromochloromethane	124-48-1	µg/L	80	
+Chlorobenzene	108-90-7	µg/L	100	
+Chromium (total)	7440-47-3	µg/L	100	
+Dichloroethylene, trans-1,2-	156-60-5	µg/L	100	
+Dichloroethylene, trans-1,2-	156-60-5	µg/L	100	
+Endothall	145-73-3	µg/L	100	
+Styrene	100-42-5	µg/L	100	
+Cyanide	143-33-9	µg/L	200	
+Dalapon (sodium salt)	75-99-0	µg/L	200	
+Oxamyl (Vydate)	23135-22-0	µg/L	200	
+Trichloroethane, 1,1,1-	71-55-6	µg/L	200	
+Di(2-ethylhexyl)adipate	103-23-1	µg/L	400	
+Picloram	1918-02-1	µg/L	500	
+Dichlorobenzene, 1,2-	95-50-1	µg/L	600	
+Ethylbenzene	100-41-4	µg/L	700	
+Ethylbenzene	100-41-4	µg/L	700	
+Glyphosate	1071-83-6	µg/L	700	
+Chlorine dioxide	10049-04-4	µg/L	800	
+Chlorite	7758-19-2	µg/L	1000	
+Nitrite (as N)	14797-65-0	µg/L	1000	
+Toluene	108-88-3	µg/L	1000	
+Barium	7440-39-3	µg/L	2000	
+Chloramine	10599-90-3	µg/L	4000	
+Chlorine	7782-50-5	µg/L	4000	
+Fluoride	16984-48-8	µg/L	4000	
+Nitrate (as N)	14797-55-8	µg/L	10000	
+Xylenes	1330-20-7	µg/L	10000	

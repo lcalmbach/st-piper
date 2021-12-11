@@ -1,5 +1,5 @@
 import pandas as pd
-
+from pathlib import Path
     
 class Metadata():
     """
@@ -14,7 +14,10 @@ class Metadata():
         self.metadata_df = self.get_parameters()
 
     def get_parameters(self):
-        df = pd.read_csv('./parameters_metadata.csv', sep=";")
+        data_folder = Path("metadata/")
+
+        file = data_folder / "parameters_metadata.csv"
+        df = pd.read_csv(file, sep=";")
         df = df.set_index('key')
         return df
     
