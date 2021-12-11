@@ -6,12 +6,11 @@ import json
 
 import const as cn
 import info
-import piper
-import time_series
 import sample
 import station
 import parameter
 import data
+import plots
 from config import Config
 
 __version__ = '0.0.1' 
@@ -66,11 +65,7 @@ def main():
     elif menu_action == 4:
         parameter.show_menu(texts_dict['parameter'])
     elif menu_action == 5:
-        time_series.show_menu(texts_dict['time_series'])
-    elif menu_action == 6:
-        map.show_menu(texts_dict['map'])
-    elif menu_action == 7:
-        piper.show_menu(texts_dict['piper'])
+        plots.show_menu(texts_dict['plots'])
     else:
         st.write(menu_action)
     st.sidebar.markdown(APP_INFO, unsafe_allow_html=True)

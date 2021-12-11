@@ -10,6 +10,7 @@
     "data": {
         "menu_options": ["Load Dataset (rows = values)", "Load Dataset (rows = samples)", "Save configuration"],
         "value_per_row_import": {
+            "steps": ["Load data", "Match station columns", "Match sample columns", "Match metadata columns", "Match parameters", "Pivot table"],
             "step0_title":"Load Data From File",
             "step0_info":"Define the column separator character of the csv file to be uploaded and upload the file.",
             "step1_title":"Identify Station Columns",
@@ -25,13 +26,7 @@
         }
     },
 
-    "piper":{
-        "menu_options": ["Show Piper plot", "Plot settings"]
-    },
-
-    "time_series":{
-        "menu_options": ["Time series (multiple parameters)", "Time series (multiple stations)", "Plot settings"]
-    },
+    
     
     "samples": {
         "menu_options": ["Summary", "Sample detail"]
@@ -41,5 +36,17 @@
     },
     "parameter": {
         "menu_options": ["Summary", "Measured value detail"]
+    },
+    "plots": {
+        "menu_options": ["Time series", "Scatter", "Maps", "Piper", "Schoeller", "Boxplot"],
+        "piper":{
+            "menu_options": ["Show Piper plot", "Plot settings"]
+        },
+        "scatter":{
+            "menu_options": ["Show scatter plot"]
+        },
+        "time_series":{
+            "menu_options": ["Time series (multiple parameters)", "Time series (multiple stations)", "Plot settings"]
+        }
     }
 }

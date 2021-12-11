@@ -84,7 +84,7 @@ def show_detail():
     df = st.session_state.config.row_value_df
     par_col = st.session_state.config.key2col()[cn.PARAMETER_COL]
     station_col = st.session_state.config.key2col()[cn.STATION_IDENTIFIER_COL]
-
+    date_col = st.session_state.config.key2col()[cn.SAMPLE_DATE_COL]
     par_list = list(st.session_state.config.parameter_map_df.index)
     parameter = st.sidebar.selectbox("Parameter", par_list)
     stations_list = ['Select a station']
@@ -99,11 +99,11 @@ def show_detail():
             value = st.number_input('', 0.0000)
     field_list = st.session_state.config.column_map_df.index
     fields = st.sidebar.multiselect("⚙️ Show columns", field_list)
+    standards =  st.session_state.config.get_standards(parameter)
+
     df = df[df[par_col]==parameter]
     if stations_list.index(station) > 0:
         df = df[df[station_col]==station]
-    if fields != []:
-        df = df[fields]
     value_col = st.session_state.config.key2col()[cn.VALUE_NUM_COL]
     if operator == '>':
         df = df[df[value_col] > value]
@@ -115,10 +115,39 @@ def show_detail():
         df = df[df[value_col] <= value]
     elif operator == '==':
         df = df[df[value_col] == value]
+    
+    show_guideline= False
+    if len(standards) > 0:
+        show_guideline = st.sidebar.checkbox(f"Show guideline ({standards[0]['value']} {standards[0]['unit']})")
+        if show_guideline:
+            gl_value = standards[0]['value'] / 1000
+            df[standards[0]['name']] = gl_value
 
     title = f"{station}: {parameter}" if station != stations_list[0] else f"{parameter}" 
-    st.write(f"### {title}")
     
+    st.write(f"#### {title}")
+    from_date = df[date_col].min()
+    to_date = df[date_col].max()
+    num_total = len(df)
+    if show_guideline: 
+        exc_df = df[df[cn.VALUE_NUM_COL] >= gl_value]
+        st.markdown(f"{num_total} measured values, {len(exc_df)} exceedances ({len(exc_df) / len(df): .1%})")
+    else:
+        st.markdown(f"{num_total} measured values")
+    
+    
+    detects = len(df[df[cn.ND_FLAG_COL] == False])
+    un_detects = len(df[df[cn.ND_FLAG_COL] == True])
+    pct_detects = un_detects / num_total if num_total > 0 else 0
+    st.markdown(f"{detects} detects and {un_detects} undetects ({pct_detects:.1%})")
+
+    date_fmt = st.session_state.config.date_format
+    stations = len(df[station_col].value_counts())
+    st.markdown(f"From *{from_date.strftime(date_fmt)}* to *{to_date.strftime(date_fmt)}*")
+    st.markdown(f"Measured at {stations} stations")
+    
+    if fields != []:
+        df = df[fields]
     AgGrid((df))
 
 def show_menu(td: dict):

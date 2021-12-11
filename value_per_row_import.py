@@ -41,22 +41,33 @@ class Value_per_row_import():
         def load_config():
             uploaded_column_definition = st.file_uploader("Columns mapping file, csv")
             if uploaded_column_definition:
-                st.session_state.config.column_map_df = pd.read_csv(uploaded_column_definition, sep=st.session_state.config.separator)
+                st.write(sep=st.session_state.config.separator)
+                st.session_state.config.column_map_df = pd.read_csv(uploaded_column_definition,
+                                                                    sep=st.session_state.config.separator)
                 with st.expander('Preview columns list'):
-                    st.write(st.session_state.config.column_map_df)
+                    AgGrid(st.session_state.config.column_map_df)
             uploaded_parameters_definition = st.file_uploader("Parameters mapping file, csv")
 
             if uploaded_parameters_definition:
-                
-                st.session_state.config.parameter_map_df = pd.read_csv(uploaded_parameters_definition, sep=st.session_state.config.separator)                
+                st.session_state.config.parameter_map_df = pd.read_csv(uploaded_parameters_definition,
+                                                                       sep=st.session_state.config.separator)
+                sample_cols = st.session_state.config.sample_cols()
+                station_cols = st.session_state.config.station_cols()
+                df, ok = self.unmelt_data(st.session_state.config.row_value_df,
+                    st.session_state.config.parameter_col(), 
+                    st.session_state.config.value_col(), 
+                    sample_cols + station_cols)
                 with st.expander('Preview parameter list'):
-                    st.write(st.session_state.config.parameter_map_df)
+                    AgGrid(st.session_state.config.parameter_map_df)
 
         st.title = st.text_input('Dataset title', 'New dataset')
         cols = st.columns(3)
         with cols[0]:
             id = cn.SEPARATORS.index(st.session_state.config.separator)
             st.session_state.config.separator = st.selectbox('Separator character', options=cn.SEPARATORS, index=id)
+            gl_list = st.session_state.config.guideline_list()
+            id = 0
+            st.session_state.config.guidelines[0]['name'] = st.selectbox('Standard/Guideline', options=gl_list, index=id)
         with cols[1]:
             id = cn.ENCODINGS.index(st.session_state.config.encoding)
             st.session_state.config.encoding = st.selectbox('File encoding', options=cn.ENCODINGS, index=id)
@@ -74,10 +85,10 @@ class Value_per_row_import():
                 load_config()
 
 
-    def unmelt_data(self, df, par_col, value_col, sample_cols):
+    def unmelt_data(self, df, par_col, value_col, group_cols):
         df = pd.pivot_table(df,
             values=value_col,
-            index=sample_cols,
+            index=group_cols,
             columns=par_col,
             aggfunc=np.mean
         ).reset_index()
@@ -217,11 +228,11 @@ class Value_per_row_import():
                 st.markdown(f"{','.join(station_cols)}")
         
         cols_dict = st.session_state.config.key2col()
-        par_col = cols_dict[cn.PARAMETER_COL]
-        value_col = cols_dict[cn.VALUE_NUM_COL]
-        sample_cols = st.session_state.config.coltype2dict(cn.CTYPE_SAMPLE)
-        station_cols = st.session_state.config.coltype2dict(cn.CTYPE_STATION)
-        sample_cols.update(station_cols)
+        par_col = st.session_state.config.parameter_col()
+        value_col = st.session_state.config.value_col()
+        sample_cols = st.session_state.config.sample_cols()
+        station_cols = st.session_state.config.station_cols()
+        sample_cols = sample_cols + station_cols
         show_settings()
         
         use_only_matched_parameters = st.checkbox("Use only matched parameters")
@@ -236,17 +247,17 @@ class Value_per_row_import():
             df, ok = self.unmelt_data(df, par_col, value_col, sample_cols)
             if ok:
                 df = helper.complete_columns(df, st.session_state.config.key2par())
-                df.to_csv('data.csv', sep=';')
+                df.to_csv('data.csv', sep=st.session_state.config.separator)
                 st.success("data was successfully transformed")
                 AgGrid(df.head(100))
             st.session_state.config.row_sample_df = df
 
-            st.session_state.config.column_map_df.to_csv('columns.csv', sep=';')
-            st.session_state.config.parameter_map_df.to_csv('parameters.csv', sep=';')
+            st.session_state.config.column_map_df.to_csv('columns.csv', sep=st.session_state.config.separator)
+            st.session_state.config.parameter_map_df.to_csv('parameters.csv', sep=st.session_state.config.separator)
 
 
     def run_step(self):
-        steps = ['Load data', 'Match station columns', 'Match sample columns', 'Match metadata columns', 'Match parameters', 'Pivot table' ]
+        steps = self.texts_dict['steps']
         option_item_sel = st.sidebar.selectbox('Import steps', steps)
         self.step = steps.index(option_item_sel)
         show_only_matched = st.sidebar.checkbox("Show only matched parameters")

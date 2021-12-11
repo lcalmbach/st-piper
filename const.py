@@ -1,9 +1,12 @@
 import math
 
 TEST_DATASET =  "./datasets/test_data.csv"
-MARKERS = ['circle','rect','triangle','cross']
+MARKERS = ['circle','square','triangle','diamond','inverted_triangle','hex','asterisk','circle_cross','circle_dot',
+            'circle_x','circle_y','cross','dash','diamond_cross','diamond_dot','dot','hex_dot','plus','square_cross',
+            'square_dot','square_pin','square_x','star','star_dot','triangle_dot','triangle_pin','x','y']
 
-cfg = {
+
+piper_cfg = {
     'gap': 20,
     'figure_padding_left': 10,
     'figure_padding_right': 10,
@@ -21,6 +24,21 @@ cfg = {
     'arrow_length': 5,
     'arrow_size': 5,
     'image_file_format': 'png'
+}
+
+time_series_cfg = {
+    'parameters': False,
+    'parameters': ['chlorid'],
+    'stations': ['F_0795'],
+    'show_marker': True,
+    'show_line': True,
+    'show_guideline': True,
+    'markers': ['circle'],
+    'lines': ['blue'],
+    'marker_size': 10,
+    'yl_axis_title': 'Concentration in mg/L',
+    'yl_unit': 'mg/L',
+    'has_yr_axis': False
 }
 
 sin60 = math.sin(math.radians(60))
@@ -58,6 +76,7 @@ PARAMETER_COL = 'Parameter'
 CASNR_COL = 'CAS-Nr'
 DL_COL = 'Detection limit'
 VALUE_NUM_COL = 'Numeric value'
+ND_FLAG_COL = '_nd_flag'
 ND_QUAL_COL = '<DL qualifier'
 ND_QUAL_VALUE_COL = '<DL qualifier + numeric value' 
 UNIT_COL = 'Unit'
@@ -84,5 +103,6 @@ PAR_PH = 'ph'
 
 DATE_FORMAT_LIST = ['%Y-%m-%d', '%Y/%m/%d', '%d.%m.%Y']
 ENCODINGS = ['utf8', 'cp1252']
-
+DEFAULT_GUIDELINE = 'epa_mcl'
+GUIDELINE_ROOT = './guidelines/'
 

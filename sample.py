@@ -19,19 +19,27 @@ def show_summary():
 def show_detail():
     df = st.session_state.config.row_value_df
     x = st.session_state.config.key2col()
-    station_key = x['Station identifier']
-    sample_key = x['Sampling date']
+    station_key = x[cn.STATION_IDENTIFIER_COL]
+    sample_key = x[cn.SAMPLE_DATE_COL]
     # st.write(list(df[sample_key]))
     lst_stations = list(df[station_key].unique())
     station = st.sidebar.selectbox("Station", options=lst_stations)
     lst_samples = list(df[df[station_key] == station][sample_key].unique())
     lst_samples.sort()
     sampling_date = st.sidebar.selectbox("Sample", options=lst_samples)
+    
     df = st.session_state.config.row_value_df
     df = df[(df[station_key] == station) & (df[sample_key]==sampling_date)]
+    if st.session_state.config.col_is_mapped(cn.CATEGORY_COL):
+        lst_categories = st.session_state.config.parameter_categories()
+        sel_categories = st.sidebar.multiselect('🔎 Parameter categories', lst_categories)
+        if len(sel_categories) > 0:
+            category_col = x[cn.CATEGORY_COL]
+            df = df[df[category_col].isin(sel_categories)]
     df_sample = df[st.session_state.config.get_parameter_detail_form_columns()]
-    st.markdown(f"Station: {df.iloc[0][station_key]}")
-    st.markdown(f"Sample date: {df.iloc[0][sample_key]}")
+    st.write(df.head())
+    st.markdown(f"Station: {df_sample.iloc[0][station_key]}")
+    st.markdown(f"Sample date: {df_sample.iloc[0][sample_key]}")
 
     AgGrid(df_sample)
 

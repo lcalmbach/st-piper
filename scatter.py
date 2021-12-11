@@ -50,9 +50,10 @@ def show_save_file_button(p, key):
 
 def show_time_series_multi_parameters():
     def get_filter(df):
-        parameter_options = list(st.session_state.config.parameter_map_df.index)
+        parameter_options = list(st.session_state.config.row_sample_df.columns)
         parameter_options.sort()
-        sel_parameters = st.sidebar.multiselect('Parameter', parameter_options, parameter_options[0])
+        x_par = st.sidebar.selectbox('X-parameter', parameter_options, 0)
+        y_par = st.sidebar.selectbox('Y-Parameter', parameter_options, 1)
         x = st.session_state.config.key2col()
         station_col = x[cn.STATION_IDENTIFIER_COL]
         par_col = x[cn.PARAMETER_COL]
@@ -60,7 +61,7 @@ def show_time_series_multi_parameters():
         date_col = x[cn.SAMPLE_DATE_COL]
         lst_stations = list(df[station_col].unique())
         sel_stations = st.sidebar.multiselect('Station', lst_stations, lst_stations[0])
-        return sel_parameters, sel_stations, station_col, date_col, par_col, value_col
+        return x_par, y_par, sel_stations, station_col, date_col, par_col, value_col
 
     def show_settings():
         cfg= {}
@@ -79,31 +80,29 @@ def show_time_series_multi_parameters():
     def color_gen():
         yield from itertools.cycle(Category10[10])
 
-    data = st.session_state.config.row_value_df
-    sel_parameters, sel_stations, station_col, date_col, par_col, value_col = get_filter(data)
+    data = st.session_state.config.row_sample_df
+    x_par, y_par, sel_stations, station_col, date_col, par_col, value_col = get_filter(data)
     settings = show_settings()
     for station in sel_stations:
         station_data = data[data[station_col] == station].sort_values(date_col)
-        p = figure(title= station,x_axis_type="datetime", 
+        p = figure(title= station,
                    toolbar_location="above", 
                    tools = [],
                    plot_width = 800, 
                    plot_height=350)
         p.title.align = "center"
-        p.yaxis.axis_label = 'Concentration (mg/L)'
+        p.yaxis.axis_label = f'{y_par} (mg/L)'
+        p.xaxis.axis_label = f'{x_par} (mg/L)'
         color = color_gen()
         i=0
+        df = data
         lines = []
         legend_items = []
-        for par in sel_parameters:
-            df = station_data[station_data[par_col] == par]
-            df = df.rename(columns = {date_col: 'date'})
-            clr = next(color)
-            l = p.line('date', value_col, line_color=clr, line_width = 2, alpha=0.6, source=df)
-            m = p.scatter(x='date', y=value_col, source=df, marker=cn.MARKERS[i], 
-                size=10, color=clr, alpha=0.6)
-            legend_items.append((par,[l,m]))
-            i+=1
+        clr = next(color)
+        m = p.scatter(x=x_par, y=y_par, source=df, marker=cn.MARKERS[i], 
+            size=10, color=clr, alpha=0.6)
+        #legend_items.append((par,[l,m]))
+
         hline = Span(location=0.015, dimension='width', line_color='red', line_width=3)
         p.renderers.extend([hline])
         legend = Legend(items=legend_items, 

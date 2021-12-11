@@ -16,6 +16,7 @@ class Config():
         self.row_value_df = pd.DataFrame()
         self._column_map_df = pd.DataFrame({'column_name': [], 'key': []})
         self._parameter_map_df = pd.DataFrame({'parameter': [], 'casnr': [], 'key': []})
+        self.guidelines = [{'name': self.guideline_list()[0], 'data': self.read_guideline(self.guideline_list()[0])}]
         self.load_config_from_file_flag = False
         self.file_format = ''
         self.date_is_formatted = False
@@ -23,7 +24,11 @@ class Config():
         self.sessionid = uuid.uuid1()
         self.lookup_parameters = Metadata() # metadata for a wide selection of parameters 
         # self.current_dataset = get_data()
-        self.piper_config = cn.cfg
+        self.piper_config = cn.piper_cfg
+        self.time_stations_config = {}
+        self.time_parameters_config = {}
+        self.map_parameters_config = {}
+        
         self.step = 0
         # true if either the value column is mapped or if the qual-value col is mapped and 
         # the value and detection-flag column is generated
@@ -53,9 +58,18 @@ class Config():
         return self._parameter_map_df
        
     @parameter_map_df.setter
-    def parameter_map_df(self, parameter_map: pd.DataFrame):
+    def parameter_map_df(self, parameter_map):
         self._parameter_map_df = parameter_map
         self._parameter_map_df.set_index('parameter', inplace=True)
+
+# functions-----------------------------------------------------------------------------------------
+
+    def guideline_list(self):
+        return ['epa_mcl']
+
+    def read_guideline(self, gl:str):
+        filename = f"{cn.GUIDELINE_ROOT}{gl}.csv"
+        return pd.read_csv(filename, sep='\t')
 
     def init_column_map(self):
         ok, err_msg = True, ''
@@ -75,12 +89,17 @@ class Config():
             result[2] = "Samples"
             result[3] = "Stations"
             result[4] = "Parameters"
+            result[5] = "Plots"
+        return result
+    
+    def get_plots_options(self):
+        result = []
         if self.col_is_mapped(cn.SAMPLE_DATE_COL):
-            result[5] = "Time series plots"
+            result.append("Time series")
         if self.col_is_mapped(cn.LATITUDE_COL):
-            result[6] = "Maps"
+            result.append("Maps")
         if self.major_ions_complete():
-            result[7] = "Piper plots"
+            result.append("Piper plots")
         return result
 
     def par_is_mapped(self, key_name):
@@ -140,7 +159,7 @@ class Config():
     def split_qual_val_column(self):
         ok = False
         qual_val_col = self.key2col()[cn.ND_QUAL_VALUE_COL]
-        nd_flag_col = '_nd_flag'
+        nd_flag_col = cn.ND_FLAG_COL
         df = self.row_value_df
 
         df[qual_val_col] = df[qual_val_col].astype(str)
@@ -293,3 +312,51 @@ class Config():
     def parameters_are_mapped(self) -> bool:
         df = self.parameter_map_df
         return len(df[df['key'] != cn.NOT_USED]) > 0
+    
+    def parameter_col(self) -> str:
+        return st.session_state.config.key2col()[cn.PARAMETER_COL]
+    
+    def station_identifier_col(self) -> str:
+        return st.session_state.config.key2col()[cn.STATION_IDENTIFIER_COL]
+
+    def sample_identifier_col(self) -> str:
+        if self.col_is_mapped(cn.SAMPLE_IDENTIFIER_COL):
+            return st.session_state.config.key2col()[cn.SAMPLE_IDENTIFIER_COL]
+        elif self.col_is_mapped(cn.DATE_IDENTIFIER_COL):
+            return st.session_state.config.key2col()[cn.DATE_IDENTIFIER_COL]
+        else:
+            return None
+    
+    def value_col(self) -> str:
+        return st.session_state.config.key2col()[cn.VALUE_NUM_COL]
+
+    def sample_cols(self) -> list:
+        return list(st.session_state.config.coltype2dict(cn.CTYPE_SAMPLE).keys())
+    
+    def station_cols(self) -> list:
+        return list(st.session_state.config.coltype2dict(cn.CTYPE_STATION).keys())
+
+    def date_col(self) -> str:
+        return st.session_state.config.coltype2dict(cn.cn.SAMPLE_DATE_COL)
+
+    def parameter_categories(self):
+        if self.col_is_mapped(cn.CATEGORY_COL):
+            pc_col_name = self.key2col()[cn.CATEGORY_COL]
+            return list(self.row_value_df[pc_col_name].unique())
+        else:
+            return []
+    
+    def get_standards(self, parameter):
+        casnr = self.parameter_map_df.loc[parameter]['casnr']
+        result = []
+        for guideline in self.guidelines:
+            df = guideline['data']
+            value = df.query('casnr == @casnr')
+            if len(value) > 0:
+                result.append({'name': guideline['name'],
+                               'value': value.iloc[0]['value'],
+                               'unit': value.iloc[0]['unit']
+                })
+        return result
+
+
