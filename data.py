@@ -30,11 +30,6 @@ def nwis_test():
 def load_config():
     pass
 
-
-def save_config():
-    pass
-
-
 def show_menu(td: dict):
     global texts_dict
 
@@ -44,11 +39,10 @@ def show_menu(td: dict):
     if menu_action == MENU_OPTIONS[0]:
         imp = Value_per_row_import(texts_dict['value_per_row_import'])
         imp.run_step()
-    if menu_action == MENU_OPTIONS[1]:
+    elif menu_action == MENU_OPTIONS[1]:
+        imp = Value_per_row_import(texts_dict['value_per_row_import'])
+        imp.run_step()
+    elif menu_action == MENU_OPTIONS[2]:
         load_config()
-    if menu_action == MENU_OPTIONS[2]:
-        save_config()
-    
-    
-
-    
+    else:
+        st.write('menu option does not exist')

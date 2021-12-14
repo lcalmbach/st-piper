@@ -32,14 +32,14 @@ def show_detail():
     df = df[(df[station_key] == station) & (df[sample_key]==sampling_date)]
     if st.session_state.config.col_is_mapped(cn.CATEGORY_COL):
         lst_categories = st.session_state.config.parameter_categories()
+
         sel_categories = st.sidebar.multiselect('🔎 Parameter categories', lst_categories)
         if len(sel_categories) > 0:
             category_col = x[cn.CATEGORY_COL]
             df = df[df[category_col].isin(sel_categories)]
     df_sample = df[st.session_state.config.get_parameter_detail_form_columns()]
-    st.write(df.head())
-    st.markdown(f"Station: {df_sample.iloc[0][station_key]}")
-    st.markdown(f"Sample date: {df_sample.iloc[0][sample_key]}")
+    st.markdown(f"Station: {df.iloc[0][station_key]}")
+    st.markdown(f"Sample date: {df.iloc[0][sample_key].strftime(st.session_state.config.date_format)}")
 
     AgGrid(df_sample)
 

@@ -3,12 +3,12 @@
     },
 
     "info": {
-        "intro_text": "### Introduction\n\nThe application Fontus allows users to upload groundwater datasets in a defined format and plot and analyze it. At the beginning a sample dataset is loaded, demonstrating the possiblities of  the program without further formatting. If you want to analyse your own data, the *data* option needs to be selected. In this menu option, your data can be uploaded, columns mapped to internal parameters in order to use plots with specific parameters such as the Piper plot.",
-        "no_data_text": "Currently no data has been loaded. Please use the `Manager data` menu option to load a sample dataset or to upload your own data."
+        "intro_text": "### Introduction\n\nFontus allows users to upload groundwater datasets in a defined format and plot and analyze it. In order to familiarize yourself with the software, two preconfigured datasets can also be used. If you intend to explore your own dataset, use the *Select or load dataset* option. In this menu option, your data can be uploaded, columns mapped to internal parameters in order to use plots with specific parameter settings, such as the Piper plot.",
+        "no_data_text": "Currently no data has been loaded. Please use the `Select or load dataset` menu option to load a sample dataset or to upload your own data."
     },
 
     "data": {
-        "menu_options": ["Load Dataset (rows = values)", "Load Dataset (rows = samples)", "Save configuration"],
+        "menu_options": ["Select dataset","Load Dataset (rows = values)", "Load Dataset (rows = samples)"],
         "value_per_row_import": {
             "steps": ["Load data", "Match station columns", "Match sample columns", "Match metadata columns", "Match parameters", "Pivot table"],
             "step0_title":"Load Data From File",
@@ -41,6 +41,9 @@
         "menu_options": ["Time series", "Scatter", "Maps", "Piper", "Schoeller", "Boxplot"],
         "piper":{
             "menu_options": ["Show Piper plot", "Plot settings"]
+        },
+        "map":{
+            "menu_options": ["Map"]
         },
         "scatter":{
             "menu_options": ["Show scatter plot"]

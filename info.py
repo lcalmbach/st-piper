@@ -6,11 +6,16 @@ def show_menu(texts_dict: dict):
     text = texts_dict['intro_text']
     st.markdown(text)
     if st.session_state.config.data_is_loaded():
-        with st.expander("Test Dataset"):
-            pass #st.write(st.session_state.current_dataset)
+        st.markdown(f"---")
+        st.markdown(f"#### Current dataset:")
+        st.markdown(f"**{st.session_state.config.current_dataset['name']}**")
+        st.markdown(st.session_state.config.current_dataset['description'])
+        img = st.session_state.config.current_dataset['image']
+        if img != '':
+            st.image(img)
         with st.expander("Columns"):
-            pass #df = pd.DataFrame(st.session_state.current_dataset.columns)
-            #df.columns=['column name']
-            #AgGrid(df)
+            df = pd.DataFrame(st.session_state.config.column_map_df.index)
+            AgGrid(df)
+        
     else:
         st.markdown(texts_dict['no_data_text'])

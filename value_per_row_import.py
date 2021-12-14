@@ -29,19 +29,17 @@ class Value_per_row_import():
 
     def load_new_dataset(self):
         def load_data():
-            st.session_state.config.row_value_df = pd.read_csv(uploaded_file, 
+            df = pd.read_csv(uploaded_file, 
                 sep=st.session_state.config.separator, 
                 encoding=st.session_state.config.encoding)
-            df = st.session_state.config.row_value_df
             st.success(f"File was loaded: {len(df)} rows, {len(list(df.columns))} columns.")
             with st.expander('Preview'):
                 st.write(df.head())
-            st.session_state.config.init_column_map()
+            st.session_state.config.row_value_df = df
         
         def load_config():
             uploaded_column_definition = st.file_uploader("Columns mapping file, csv")
             if uploaded_column_definition:
-                st.write(sep=st.session_state.config.separator)
                 st.session_state.config.column_map_df = pd.read_csv(uploaded_column_definition,
                                                                     sep=st.session_state.config.separator)
                 with st.expander('Preview columns list'):
@@ -127,7 +125,7 @@ class Value_per_row_import():
                 else:
                     df.loc[idx]['type'] = cn.CTYPE_STATION
                                 
-                if (df.loc[idx]['key'] == cn.GEOPOINT_COL) and (not st.session_state.config.is_mapped(cn.LONGITUDE_COL)):
+                if (df.loc[idx]['key'] == cn.GEOPOINT_COL) and (not st.session_state.config.col_is_mapped(cn.LONGITUDE_COL)):
                     st.session_state.config.geopoint_to_lat_long()
 
 
@@ -246,7 +244,8 @@ class Value_per_row_import():
         if st.button("Unmelt table"):
             df, ok = self.unmelt_data(df, par_col, value_col, sample_cols)
             if ok:
-                df = helper.complete_columns(df, st.session_state.config.key2par())
+                parameter_master_data = st.session_state.config.lookup_parameters.metadata_df
+                df = helper.complete_columns(df, st.session_state.config.key2par(), parameter_master_data)
                 df.to_csv('data.csv', sep=st.session_state.config.separator)
                 st.success("data was successfully transformed")
                 AgGrid(df.head(100))

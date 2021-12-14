@@ -1,0 +1,26 @@
+[
+    {
+        "name": "Groundwater monitoring in Basel/Switzerland",
+        "description": "The city of Basel is located in northern Switzerland at the so called 'knee' of the River Rhine. It has a population of approximately 200,000. Basel monitores water levels and water quality in currently 84 monitoring wells of which 28 are sampled biannually for water quality samples. The raw data used in this app is published on the https://data.bs.ch/explore/dataset/100067/. Analysis include Major constituents, inorganic and organic trace elements and nutrients. \n\nGeological situation:",
+        "image": "https://www.aue.bs.ch/.imaging/default/dam/aue/Bilder/wasser/grundwasser/8-3_gewaesser-gw/jcr:content.jpg",
+        "row_is": "value",
+        "date_format":"%d.%m.%Y",
+        "separator": ";",
+        "encoding": "utf8",
+        "data": "100067.csv",
+        "column_map": "100067_columns.csv",
+        "parameter_map": "100067_parameters.csv"
+    },
+    {
+        "name": "Arsenic contamination of groundwater in Bangladesh",
+        "description": "Arsenic contamination has been identified any many regions araound the world and Bangladesh is the most infamous example. The British Geological Society has conducted a study in 1993 and all the data is published on.",
+        "source": "https://www2.bgs.ac.uk/groundwater/health/arsenic/Bangladesh/data.html",
+        "row_is": "value",
+        "date_format":"%d.%m.%Y",
+        "separator": ";",
+        "encoding": "utf8",
+        "data": "bgs_arsenic_01.csv",
+        "column_map": "100067_columns.csv",
+        "parameter_map": "100067_parameters.csv"
+    }
+]

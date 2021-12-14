@@ -13,5 +13,5 @@ CAS-Bezeichnung;CAS-Nr;md
 BAFU-Bezeichnung;Not used;
 Allgemeine Parametergruppe;Parameter group;md
 Numeric value;Numeric value;md
-latitude;latitude;st
-longitude;longitude;st
+Latitude;Latitude;st
+Longitude;Longitude;st

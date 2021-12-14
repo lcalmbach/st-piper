@@ -95,6 +95,7 @@ def get_tranformed_data(data):
     df_xy = pd.concat([cations_df, anions_df, projected_df], ignore_index=True)
     return df_xy
 
+
 def draw_triangles(p):
     x1 = [0, 100, 50, 0]
     y1 = [0, 0, cn.sin60*100, 0]
@@ -461,6 +462,7 @@ def show_save_file_button(p):
                 file_name=filename,
                 mime="image/png"
             )
+
 
 def show_piper(data):
     p = figure(width=800, height=int(800 * cn.sin60), 

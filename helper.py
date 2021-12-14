@@ -22,7 +22,7 @@ def get_random_filename(prefix: str, ext: str):
 def isnan(text):
     return text != text
 
-def complete_columns(df:pd.DataFrame, par_dict:dict)->pd.DataFrame:
+def complete_columns(df:pd.DataFrame, par_dict:dict, pmd)->pd.DataFrame:
     """converts mg/L concentrations to meq/L, meq% to be used in the piper diagram
     and the ion balance.
 
@@ -32,7 +32,7 @@ def complete_columns(df:pd.DataFrame, par_dict:dict)->pd.DataFrame:
     Returns:
         pd.DataFrame: same dataframe with added columns xx_meqpl, xx_meqpct for each major ion
     """
-    df = calc_meql(df, par_dict)
+    df = calc_meql(df, par_dict, pmd)
     df = calc_pct(df)
     df = calculate_electroneutrality(df)
     return df
@@ -91,12 +91,11 @@ def calculate_electroneutrality(df: pd.DataFrame):
     return df
 
 
-def calc_meql(df: pd.DataFrame, pars: dict):
+def calc_meql(df: pd.DataFrame, pars: dict, pmd: pd.DataFrame):
     """
     Adds a new column xx_mqpl for all major ions xx
     """
 
-    pmd = st.session_state.config.lookup_parameters.metadata_df
     if 'ca' in pars.keys():
         df['ca_meqpl'] = df[pars['ca']] / pmd.loc['ca']['fmw'] * abs(pmd.loc['ca']['valence'])
 
@@ -136,3 +135,14 @@ def percentile(n):
         return np.percentile(x, n)
     percentile_.__name__ = 'percentile_%s' % n
     return percentile_
+
+def date_filter(df, cols):
+    date_col = st.session_state.config.key2col()[cn.SAMPLE_DATE_COL]
+    min_date = df[date_col].min()
+    max_date = df[date_col].max()
+    with cols[0]:
+        date_from = st.date_input("Date from", min_date)
+    with cols[1]:
+        date_to = st.date_input("Date to", max_date)
+    is_filtered = (date_from != min_date) | (date_to != max_date)
+    return date_from, date_to, is_filtered
