@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import streamlit as st
 import xyzservices.providers as xyz
-from pyproj import Proj # https://pyproj4.github.io/pyproj/stable/api/proj.html
+# from pyproj import Proj # https://pyproj4.github.io/pyproj/stable/api/proj.html
 from bokeh.plotting import figure
 from bokeh.tile_providers import CARTODBPOSITRON, get_provider
 from bokeh.models import ColumnDataSource, GMapOptions, HoverTool

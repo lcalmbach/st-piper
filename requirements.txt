@@ -5,4 +5,3 @@ streamlit-aggrid==0.2.2.post4
 bokeh==2.4.1
 streamlit-bokeh-events==0.1.2
 xyzservices==2021.11.0
-pyproj==3.3.0
