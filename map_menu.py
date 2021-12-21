@@ -2,7 +2,6 @@ from bokeh.models.tools import SaveTool
 import pandas as pd
 import numpy as np
 import streamlit as st
-import xyzservices.providers as xyz
 from bokeh.io import export_png, export_svgs
 from bokeh.plotting import figure
 from bokeh.tile_providers import CARTODBPOSITRON, get_provider
