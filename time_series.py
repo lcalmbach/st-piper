@@ -2,117 +2,61 @@ from bokeh.models.tools import SaveTool
 import pandas as pd
 import numpy as np
 import streamlit as st
-from bokeh.io import export_png, export_svgs
-from bokeh.plotting import figure, show
-from bokeh.models import ColumnDataSource, Legend, Range1d, LabelSet, Label, HoverTool, Arrow, NormalHead, OpenHead, VeeHead, Span
-from bokeh.core.enums import MarkerType
-from bokeh.transform import factor_mark, factor_cmap
-from bokeh.palettes import Category10,Category20b
+import xyzservices.providers as xyz
+from pyproj import Proj # https://pyproj4.github.io/pyproj/stable/api/proj.html
+from bokeh.plotting import figure
+from bokeh.tile_providers import CARTODBPOSITRON, get_provider
+from bokeh.models import ColumnDataSource, GMapOptions, HoverTool
 from bokeh.core.enums import MarkerType, LineDash
+from bokeh.models import ColumnDataSource, Legend, Range1d, LabelSet, Label, HoverTool, Arrow, NormalHead, OpenHead, VeeHead, Span
+from bokeh.transform import factor_mark, factor_cmap
+from bokeh import palettes
+import itertools
 import helper
 import const as cn
-import itertools  
 
 
-gap = 20
-figure_padding_left = 10
-figure_padding_right = 10
-figure_padding_top = 10
-figure_padding_bottom = 20
-marker_size = 10
-tick_len = 2
-grid_color = 'silver'
-line_color = 'black'
-grid_line_pattern = 'dashed'
-tick_label_font_size = 8
-axis_title_font_size = 10
-grid_line_pattern = 'dotted'
-legend_location = "top_right"
-arrow_length = 5
-arrow_size = 5
-image_file_format = 'png'
+class Time_series:
+    def __init__(self, df: pd.DataFrame, cfg: dict):
+        self.data = df
+        self.cfg = cfg
 
-def draw_markers(p, df):
-    return p
+    def add_markers(self, p, df):
+        p.circle(x="x", y="y", size=self.cfg['symbol_size'], fill_color=self.cfg['fill_colors'][0], fill_alpha=self.cfg['fill_alpha'], source=df)
+        return p
 
-def show_save_file_button(p, key):
-    if st.button("Save png file", key = key):
-        filename = helper.get_random_filename('piper','png')
-        export_png(p, filename=filename)
-        helper.flash_text(f"the Piper plot has been saved to **{filename}** and is ready for download", 'info')
-        with open(filename, "rb") as file:
-            btn = st.download_button(
-                label="Download image",
-                data=file,
-                file_name=filename,
-                mime="image/png"
-            )
-
-def show_time_series_multi_parameters():
-    def get_filter(df):
-        parameter_options = list(st.session_state.config.parameter_map_df.index)
-        parameter_options.sort()
-        sel_parameters = st.sidebar.multiselect('Parameter', parameter_options, parameter_options[0])
-        x = st.session_state.config.key2col()
-        station_col = x[cn.STATION_IDENTIFIER_COL]
-        par_col = x[cn.PARAMETER_COL]
-        value_col = x[cn.VALUE_NUM_COL]
-        date_col = x[cn.SAMPLE_DATE_COL]
-        lst_stations = list(df[station_col].unique())
-        sel_stations = st.sidebar.multiselect('Station', lst_stations, lst_stations[0])
-        return sel_parameters, sel_stations, station_col, date_col, par_col, value_col
-
-    def show_settings():
-        cfg= {}
-        with st.sidebar.expander('⚙️ Settings'):
-            cfg['x_axis_auto'] = st.checkbox("Time axis auto", True)
-            if not cfg['x_axis_auto']:
-                cfg['time_axis_start'] = st.date_input("Time-axis start")
-                cfg['time_axis_end'] = st.date_input("Time-axis end")
-
-            cfg['y_axis_auto'] = st.checkbox("Y axis auto", True)
-            if not cfg['y_axis_auto']:
-                cfg['y_axis'] = st.number_input("Y-axis maxiumum")
-        
-        return cfg
-
-    def color_gen():
-        yield from itertools.cycle(Category10[10])
-
-    data = st.session_state.config.row_value_df
-    sel_parameters, sel_stations, station_col, date_col, par_col, value_col = get_filter(data)
-    settings = show_settings()
-    for station in sel_stations:
-        station_data = data[data[station_col] == station].sort_values(date_col)
-        p = figure(title= station,x_axis_type="datetime", 
+    def get_plot(self):
+        p = figure(title=self.cfg['plot_title'], x_axis_type="datetime", 
                    toolbar_location="above", 
                    tools = [],
-                   plot_width = 800, 
-                   plot_height=350)
+                   plot_width = self.cfg['width'], 
+                   plot_height=self.cfg['height'])
         p.title.align = "center"
         p.yaxis.axis_label = 'Concentration (mg/L)'
-        color = color_gen()
+        color = itertools.cycle(palettes.Category20_20) #helper.color_gen(self.cfg['palette'], 10)
         i=0
-        lines = []
         legend_items = []
-        for par in sel_parameters:
-            df = station_data[station_data[par_col] == par]
-            df = df.rename(columns = {date_col: 'date'})
+        for item in self.cfg['legend_items']:
+            df = self.data[self.data[self.cfg['legend_col']] == item]
+            df = df.rename(columns={f"{st.session_state.config.date_col}": 'date'})
             clr = next(color)
-            l = p.line('date', value_col, line_color=clr, line_width = 2, alpha=0.6, source=df)
-            m = p.scatter(x='date', y=value_col, source=df, marker=cn.MARKERS[i], 
-                size=10, color=clr, alpha=0.6)
-            legend_items.append((par,[l,m]))
+            l = p.line(x='date', y=st.session_state.config.value_col, line_color=clr, line_width = 2, alpha=self.cfg['fill_alpha'], source=df)
+            m = p.scatter(x='date', y=st.session_state.config.value_col, source=df, marker=cn.MARKERS[i], 
+                size=self.cfg['symbol_size'], color=clr, alpha=self.cfg['fill_alpha'])
+            legend_items.append((item,[l,m]))
             i+=1
-        hline = Span(location=0.015, dimension='width', line_color='red', line_width=3)
-        p.renderers.extend([hline])
+        if 'hlines' in self.cfg:
+            for lin in self.cfg['hlines']:
+                hline = Span(location=lin['location'], dimension='width', line_color=lin['color'], line_width=lin['width'])
+                p.renderers.extend([hline])
         legend = Legend(items=legend_items, 
-                        location=(0, 0), click_policy="hide")
+                        location=(0, 0), 
+                        click_policy="hide")
         p.add_layout(legend, 'right')
 
         p.add_tools(HoverTool(
             tooltips=[
-                ('Parameter', f'@{par_col}'),
+                ('Parameter', f'@{st.session_state.config.parameter_col}'),
                 ('Date', '@date{%F}'),
                 ('Value', '@Wert')
             ],
@@ -120,41 +64,6 @@ def show_time_series_multi_parameters():
                 '@date': 'datetime', # use 'datetime' formatter for 'date' field
             })
         )
-
-        st.bokeh_chart(p)
-        show_save_file_button(p,station)
-
-
-def show_settings():
-    def show_axis_settings():
         
-        with st.form("my_form1"):
-            col1, col2 = st.columns(2)
-            with col1:            
-                show_gridlines = st.checkbox("Show Gridlines")
-                marker_column = st.selectbox("Grid line pattern", helper.get_parameter_columns('station'))
-                marker_proportional = st.selectbox("Size or color proportional to value", ['None', 'Size', 'Color'])
-            with col2:            
-                grid_line_pattern = st.selectbox("Grid line pattern", list(LineDash))
-                diff_marker = st.checkbox("Use distinct marker for each group")
-
-            st.markdown("---")
-            if st.form_submit_button("Submit"):
-                st.markdown("slider", "checkbox", show_gridlines)
-
-
-    menu_options = ['Axis Settings', 'Markers']
-    menu_action = st.sidebar.selectbox("Setting",menu_options)
-    if menu_action == menu_options[0]:
-        show_axis_settings()
-
-
-def show_menu(texts_dict:dict):
-    menu_options = texts_dict["menu_options"]
-    menu_action = st.sidebar.selectbox('Options', menu_options)
-    if menu_action == menu_options[0]:
-        show_time_series_multi_parameters()
-    elif menu_action == menu_options[1]:
-        show_settings()
-    
+        return p
 

@@ -506,19 +506,19 @@ def filter(df: pd.DataFrame):
     station_col = st.session_state.config.key2col()[cn.STATION_IDENTIFIER_COL]
     station_options = st.session_state.config.get_station_list()
     sel_stations = st.sidebar.multiselect("Stations", station_options)
-    if st.session_state.config.col_is_mapped(cn.SAMPLE_DATE_COL):
-        date_col = st.session_state.config.key2col()[cn.SAMPLE_DATE_COL]
-        df[date_col] = pd.to_datetime(df[date_col], format='%d.%m.%Y', errors='ignore')
-        min_date = df[date_col].min().to_pydatetime().date()
-        max_date = df[date_col].max().to_pydatetime().date()
-        
-        from_date = st.sidebar.date_input("From date", min_date)
-        to_date = st.sidebar.date_input("From date", max_date)
-        if (from_date != min_date) or (to_date != max_date):
-            df = df[(df[date_col].dt.date >= from_date) & (df[date_col].dt.date < to_date)]
+    #if st.session_state.config.col_is_mapped(cn.SAMPLE_DATE_COL):
+    #    date_col = st.session_state.config.key2col()[cn.SAMPLE_DATE_COL]
+    ##    df[date_col] = pd.to_datetime(df[date_col], format='%d.%m.%Y', errors='ignore')
+    #    min_date = df[date_col].min().to_pydatetime().date()
+    #    max_date = df[date_col].max().to_pydatetime().date()
+    #    
+    #    from_date = st.sidebar.date_input("From date", min_date)
+    #    to_date = st.sidebar.date_input("From date", max_date)
+    #    if (from_date != min_date) or (to_date != max_date):
+    #        df = df[(df[date_col].dt.date >= from_date) & (df[date_col].dt.date < to_date)]
 
     if len(sel_stations)>0:
-        df = df[df[station_col].isin(sel_stations)]
+        df = df[(df[station_col].isin(sel_stations)) & (df['alk_pct'] > 0)]
     return df
 
 def show_menu(texts_dict:dict):

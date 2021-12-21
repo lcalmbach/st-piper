@@ -3,111 +3,119 @@ import pandas as pd
 import numpy as np
 import streamlit as st
 import xyzservices.providers as xyz
-from bokeh.io import export_png, export_svgs
+from pyproj import Proj # https://pyproj4.github.io/pyproj/stable/api/proj.html
 from bokeh.plotting import figure
 from bokeh.tile_providers import CARTODBPOSITRON, get_provider
 from bokeh.models import ColumnDataSource, GMapOptions, HoverTool
 from bokeh.core.enums import MarkerType, LineDash
-from bokeh.models import ColumnDataSource, GMapOptions
-from bokeh.plotting import gmap
-from streamlit.delta_generator import MAX_DELTA_BYTES
-from datetime import datetime, timedelta
-
+from bokeh.models import ColumnDataSource, LinearColorMapper
+from matplotlib import colors
 import helper
 import const as cn
 
+class Map:
+    def __init__(self, df: pd.DataFrame, cfg: dict):
+        self.data = df
+        self.cfg = cfg
 
+    def wgs84_to_web_mercator_df(self, df, lat, lon):
+        k = 6378137
+        df["x"] = df[lon] * (k * np.pi/180.0)
+        df["y"] = np.log(np.tan((90 + df[lat]) * np.pi/360.0)) * k
 
-def show_save_file_button(p):
-    if st.button("Save png file"):
-        filename = helper.get_random_filename('piper','png')
-        export_png(p, filename=filename)
-        helper.flash_text(f"the Piper plot has been saved to **{filename}** and is ready for download", 'info')
-        with open(filename, "rb") as file:
-            btn = st.download_button(
-                label="Download image",
-                data=file,
-                file_name=filename,
-                mime="image/png"
-            )
+        return df
 
-def wgs84_to_web_mercator_df(df, lon=cn.LONGITUDE_COL, lat=cn.LATITUDE_COL):
-      k = 6378137
-      df["x"] = df[lon] * (k * np.pi/180.0)
-      df["y"] = np.log(np.tan((90 + df[lat]) * np.pi/360.0)) * k
-
-      return df
-
-def show_map(data):
-    def wgs84_to_web_mercator(lat, lon):
+    def wgs84_to_web_mercator(self, lat, lon):
         k = 6378137
         x = lon * (k * np.pi/180.0)
         y = np.log(np.tan((90 + lat) * np.pi/360.0)) * k
         return x, y
 
-    def get_map_rectangle(df, rad: int):
+    def get_map_rectangle(self, df, rad: int, lat:str, lon:str):
         lat_avg, lon_avg = df[lat].mean(), df[lon].mean()
-        x_avg, y_avg = wgs84_to_web_mercator(lat_avg, lon_avg)
+        x_avg, y_avg =  self.wgs84_to_web_mercator(lat_avg, lon_avg)
         x_min = x_avg - rad
         x_max = x_avg + rad
         y_min = y_avg - rad
         y_max = y_avg + rad
         return x_min, y_min, x_max, y_max
 
-    x = st.session_state.config.key2col()
+    def add_color_column(self, df):
+        def get_color(row, par, max_val):
+            color = colors.rgb2hex([row[self.cfg['parameter']] / max_val, 0, 0])
+            return color
 
-    lat = x[cn.LATITUDE_COL]
-    lon = x[cn.LONGITUDE_COL]
-    station = x[cn.STATION_IDENTIFIER_COL]
-    df = data[[lat, lon, station]].drop_duplicates()
-    df = df.rename(columns={st.session_state.config.key2col()[cn.STATION_IDENTIFIER_COL]: 'station'})
-    df = wgs84_to_web_mercator_df(df)
-    tile_provider = get_provider(xyz.OpenStreetMap.Mapnik)
-    x_min, y_min, x_max, y_max = get_map_rectangle(df, 7000)
-    #map_options = GMapOptions(lat=47.55, lng=7.58, map_type="roadmap", zoom=11)
-    # p = gmap("GOOGLE_API_KEY", map_options, title="Austin")
-    
-    p = figure(x_range=(x_min,x_max),
-                y_range=(y_min,y_max),
-                x_axis_type="mercator",
-                y_axis_type="mercator",
-                width = 800,
-                tooltips=f"Station: @station")
-    p.add_tile(tile_provider)
+        cols = st.session_state.config.station_cols + [self.cfg['parameter']]
+        df = df[cols]
+        if self.cfg['aggregation'] == 'mean':
+            df = df.groupby(st.session_state.config.station_cols).mean()
+        elif self.cfg['aggregation'] == 'max':
+            df = df.groupby(st.session_state.config.station_cols).max()
+            
+        elif self.cfg['aggregation'] == 'min':
+            df = df.groupby(st.session_state.config.station_cols).min()
+        df.reset_index(inplace=True)
+        df = df.dropna()
+        df['_color'] = 0
+        max_val = df[self.cfg['parameter']].max()
+        df['_color'] = df.apply(lambda row: get_color(row, self.cfg['parameter'], max_val), axis=1)
+        return df
 
-    #source = ColumnDataSource(
-    #    data=dict(lat=list(df['x']),
-    #              lon=list(df['y']))
-    #     )
-    p.circle(x="x", y="y", size=10, fill_color="darkblue", fill_alpha=0.8, source=df)
-    st.bokeh_chart(p)
-    
-    show_save_file_button(p)
+    def add_markers(self,p,df):
+        def get_size(x):
+            result = x / self.cfg['max_value'] * self.cfg['max_prop_size']
+            if result > self.cfg['max_prop_size']:
+                result = self.cfg['max_prop_size']
+            elif result < self.cfg['min_prop_size']:
+                result = self.cfg['min_prop_size']
+            return result
 
-def filter(df: pd.DataFrame):
-    st.sidebar.markdown("🔎 Filter")
-    station_col = st.session_state.config.key2col()[cn.STATION_IDENTIFIER_COL]
-    station_options = st.session_state.config.get_station_list()
-    sel_stations = st.sidebar.multiselect("Stations", station_options)
-    if st.session_state.config.col_is_mapped(cn.SAMPLE_DATE_COL):
-        date_col = st.session_state.config.key2col()[cn.SAMPLE_DATE_COL]
-        df[date_col] = pd.to_datetime(df[date_col], format='%d.%m.%Y', errors='ignore')
-        min_date = df[date_col].min().to_pydatetime().date()
-        max_date = df[date_col].max().to_pydatetime().date()
+        if 'parameter' in self.cfg:
+            if self.cfg['prop_size_method'] == 'color':
+                color_mapper = LinearColorMapper(palette=self.cfg['lin_palette'], 
+                                                low=df[self.cfg['parameter']].min(), 
+                                                high=df[self.cfg['parameter']].mean() * 2)
+                p.scatter(x="x", y="y", 
+                        size=self.cfg['symbol_size'], 
+                        color={'field': self.cfg['parameter'], 'transform': color_mapper}, 
+                        fill_alpha=self.cfg['fill_alpha'], source=df)
+            else:
+                # = df.apply(lambda x: get_size(x))
+                df['_size'] = list(map(get_size, list(df[self.cfg['parameter']])))
+                p.circle(x="x", y="y", size='_size', fill_color=self.cfg['fill_colors'][0], fill_alpha=self.cfg['fill_alpha'], source=df)
+        else:
+            p.circle(x="x", y="y", size=self.cfg['symbol_size'], fill_color=self.cfg['fill_colors'][0], fill_alpha=self.cfg['fill_alpha'], source=df)
+        return p
+
+    def get_plot(self):
+        x = st.session_state.config.key2col()
+
+        lat = x[st.session_state.config.latitude_col]
+        lon = x[st.session_state.config.longitude_col]
+        # if paramter is set, then create a color column
+        if 'parameter' in self.cfg:
+            df = self.add_color_column(self.data)
+        else:
+            df = self.data[st.session_state.config.sample_station_cols].drop_duplicates()
+
+        df = df.rename(columns={st.session_state.config.station_col: 'station'})
+        df = self.wgs84_to_web_mercator_df(df, lat, lon)
+        tile_provider = get_provider(xyz.OpenStreetMap.Mapnik)
+        x_min, y_min, x_max, y_max = self.get_map_rectangle(df, self.cfg['extent'], lat, lon)
         
-        from_date = st.sidebar.date_input("From date", min_date)
-        to_date = st.sidebar.date_input("From date", max_date)
-        if (from_date != min_date) or (to_date != max_date):
-            df = df[(df[date_col].dt.date >= from_date) & (df[date_col].dt.date < to_date)]
-    if len(sel_stations)>0:
-        df = df[df[station_col].isin(sel_stations)]
-    return df
-
-def show_menu(texts_dict:dict):
-    menu_options = texts_dict["menu_options"]
-    menu_action = st.sidebar.selectbox('Options', menu_options)
-    data = filter(st.session_state.config.row_sample_df)
-    if menu_action == menu_options[0]:
-        show_map(data)
-    
+        if 'parameter' in self.cfg:
+            tooltips = f"""Station: @station,
+                        {self.cfg['parameter']}: @{self.cfg['parameter']}"""
+        else:
+            tooltips = f"Station: @station"
+        p = figure(x_range=(x_min,x_max),
+                    y_range=(y_min,y_max),
+                    x_axis_type="mercator",
+                    y_axis_type="mercator",
+                    width = 800,
+                    tooltips=tooltips)
+        p.add_tile(tile_provider)
+        p = self.add_markers(p, df)
+        
+        return p
 

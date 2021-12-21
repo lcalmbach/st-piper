@@ -1,9 +1,4 @@
-"BGS,  DFID,  DPHE",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-Groundwater Studies of Arsenic Contamination in Bangladesh,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-National Survey Data,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-Release date: 25 May 2000,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 SAMPLE_ID,SAMPLE_FIELD_ID,SAMPLE_DATE,LAT_DEG,LONG_DEG,YEAR_CONSTRUCTION,WELL_TYPE,WELL_DEPTH,DIVISION,DISTRICT,THANA,UNION,MOUZA,GEOCODE,As,Al,B_,Ba,Ca,Co,Cr,Cu,Fe,K_,Li,Mg,Mn,Na,P_,Si,SO4,Sr,V_,Zn
-,,,,,,,m,,,,,,,ug/l,mg/L,mg/L,mg/L,mg/L,mg/L,mg/L,mg/L,mg/L,mg/L,mg/L,mg/L,mg/L,mg/L,mg/L,mg/L,mg/L,mg/L,mg/L,mg/L
 S98_00701,"RIP3491, BTS101",06/03/1998,22.8731,90.7844,1992,Shallow HP TW,10.7,Chittagong,Lakshmipur,Lakshmipur Sadar,Shakchar,Char Ramani Mohan,2514385190,13,< 0.04,0.27,0.096,49.6,< 0.008,< 0.02,< 0.008,1.17,11.1,< 0.003,32.7,0.624,211,0.7,12.2,1.2,0.304,< 0.006,0.049
 S98_00718,"RIP3492, BTS118",08/03/1998,23.0194,90.8786,1971,Shallow HP TW,12.2,Chittagong,Lakshmipur,Lakshmipur Sadar,Baksipur,Nandigram,2514310666,256,< 0.04,0.04,0.01,56.9,< 0.008,< 0.02,< 0.008,1.74,6.9,< 0.003,29.9,0.447,7.9,1.2,13.9,< 0.2,0.246,< 0.006,0.031
 S98_00724,"RIP3493, BTS124",10/03/1998,22.965,90.9597,1995,Private HP TW,12.2,Chittagong,Lakshmipur,Lakshmipur Sadar,Uttar Joypur,Chandra Prabhabag,2514395147,38,< 0.04,0.26,0.013,16.6,< 0.008,< 0.02,< 0.008,0.317,7.1,0.003,15.7,0.231,205,0.6,13.8,1.5,0.108,< 0.006,0.021

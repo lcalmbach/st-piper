@@ -33,8 +33,10 @@ class Config():
         self.map_parameters_config = {}
         with open('dataset.json') as f:
             self.datasets = json.load(f)
+        self._current_dataset = {}
         self.current_dataset = self.datasets[0]
-        self.load_data(self.current_dataset)
+        self.unit_row = 1
+        
 
         self.step = 0
         # true if either the value column is mapped or if the qual-value col is mapped and 
@@ -45,14 +47,23 @@ class Config():
 
 # properties---------------------------------------------------------------------------------------
     @property
+    def current_dataset(self):
+        return self._current_dataset
+       
+    @current_dataset.setter
+    def current_dataset(self, df):
+        self._current_dataset = df
+        self.load_data(self.current_dataset)
+
+    @property
     def row_sample_df(self):
         return self._row_sample_df
        
     @row_sample_df.setter
     def row_sample_df(self, df):
-        df = helper.complete_columns(df, self.key2par(), self.lookup_parameters.metadata_df)
         self._row_sample_df = df
-        
+        if self.major_ions_complete:
+            df = helper.complete_columns(df, self.key2par(), self.lookup_parameters.metadata_df)
 
     @property
     def row_value_df(self):
@@ -71,18 +82,8 @@ class Config():
     def column_map_df(self, column_map):
         self._column_map_df = column_map
         self._column_map_df.set_index('column_name', inplace=True)
-
-        if self.col_is_mapped(cn.SAMPLE_DATE_COL):
-            self.format_date_column()
-        if self.col_is_mapped(cn.GEOPOINT_COL):
-            self.geopoint_to_lat_long()
-        if self.col_is_mapped(cn.ND_QUAL_VALUE_COL):
-            self.split_qual_val_column()
-        if self.col_is_mapped(cn.LATITUDE_COL):
-            self._row_value_df[cn.LATITUDE_COL] = self._row_value_df[cn.LATITUDE_COL].astype(float)
-            self._row_value_df[cn.LONGITUDE_COL] = self._row_value_df[cn.LONGITUDE_COL].astype(float)
-
-
+        self.check_columns()
+        
     @property
     def parameter_map_df(self):
         return self._parameter_map_df
@@ -92,20 +93,105 @@ class Config():
         self._parameter_map_df = parameter_map
         self._parameter_map_df.set_index('parameter', inplace=True)
 
-# functions----------------------------------------------------------------------------------------
+    @property
+    def longitude_col(self) -> str:
+        return self.key2col()[cn.LONGITUDE_COL]
 
+    @property
+    def latitude_col(self) -> str:
+        return self.key2col()[cn.LATITUDE_COL]
+
+    @property
+    def station_col(self) -> str:
+        return self.key2col()[cn.STATION_IDENTIFIER_COL]
+
+    @property
+    def parameter_col(self) -> str:
+        return self.key2col()[cn.PARAMETER_COL]
+
+    @property
+    def value_col(self) -> str:
+        return self.key2col()[cn.VALUE_NUM_COL]
+
+    @property
+    def sample_cols(self) -> list:
+        return list(self.coltype2dict(cn.CTYPE_SAMPLE).keys())
+    
+    @property
+    def station_cols(self) -> list:
+        return list(self.coltype2dict(cn.CTYPE_STATION).keys())
+    
+    @property
+    def sample_station_cols(self) -> list:
+        """
+        returns the list of all station and sample related parameters. Often, these are used to for grouping
+        """
+        fields = self.sample_cols
+        fields += self.station_cols
+        return fields
+
+    @property
+    def parameter_cols(self) -> list:
+        return list(self.coltype2dict(cn.CTYPE_PARAMETER).keys())
+
+    @property
+    def date_col(self) -> str:
+        return self.key2col()[cn.SAMPLE_DATE_COL]
+
+    @property
+    def sample_identifier_col(self) -> str:
+        if self.col_is_mapped(cn.SAMPLE_IDENTIFIER_COL):
+            return self.key2col()[cn.SAMPLE_IDENTIFIER_COL]
+        elif self.col_is_mapped(cn.DATE_IDENTIFIER_COL):
+            return self.key2col()[cn.DATE_IDENTIFIER_COL]
+        else:
+            return None
+    @property
+    def major_ions_complete(self):
+        ok = (self.par_is_mapped(cn.PAR_CALCIUM)
+                and self.par_is_mapped(cn.PAR_MAGNESIUM)
+                and self.par_is_mapped(cn.PAR_SODIUM)
+                and self.par_is_mapped(cn.PAR_SODIUM)
+                and self.par_is_mapped(cn.PAR_ALKALINITY)
+                and self.par_is_mapped(cn.PAR_SULFATE)
+                and self.par_is_mapped(cn.PAR_CHLORIDE))
+        return ok
+
+# functions----------------------------------------------------------------------------------------
+    def check_columns(self):
+        """
+        sets the format of matched columns such as date column. This is only possible if the sample_row df 
+        exists. todo: call this for each dataframe : values as row and sample. then the columns are fixed when they are present
+        """
+        if len(self._row_value_df) > 0:
+            if self.col_is_mapped(cn.SAMPLE_DATE_COL):
+                self.format_date_column(self._row_value_df)
+            if self.col_is_mapped(cn.GEOPOINT_COL):
+                self.geopoint_to_lat_long(self._row_value_df)
+            if self.col_is_mapped(cn.ND_QUAL_VALUE_COL):
+                self.split_qual_val_column()
+            if self.col_is_mapped(cn.LATITUDE_COL):
+                self._row_value_df[self.latitude_col] = self._row_value_df[self.latitude_col].astype(float)
+                self._row_value_df[self.longitude_col] = self._row_value_df[self.longitude_col].astype(float)
+        
+        # same for row as sample format datafram
+        if len(self._row_sample_df) > 0:
+            if self.col_is_mapped(cn.SAMPLE_DATE_COL):
+                self.format_date_column(self._row_sample_df)
+            if self.col_is_mapped(cn.LATITUDE_COL):
+                self._row_sample_df[self.latitude_col] = self._row_sample_df[self.latitude_col].astype(float)
+                self._row_sample_df[self.longitude_col] = self._row_sample_df[self.longitude_col].astype(float)
+    
     def load_data(self, ds):
         def import_row_value():
             def pivot_data():
-                par_col = self.parameter_col()
-                value_col = self.value_col()
-                sample_cols = self.sample_cols()
-                station_cols = self.station_cols()
+                sample_cols = self.sample_cols
+                station_cols = self.station_cols
                 group_cols = sample_cols + station_cols
                 self.row_sample_df = pd.pivot_table(self.row_value_df,
-                    values=value_col,
+                    values=self.value_col,
                     index=group_cols,
-                    columns=par_col,
+                    columns=self.parameter_col,
                     aggfunc=np.mean
                 ).reset_index()
 
@@ -122,13 +208,45 @@ class Config():
             self.parameter_map_df = pd.read_csv(folder / ds['parameter_map'], sep=';')
             pivot_data()
 
-        def import_sample_value():
-            pass
+        def import_row_sample():
+            def melt_data():
+                parameter_cols = self.parameter_cols
+                self._row_value_df = pd.melt(frame=self.row_sample_df,
+                                             id_vars=self.sample_station_cols, 
+                                             value_vars = parameter_cols,
+                                             var_name = 'parameter',
+                                             value_name = 'value'
+                )
 
+            # read the data
+            folder = Path("data/")
+            self.date_format = ds['date_format']
+            self.unit_row = ds['unit_row']
+            self.row_sample_df = pd.read_csv(folder / ds['data'], 
+                                            sep=ds['separator'], 
+                                            encoding=ds['encoding'])
+            # read column mapping
+            self.column_map_df = pd.read_csv(folder / ds['column_map'], sep=';')
+            # read parameter mapping
+            self.parameter_map_df = pd.read_csv(folder / ds['parameter_map'], sep=';')
+            self._column_map_df.loc['value'] = [cn.ND_QUAL_VALUE_COL, cn.CTYPE_VAL_META, None]
+            self._column_map_df.loc['parameter'] = [cn.PARAMETER_COL, cn.CTYPE_VAL_META, None]
+            melt_data()
+            # trigger set column map, since only now all information is available. this triggers the formatting of essential 
+            # columsn such as date
+            self.check_columns()
+
+        def init_data():
+            self._row_value_df = pd.DataFrame()
+            self._row_sample_df = pd.DataFrame()
+            self._column_map_df = pd.DataFrame()
+            self._parameter_map_df = pd.DataFrame()
+
+        init_data()
         if ds['row_is'] == 'value':
             import_row_value()
         else:
-            import_sample_value()
+            import_row_sample()
 
     def guideline_list(self):
         return ['epa_mcl']
@@ -161,12 +279,16 @@ class Config():
     def get_plots_options(self):
         result = []
         result.append("Scatter")
+        result.append("Histogram")
+        result.append("Boxplot")
         if self.col_is_mapped(cn.SAMPLE_DATE_COL):
             result.append("Time series")
         if self.col_is_mapped(cn.LATITUDE_COL):
             result.append("Map")
-        if self.major_ions_complete():
+        if self.major_ions_complete:
             result.append("Piper")
+            result.append("Schoeller")
+
         return result
 
     def par_is_mapped(self, key_name):
@@ -236,20 +358,20 @@ class Config():
         df.loc[(df[nd_flag_col] == False), cn.VALUE_NUM_COL] = pd.to_numeric(df[qual_val_col],errors='coerce') 
         df[cn.VALUE_NUM_COL] = df[cn.VALUE_NUM_COL].astype('float') 
         df.loc[(df[nd_flag_col] == True) & (df[cn.VALUE_NUM_COL] != 0), cn.VALUE_NUM_COL] = df[cn.VALUE_NUM_COL] / 2
-        self.column_map_df.loc[cn.VALUE_NUM_COL] = [cn.VALUE_NUM_COL, cn.CTYPE_VAL_META]
+        self.column_map_df.loc[cn.VALUE_NUM_COL] = [cn.VALUE_NUM_COL, cn.CTYPE_VAL_META, None]
         self.qual_value_col_is_filled = True
         ok = True
         return ok
 
 
-    def format_date_column(self):
+    def format_date_column(self, df):
         ok = False
         date_col = self.key2col()[cn.SAMPLE_DATE_COL]
         try:
-            self.row_value_df[date_col] = pd.to_datetime(self.row_value_df[date_col], format=self.date_format, errors='ignore')
+            df[date_col] = pd.to_datetime(df[date_col], format=self.date_format, errors='ignore')
             ok = True
         except:
-            pass
+            print('date column could not be formatted')
         return ok
 
 
@@ -278,14 +400,13 @@ class Config():
         result = result and cn.PARAMETER_COL in list(self.column_map_df['key'])
         return result
 
-    def geopoint_to_lat_long(self):
+    def geopoint_to_lat_long(self, df):
         ok,err_msg = True,''
         col_name = self.key2col()[cn.GEOPOINT_COL]
-        df = self.row_value_df
         df[[cn.LATITUDE_COL, cn.LONGITUDE_COL]] = df[col_name].str.split(',', expand=True)
         df = self.column_map_df
-        df.loc[cn.LATITUDE_COL] = [cn.LATITUDE_COL, cn.CTYPE_STATION]
-        df.loc[cn.LONGITUDE_COL] = [cn.LONGITUDE_COL, cn.CTYPE_STATION]
+        df.loc[cn.LATITUDE_COL] = [cn.LATITUDE_COL, cn.CTYPE_STATION, None]
+        df.loc[cn.LONGITUDE_COL] = [cn.LONGITUDE_COL, cn.CTYPE_STATION, None]
         return ok, err_msg
 
     def get_parameter_detail_form_columns(self):
@@ -312,19 +433,18 @@ class Config():
             lst_cols.append(self.key2col()[cn.COMMENT_COL])
         return lst_cols
 
-
     def init_user_parameters(self):
-        parameter_col = self.key2col()[cn.PARAMETER_COL]
+
         casnr_col = self.key2col()[cn.CASNR_COL]
 
         if casnr_col != None:
-            df_pars = pd.DataFrame(self.row_value_df[[parameter_col, casnr_col]].drop_duplicates())
+            df_pars = pd.DataFrame(self.row_value_df[[self.parameter_col, casnr_col]].drop_duplicates())
             df_pars.columns = ['parameter', 'casnr']
             df_pars['key'] = cn.NOT_USED
             self.parameter_map_df = df_pars
             print('here')
         elif casnr_col == None:
-            df_pars = pd.DataFrame(self.row_value_df[[parameter_col]].drop_duplicates())
+            df_pars = pd.DataFrame(self.row_value_df[[self.parameter_col]].drop_duplicates())
             df_pars.columns = ['parameter']
             df_pars['key'] = cn.NOT_USED
             self.parameter_map_df = df_pars  
@@ -355,16 +475,6 @@ class Config():
         self.parameter_map_df = result_df
         return ok, err_msg
 
-    def major_ions_complete(self):
-        ok = (self.par_is_mapped(cn.PAR_CALCIUM)
-                and self.par_is_mapped(cn.PAR_MAGNESIUM)
-                and self.par_is_mapped(cn.PAR_SODIUM)
-                and self.par_is_mapped(cn.PAR_SODIUM)
-                and self.par_is_mapped(cn.PAR_ALKALINITY)
-                and self.par_is_mapped(cn.PAR_SULFATE)
-                and self.par_is_mapped(cn.PAR_CHLORIDE))
-        return ok
-
     def get_station_list(self):
         station_key = self.key2col()[cn.STATION_IDENTIFIER_COL]
         result = list(self.row_value_df[station_key].unique())
@@ -379,32 +489,6 @@ class Config():
     def parameters_are_mapped(self) -> bool:
         df = self.parameter_map_df
         return len(df[df['key'] != cn.NOT_USED]) > 0
-    
-    def parameter_col(self) -> str:
-        return self.key2col()[cn.PARAMETER_COL]
-    
-    def station_identifier_col(self) -> str:
-        return self.key2col()[cn.STATION_IDENTIFIER_COL]
-
-    def sample_identifier_col(self) -> str:
-        if self.col_is_mapped(cn.SAMPLE_IDENTIFIER_COL):
-            return self.key2col()[cn.SAMPLE_IDENTIFIER_COL]
-        elif self.col_is_mapped(cn.DATE_IDENTIFIER_COL):
-            return self.key2col()[cn.DATE_IDENTIFIER_COL]
-        else:
-            return None
-    
-    def value_col(self) -> str:
-        return self.key2col()[cn.VALUE_NUM_COL]
-
-    def sample_cols(self) -> list:
-        return list(self.coltype2dict(cn.CTYPE_SAMPLE).keys())
-    
-    def station_cols(self) -> list:
-        return list(self.coltype2dict(cn.CTYPE_STATION).keys())
-
-    def date_col(self) -> str:
-        return self.coltype2dict(cn.cn.SAMPLE_DATE_COL)
 
     def parameter_categories(self):
         if self.col_is_mapped(cn.CATEGORY_COL):
@@ -413,17 +497,20 @@ class Config():
         else:
             return []
     
-    def get_standards(self, parameter):
+    def get_standards(self, parameter)->list:
         casnr = self.parameter_map_df.loc[parameter]['casnr']
         result = []
         for guideline in self.guidelines:
-            df = guideline['data']
-            value = df.query('casnr == @casnr')
-            if len(value) > 0:
-                result.append({'name': guideline['name'],
-                               'value': value.iloc[0]['value'],
-                               'unit': value.iloc[0]['unit']
-                })
+            try:
+                df = guideline['data']
+                value = df.query('casnr == @casnr')
+                if len(value) > 0:
+                    result.append({'name': guideline['name'],
+                                'value': value.iloc[0]['value'],
+                                'unit': value.iloc[0]['unit']
+                    })
+            except:
+                print('error occurred when retriebving the guideline list')
         return result
 
 

@@ -3,15 +3,12 @@ import pandas as pd
 import numpy as np
 import streamlit as st
 from bokeh.io import export_png, export_svgs
-from bokeh.plotting import figure, show
-from bokeh.models import ColumnDataSource, Legend, Range1d, LabelSet, Label, HoverTool, Arrow, NormalHead, OpenHead, VeeHead, Span
-from bokeh.core.enums import MarkerType
-from bokeh.transform import factor_mark, factor_cmap
-from bokeh.palettes import Category10,Category20b
-from bokeh.core.enums import MarkerType, LineDash
+from bokeh.plotting import figure
+
 import helper
 import const as cn
-import itertools  
+
+from time_series import Time_series
 
 
 gap = 20
@@ -35,25 +32,12 @@ image_file_format = 'png'
 def draw_markers(p, df):
     return p
 
-def show_save_file_button(p, key):
-    if st.button("Save png file", key = key):
-        filename = helper.get_random_filename('piper','png')
-        export_png(p, filename=filename)
-        helper.flash_text(f"the Piper plot has been saved to **{filename}** and is ready for download", 'info')
-        with open(filename, "rb") as file:
-            btn = st.download_button(
-                label="Download image",
-                data=file,
-                file_name=filename,
-                mime="image/png"
-            )
 
 def show_time_series_multi_parameters():
     def get_filter(df):
-        parameter_options = list(st.session_state.config.row_sample_df.columns)
+        parameter_options = list(st.session_state.config.parameter_map_df.index)
         parameter_options.sort()
-        x_par = st.sidebar.selectbox('X-parameter', parameter_options, 0)
-        y_par = st.sidebar.selectbox('Y-Parameter', parameter_options, 1)
+        sel_parameters = st.sidebar.multiselect('Parameter', parameter_options, parameter_options[0])
         x = st.session_state.config.key2col()
         station_col = x[cn.STATION_IDENTIFIER_COL]
         par_col = x[cn.PARAMETER_COL]
@@ -61,10 +45,10 @@ def show_time_series_multi_parameters():
         date_col = x[cn.SAMPLE_DATE_COL]
         lst_stations = list(df[station_col].unique())
         sel_stations = st.sidebar.multiselect('Station', lst_stations, lst_stations[0])
-        return x_par, y_par, sel_stations, station_col, date_col, par_col, value_col
+        return sel_parameters, sel_stations, station_col, date_col, par_col, value_col
 
-    def show_settings():
-        cfg= {}
+    def show_settings()->dict:
+        cfg= cn.time_series_cfg
         with st.sidebar.expander('⚙️ Settings'):
             cfg['x_axis_auto'] = st.checkbox("Time axis auto", True)
             if not cfg['x_axis_auto']:
@@ -74,59 +58,29 @@ def show_time_series_multi_parameters():
             cfg['y_axis_auto'] = st.checkbox("Y axis auto", True)
             if not cfg['y_axis_auto']:
                 cfg['y_axis'] = st.number_input("Y-axis maxiumum")
-        
+            palette_options = helper.bokeh_palettes(10)
+            cfg['palette'] = st.selectbox("Color-palette", palette_options)
         return cfg
 
-    def color_gen():
-        yield from itertools.cycle(Category10[10])
-
-    data = st.session_state.config.row_sample_df
-    x_par, y_par, sel_stations, station_col, date_col, par_col, value_col = get_filter(data)
-    settings = show_settings()
+    data = st.session_state.config.row_value_df
+    sel_parameters, sel_stations, station_col, date_col, par_col, value_col = get_filter(data)
+    cfg = show_settings()
+    cfg['legend_items'] = sel_parameters
+    cfg['legend_col'] = st.session_state.config.parameter_col
+    data = data[data[cfg['legend_col']].isin(sel_parameters)]
+    if sel_stations == []:
+        sel_stations = list(data[st.session_state.config.station_col].unique())
+        sel_stations.sort
     for station in sel_stations:
         station_data = data[data[station_col] == station].sort_values(date_col)
-        p = figure(title= station,
-                   toolbar_location="above", 
-                   tools = [],
-                   plot_width = 800, 
-                   plot_height=350)
-        p.title.align = "center"
-        p.yaxis.axis_label = f'{y_par} (mg/L)'
-        p.xaxis.axis_label = f'{x_par} (mg/L)'
-        color = color_gen()
-        i=0
-        df = data
-        lines = []
-        legend_items = []
-        clr = next(color)
-        m = p.scatter(x=x_par, y=y_par, source=df, marker=cn.MARKERS[i], 
-            size=10, color=clr, alpha=0.6)
-        #legend_items.append((par,[l,m]))
-
-        hline = Span(location=0.015, dimension='width', line_color='red', line_width=3)
-        p.renderers.extend([hline])
-        legend = Legend(items=legend_items, 
-                        location=(0, 0), click_policy="hide")
-        p.add_layout(legend, 'right')
-
-        p.add_tools(HoverTool(
-            tooltips=[
-                ('Parameter', f'@{par_col}'),
-                ('Date', '@date{%F}'),
-                ('Value', '@Wert')
-            ],
-            formatters={
-                '@date': 'datetime', # use 'datetime' formatter for 'date' field
-            })
-        )
-
-        st.bokeh_chart(p)
-        show_save_file_button(p,station)
+        cfg['plot_title'] = station
+        plot = Time_series(station_data, cfg).get_plot()
+        st.bokeh_chart(plot)
+        helper.show_save_file_button(plot, station)
 
 
 def show_settings():
     def show_axis_settings():
-        
         with st.form("my_form1"):
             col1, col2 = st.columns(2)
             with col1:            

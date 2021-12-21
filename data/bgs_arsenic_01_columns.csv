@@ -1,0 +1,36 @@
+column_name;key;type;data_type
+SAMPLE_ID;Station identifier;st;None
+SAMPLE_FIELD_ID;Sample identifier;sa;None
+SAMPLE_DATE;Sampling date;sa;None
+LAT_DEG;Latitude;st;None
+LONG_DEG;Longitude;st;None
+YEAR_CONSTRUCTION;Not used;st;ord
+WELL_TYPE;Not used;st;cat
+WELL_DEPTH;Not used;st;None
+DIVISION;Not used;st;cat
+DISTRICT;Not used;st;cat
+THANA;Not used;st;cat
+UNION;Not used;st;cat
+MOUZA;Not used;st;cat
+GEOCODE;Not used;st;None
+As;as;pa;None
+Al;Not used;pa;None
+B_;Not used;pa;None
+Ba;Not used;pa;None
+Ca;ca;pa;None
+Co;Not used;pa;None
+Cr;Not used;pa;None
+Cu;Not used;pa;None
+Fe;fe;pa;None
+K_;k;pa;None
+Li;Not used;pa;None
+Mg;mg;pa;None
+Mn;Not used;pa;None
+Na;na;pa;None
+P_;Not used;pa;None
+Si;Not used;pa;None
+SO4;so4;pa;None
+Sr;Not used;pa;None
+V_;Not used;pa;None
+Zn;Not used;pa;None
+

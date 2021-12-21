@@ -14,6 +14,7 @@ co3;chem;Carbonate;3812-32-6;CO3;CO361;60.0089;1;1;mg/L;True
 no3;chem;Nitrate;12033-49-7;NO3;NO3;62.0049;-2;1;mg/L;False
 fe;chem;Iron;7439-89-6;Fe;Fe;55.845;2;1;mg/L;False
 mn;chem;Manganese;7439-96-5;Mn;Mn;54.938045;2;1;mg/L;False
+as;chem;Arsenic;7440-38-2;As;As;74.9216;3;1;ug/L;False
 cond_25;chem;conductivity_25°C;;Cond;;;;;uS/cm;False
 tds;chem;conductivity_25°C;;TDS;;;;;mg/L;False
 temp;chem;Temperature;;Temp;;;;;°C;False

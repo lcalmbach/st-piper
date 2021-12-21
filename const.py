@@ -6,6 +6,10 @@ MARKERS = ['circle','square','triangle','diamond','inverted_triangle','hex','ast
             'square_dot','square_pin','square_x','star','star_dot','triangle_dot','triangle_pin','x','y']
 
 
+DEFAULT_PLOT_WIDTH_L = 800
+DEFAULT_PLOT_HEIGHT_L = 600
+DEFAULT_PLOT_WIDTH_M = 600
+DEFAULT_PLOT_HEIGHT_M = 400
 piper_cfg = {
     'gap': 20,
     'figure_padding_left': 10,
@@ -25,6 +29,39 @@ piper_cfg = {
     'arrow_size': 5,
     'image_file_format': 'png'
 }
+map_cfg = {
+    'extent': 7000,
+    'fill_colors': ['blue', 'orange', 'green'],
+    'fill_alpha': 0.8,
+    'symbol_size': 10,
+    'max_prop_size': 20,
+    'min_prop_size': 2,
+    'lin_palette': 'Magma256'
+}
+
+scatter_cfg = {
+    'x_par': '',
+    'y_par': '',
+    'colors': ['blue', 'orange', 'green'],
+    'fill_alpha': 0.8,
+    'symbol_size': 10
+}
+
+histogram_cfg = {
+    'par': '',
+    'bin_width': '',
+    'colors': ['#00FFAA', 'orange', 'green'],
+    'fill_alpha': 0.8,
+    'y_max': 0,
+    'plot_height': DEFAULT_PLOT_HEIGHT_L,
+    'plot_width': DEFAULT_PLOT_WIDTH_L,
+    'plot_title': "",
+    'x_axis_title': "",
+    'y_axis_title': "",
+    'bins': 20,
+    'x_min': 0,
+    'x_max': 0,
+}
 
 time_series_cfg = {
     'parameters': False,
@@ -35,10 +72,14 @@ time_series_cfg = {
     'show_guideline': True,
     'markers': ['circle'],
     'lines': ['blue'],
-    'marker_size': 10,
+    'fill_alpha': 0.8,
+    'symbol_size': 10,
     'yl_axis_title': 'Concentration in mg/L',
     'yl_unit': 'mg/L',
-    'has_yr_axis': False
+    'has_yr_axis': False,
+    'plot_title': '',
+    'width': DEFAULT_PLOT_WIDTH_L,
+    'height': DEFAULT_PLOT_HEIGHT_M,
 }
 
 sin60 = math.sin(math.radians(60))
@@ -56,6 +97,7 @@ SEPARATORS = [';',',','\t']
 CTYPE_STATION = 'st'
 CTYPE_SAMPLE = 'sa'
 CTYPE_VAL_META = 'md'
+CTYPE_PARAMETER = 'pa'
 
 STATION_IDENTIFIER_COL = 'Station identifier'
 GEOPOINT_COL = 'Geopoint'
@@ -76,6 +118,7 @@ PARAMETER_COL = 'Parameter'
 CASNR_COL = 'CAS-Nr'
 DL_COL = 'Detection limit'
 VALUE_NUM_COL = 'Numeric value'
+
 ND_FLAG_COL = '_nd_flag'
 ND_QUAL_COL = '<DL qualifier'
 ND_QUAL_VALUE_COL = '<DL qualifier + numeric value' 

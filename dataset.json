@@ -1,7 +1,7 @@
 [
     {
         "name": "Groundwater monitoring in Basel/Switzerland",
-        "description": "The city of Basel is located in northern Switzerland at the so called 'knee' of the River Rhine. It has a population of approximately 200,000. Basel monitores water levels and water quality in currently 84 monitoring wells of which 28 are sampled biannually for water quality samples. The raw data used in this app is published on the https://data.bs.ch/explore/dataset/100067/. Analysis include Major constituents, inorganic and organic trace elements and nutrients. \n\nGeological situation:",
+        "description": "The city of Basel is located in northern Switzerland at the so called 'knee' of the River Rhine. It has a population of approximately 200,000. Basel monitores water levels and water quality in 84 monitoring wells. 28 are sampled biannually for water quality samples. Complete analyses include major inorganic constituents, inorganic and organic trace elements and nutrients. The raw data used in this app is published on the cantons [opendata portal](https://data.bs.ch/explore/dataset/100067/).\n\nGeological situation:",
         "image": "https://www.aue.bs.ch/.imaging/default/dam/aue/Bilder/wasser/grundwasser/8-3_gewaesser-gw/jcr:content.jpg",
         "row_is": "value",
         "date_format":"%d.%m.%Y",
@@ -12,15 +12,17 @@
         "parameter_map": "100067_parameters.csv"
     },
     {
-        "name": "Arsenic contamination of groundwater in Bangladesh",
-        "description": "Arsenic contamination has been identified any many regions araound the world and Bangladesh is the most infamous example. The British Geological Society has conducted a study in 1993 and all the data is published on.",
-        "source": "https://www2.bgs.ac.uk/groundwater/health/arsenic/Bangladesh/data.html",
-        "row_is": "value",
-        "date_format":"%d.%m.%Y",
-        "separator": ";",
+        "name": "Groundwater Studies of Arsenic Contamination in Bangladesh",
+        "description": "Arsenic contamination has been identified any many regions araound the world and Bangladesh is the most infamous example. The British Geological Society has conducted a study in 1993 and all the data is published on the [BGS website](https://www2.bgs.ac.uk/groundwater/health/arsenic/Bangladesh/data.html). The survey of water wells (n=3534) from throughout Banladesh has shown that water from 46% of shallow tubewells (<150m deep) exceed the WHO standard for arsenic in drinking water (10 ug/). According to the BGS [study report](https://www2.bgs.ac.uk/downloads/start.cfm?id=2221), the arsenic is of natural origin and is beieved to be released to groundwater as  result of a number of mechanisms which are poorly understood. The release appears to be associated with the burial of fresh sediment and the generation of aneobic (oxygen deficient) groundwater condition.",
+        "image": "https://www2.bgs.ac.uk/groundwater/images/Smoothed11.png",
+        "row_is": "sample",
+        "date_format":"%d/%m/%Y",
+        "separator": ",",
         "encoding": "utf8",
         "data": "bgs_arsenic_01.csv",
-        "column_map": "100067_columns.csv",
-        "parameter_map": "100067_parameters.csv"
+        "column_map": "bgs_arsenic_01_columns.csv",
+        "parameter_map": "bgs_arsenic_01_parameters.csv",
+        "unit_row": 1,
+        "generate_num_value_column": true
     }
 ]

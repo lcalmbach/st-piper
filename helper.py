@@ -1,9 +1,12 @@
 import streamlit as st
+from bokeh.io import export_png, export_svgs
 import time
 import pandas as pd
 import numpy as np
 from datetime import datetime
 import const as cn
+from bokeh import palettes
+import itertools  
 
 def flash_text(text:str,type:str):
     placeholder = st.empty()
@@ -95,10 +98,8 @@ def calc_meql(df: pd.DataFrame, pars: dict, pmd: pd.DataFrame):
     """
     Adds a new column xx_mqpl for all major ions xx
     """
-
     if 'ca' in pars.keys():
         df['ca_meqpl'] = df[pars['ca']] / pmd.loc['ca']['fmw'] * abs(pmd.loc['ca']['valence'])
-
     if 'na' in pars.keys():
         df['na_meqpl'] = df[pars['na']] / pmd.loc['na']['fmw'] * abs(pmd.loc['na']['valence'])
     if 'k' in pars.keys():
@@ -146,3 +147,63 @@ def date_filter(df, cols):
         date_to = st.date_input("Date to", max_date)
     is_filtered = (date_from != min_date) | (date_to != max_date)
     return date_from, date_to, is_filtered
+
+def show_save_file_button(p, key: str):
+    if st.button("Save png file", key=key):
+        filename = get_random_filename('piper','png')
+        export_png(p, filename=filename)
+        flash_text(f"The plot has been saved to **{filename}** and is ready for download", 'info')
+        with open(filename, "rb") as file:
+            btn = st.download_button(
+                label="Download image",
+                data=file,
+                file_name=filename,
+                mime="image/png"
+            )
+
+def transpose_row(df):
+    result = pd.DataFrame()
+    for fld in df.columns:
+        result = result.append({'parameter': fld, 'value': df.iloc[0][fld]}, ignore_index=True)
+    return result
+
+def nd2numeric(df):
+    col_name = df.columns[0]
+    nd_flag_col = 'nd_flag'
+    num_val_col = 'num_val_col'
+    df[nd_flag_col] = False
+    df[col_name] = df[col_name].astype(str)
+    df.loc[df[col_name].str.startswith('<') == True, nd_flag_col] = True
+    df.loc[df[nd_flag_col] == True, num_val_col] = df[col_name].str.replace('<', '')
+    df.loc[(df[nd_flag_col] == False), num_val_col] = pd.to_numeric(df[col_name],errors='coerce') 
+    df[num_val_col] = df[num_val_col].astype('float') 
+    df.loc[(df[nd_flag_col] == True) & (df[num_val_col] != 0), num_val_col] = df[num_val_col] / 2
+    df = df[num_val_col]
+    df.columns = col_name
+    return df
+
+def select_parameter(sidebar_flag: bool):
+    parameter_options = list(st.session_state.config.parameter_map_df.index)
+    parameter_options.sort()
+    if sidebar_flag:
+        sel_parameter = st.sidebar.selectbox('Parameter', parameter_options)
+    else:
+        sel_parameter = st.selectbox('Parameter', parameter_options)
+    return sel_parameter
+
+def bokeh_palettes(n: int)->list:
+    """
+    Returns a list of available bokeh palettes for a given number of required colors
+
+    Args:
+        n (int): required colors
+
+    Returns:
+        list: available palettes for specified number of required colors
+    """
+
+    colors = palettes.__palettes__
+    return list(filter(lambda col: col.find(str(n)) > 0, colors))
+
+def color_gen(palette, n):
+    yield from itertools.cycle(palettes[palette])
