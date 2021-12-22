@@ -3,6 +3,7 @@
 import streamlit as st
 import pandas as pd
 import json
+import uuid
 
 import const as cn
 import info
@@ -12,6 +13,7 @@ import parameter
 import data
 import plots
 from config import Config
+import guideline
 
 __version__ = '0.0.1' 
 __author__ = 'Lukas Calmbach'
@@ -48,6 +50,8 @@ def main():
     
     if len(st.session_state) == 0:
         st.session_state.config = Config()
+        st.session_state.key = uuid.uuid4()
+        st.write(st.session_state.key)
 
     MENU_OPTIONS = st.session_state.config.get_menu_options()
     st.sidebar.markdown(f"### {APP_EMOJI} {APP_NAME}")
@@ -66,6 +70,8 @@ def main():
         parameter.show_menu(texts_dict['parameter'])
     elif menu_action == 5:
         plots.show_menu(texts_dict['plots'])
+    elif menu_action == 6:
+        guideline.show_menu(texts_dict['guideline'])
     else:
         st.write(menu_action)
     st.sidebar.markdown(APP_INFO, unsafe_allow_html=True)

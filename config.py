@@ -20,7 +20,8 @@ class Config():
         self._ow_value_df = pd.DataFrame()
         self._column_map_df = pd.DataFrame({'column_name': [], 'key': []})
         self._parameter_map_df = pd.DataFrame({'parameter': [], 'casnr': [], 'key': []})
-        self.guidelines = [{'name': self.guideline_list()[0], 'data': self.read_guideline(self.guideline_list()[0])}]
+        self.guidelines_df = self.read_all_guidelines()
+        self.guidelines_data_df = self.read_guideline_data()
         self.load_config_from_file_flag = False
         self.file_format = ''
         self.date_is_formatted = False
@@ -248,12 +249,19 @@ class Config():
         else:
             import_row_sample()
 
-    def guideline_list(self):
-        return ['epa_mcl']
+    def read_all_guidelines(self):
+        with open(f"{cn.GUIDELINE_ROOT}guidelines.json") as f:
+            guidelines_df = pd.DataFrame(json.load(f))
+        return guidelines_df
 
-    def read_guideline(self, gl:str):
-        filename = f"{cn.GUIDELINE_ROOT}{gl}.csv"
-        return pd.read_csv(filename, sep='\t')
+    def read_guideline_data(self):
+        data = pd.DataFrame()
+        for index, row in self.guidelines_df.iterrows():
+            filename = f"{cn.GUIDELINE_ROOT}{row['filename']}"
+            df =  pd.read_csv(filename, sep='\t')
+            df['key'] = row['key']
+            data = data.append(df, ignore_index=True)
+        return data
 
     def init_column_map(self):
         ok, err_msg = True, ''
@@ -274,6 +282,7 @@ class Config():
             result[3] = "Stations"
             result[4] = "Parameters"
             result[5] = "Plots"
+            result[6] = "Guidelines"
         return result
     
     def get_plots_options(self):
@@ -314,6 +323,9 @@ class Config():
         result = zip(list(df['key']), list(df.index))
         return dict(result)
 
+    def par2casnr(self) -> dict:
+        result = zip(list(self.parameter_map_df.index), list(self.parameter_map_df.casnr))
+        return dict(result)
 
     def par2key(self) -> dict:
         result = zip(list(self.parameter_map_df.index), list(self.parameter_map_df.key))

@@ -16,7 +16,7 @@ class Histogram:
     def get_plot(self):
         def get_bins(df, par):
             arr_hist, edges = np.histogram(df[self.cfg['value_col']], 
-                                           bins = self.cfg['bins'], 
+                                           bins = int(self.cfg['bins']),
                                            range = [self.cfg['x_min'], self.cfg['x_max']])
             result = pd.DataFrame({'counts': arr_hist, 
                                    'left': edges[:-1], 

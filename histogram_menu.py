@@ -59,10 +59,7 @@ def get_unit(df):
         unit = df.iloc[0][unit_col]
     return unit
 
-def get_config(df, par):
-    cfg = cn.histogram_cfg
-
-    cfg['par'] = par
+def get_config(df, cfg):
     cfg['value_col'] = st.session_state.config.key2col()[cn.VALUE_NUM_COL]
     x_min = df[cfg['value_col']].min()
     x_max = df[cfg['value_col']].max()
@@ -77,10 +74,10 @@ def get_config(df, par):
             cfg['x_max'] = float(st.text_input("X-axis end", value=x_max))
             
         unit = get_unit(df)
-        cfg['x_axis_title'] = f"{par} ({unit})" if unit > '' else par
+        cfg['x_axis_title'] = f"{cfg['parameter']} ({unit})" if unit > '' else cfg['parameter']
         cfg['x_axis_title'] = st.text_input("X-axis title", cfg['x_axis_title'])
         cfg['y_axis_title'] = st.text_input("Y-axis title", cfg['y_axis_title'])
-        cfg['bins'] = st.number_input("Bins", value=cfg['bins'], min_value=0, max_value=1000, step=1)
+        cfg['bins'] = st.number_input("Bins", value=int(cfg['bins']), min_value=2, max_value=1000, step=1)
         cfg['colors'][0]=st.color_picker('Fill color', value=cfg['colors'][0])
         cfg = cfg
     return cfg
@@ -94,7 +91,6 @@ def show_histogram(df:pd.DataFrame, cfg:dict):
     histo = Histogram(df, cfg)
     p = histo.get_plot()
     st.bokeh_chart(p)
-    helper.show_save_file_button(p)
 
 def show_menu(texts_dict:dict):
     menu_options = texts_dict["menu_options"]
@@ -103,10 +99,11 @@ def show_menu(texts_dict:dict):
     df = st.session_state.config.row_value_df
     
     if menu_action == menu_options[0]:
-        par = get_parameter()
+        cfg = cn.histogram_cfg
+        cfg['parameter'] = get_parameter()
         par_col = st.session_state.config.key2col()[cn.PARAMETER_COL]
-        df = df[df[par_col] == par]
-        cfg = get_config(df, par)
+        df = df[df[par_col] == cfg['parameter']]
+        cfg = get_config(df, cfg)
         filters = ('station', 'year')
         df = show_filter(df, filters)
         

@@ -36,7 +36,8 @@ map_cfg = {
     'symbol_size': 10,
     'max_prop_size': 20,
     'min_prop_size': 2,
-    'lin_palette': 'Magma256'
+    'lin_palette': 'Magma256',
+    'plot_width': DEFAULT_PLOT_WIDTH_L,
 }
 
 scatter_cfg = {
@@ -44,7 +45,8 @@ scatter_cfg = {
     'y_par': '',
     'colors': ['blue', 'orange', 'green'],
     'fill_alpha': 0.8,
-    'symbol_size': 10
+    'symbol_size': 10,
+    'plot_width': DEFAULT_PLOT_WIDTH_L,
 }
 
 histogram_cfg = {
@@ -57,7 +59,7 @@ histogram_cfg = {
     'plot_width': DEFAULT_PLOT_WIDTH_L,
     'plot_title': "",
     'x_axis_title': "",
-    'y_axis_title': "",
+    'y_axis_title': "Count",
     'bins': 20,
     'x_min': 0,
     'x_max': 0,
@@ -105,6 +107,8 @@ LATITUDE_COL = 'Latitude'
 LONGITUDE_COL = 'Longitude'
 SAMPLING_DEPTH_COL = 'Depth'
 OTHER_STATION_COL = 'Other station column'
+COLOR_COL = '_color'
+PROP_SIZE_COL = '_prop_size'
 STATION_COLUMNS_OPTIONS = [STATION_IDENTIFIER_COL, GEOPOINT_COL, LATITUDE_COL,
     LONGITUDE_COL, SAMPLING_DEPTH_COL, OTHER_STATION_COL, NOT_USED]
 
@@ -149,3 +153,5 @@ ENCODINGS = ['utf8', 'cp1252']
 DEFAULT_GUIDELINE = 'epa_mcl'
 GUIDELINE_ROOT = './guidelines/'
 
+COMPARE_OPTIONS = ['>', '<', '=', '>=', '<=', '!=']
+SPLASH_IMAGE = "water-2630618-wide.jpg"

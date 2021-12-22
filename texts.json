@@ -3,12 +3,12 @@
     },
 
     "info": {
-        "intro_text": "### Introduction\n\nFontus allows users to upload groundwater datasets in a defined format and plot and analyze it. In order to familiarize yourself with the software, two preconfigured datasets can also be used. If you intend to explore your own dataset, use the *Select or load dataset* option. In this menu option, your data can be uploaded, columns mapped to internal parameters in order to use plots with specific parameter settings, such as the Piper plot.",
+        "intro_text": "### Introduction\n\nFontus is a data-exploration software specifically designed to be used with water quality datasets. You may explore one of the preconfigured datasets to familiarize yourself with the software. You may also upload your own dataset, explore it and save and download the generated plots. When using your own dataset, a important step in order to take advante of all Fontus features is to map some important parameters. For example, in order to draw maps or time series diagrams, the columns latitude/longitude or the column holding the sampling date must be specified.",
         "no_data_text": "Currently no data has been loaded. Please use the `Select or load dataset` menu option to load a sample dataset or to upload your own data."
     },
 
     "data": {
-        "menu_options": ["Select dataset","Load Dataset (rows = values)", "Load Dataset (rows = samples)"],
+        "menu_options": ["Load sample dataset","Load custom dataset (rows = values)", "Load custom dataset (rows = samples)"],
         "value_per_row_import": {
             "steps": ["Load data", "Match station columns", "Match sample columns", "Match metadata columns", "Match parameters", "Pivot table"],
             "step0_title":"Load Data From File",
@@ -72,5 +72,10 @@
         "time_series":{
             "menu_options": ["Time series (multiple parameters)", "Time series (multiple stations)", "Plot settings"]
         }
+    },
+    "guideline": {
+        "menu_options": ["Show guidelines"],
+        "info": "Select the guidelines you wish to include in the result output table. The last column in this table shows the respective guidline name. If you select a parameter from your dataset, the guideline table will be filtered for this parameter if the parameter exists in the guideline and if the dataset and guideline parameters can be matched. Fontes tries to match parameter names and CASNr. CASNr is the more reliable matchmaker, however not all parameters have a CASNr (e.g. pH, Beta particles, Temperature) and your dataset may not include a CASNr."
     }
+
 }

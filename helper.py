@@ -207,3 +207,15 @@ def bokeh_palettes(n: int)->list:
 
 def color_gen(palette, n):
     yield from itertools.cycle(palettes[palette])
+
+def aggregate_data(source: pd.DataFrame, group_cols: list, val_col: str, agg_func: str):
+    df = source[group_cols + [val_col]]
+    if agg_func == 'mean':
+        df = df.groupby(group_cols).mean()
+    elif agg_func == 'max':
+        df = df.groupby(group_cols).max()
+    elif agg_func == 'min':
+        df = df.groupby(group_cols).min()
+    df.reset_index(inplace=True)
+    df = df.dropna()
+    return df

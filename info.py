@@ -1,9 +1,10 @@
 import streamlit as st
 from st_aggrid import AgGrid
 import pandas as pd
+import const as cn
 
 def show_menu(texts_dict: dict):
-    st.image("./j-k-4AQjVB2UrdU-unsplash.jpg")
+    st.image(f"./{cn.SPLASH_IMAGE}")
     text = texts_dict['intro_text']
     st.markdown(text)
     if st.session_state.config.data_is_loaded():

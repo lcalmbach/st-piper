@@ -9,9 +9,9 @@ from bokeh.tile_providers import CARTODBPOSITRON, get_provider
 from bokeh.models import ColumnDataSource, GMapOptions, HoverTool
 from bokeh.core.enums import MarkerType, LineDash
 from bokeh.models import ColumnDataSource, LinearColorMapper
-from matplotlib import colors
 import helper
 import const as cn
+from matplotlib import colors
 
 class Map:
     def __init__(self, df: pd.DataFrame, cfg: dict):
@@ -31,37 +31,14 @@ class Map:
         y = np.log(np.tan((90 + lat) * np.pi/360.0)) * k
         return x, y
 
-    def get_map_rectangle(self, df, rad: int, lat:str, lon:str):
-        lat_avg, lon_avg = df[lat].mean(), df[lon].mean()
-        x_avg, y_avg =  self.wgs84_to_web_mercator(lat_avg, lon_avg)
-        x_min = x_avg - rad
-        x_max = x_avg + rad
-        y_min = y_avg - rad
-        y_max = y_avg + rad
+    def get_map_rectangle(self, df):
+        x_min = df['x'].min()
+        x_max = df['x'].max()
+        y_min = df['y'].min()
+        y_max = df['y'].max()
         return x_min, y_min, x_max, y_max
 
-    def add_color_column(self, df):
-        def get_color(row, par, max_val):
-            color = colors.rgb2hex([row[self.cfg['parameter']] / max_val, 0, 0])
-            return color
-
-        cols = st.session_state.config.station_cols + [self.cfg['parameter']]
-        df = df[cols]
-        if self.cfg['aggregation'] == 'mean':
-            df = df.groupby(st.session_state.config.station_cols).mean()
-        elif self.cfg['aggregation'] == 'max':
-            df = df.groupby(st.session_state.config.station_cols).max()
-            
-        elif self.cfg['aggregation'] == 'min':
-            df = df.groupby(st.session_state.config.station_cols).min()
-        df.reset_index(inplace=True)
-        df = df.dropna()
-        df['_color'] = 0
-        max_val = df[self.cfg['parameter']].max()
-        df['_color'] = df.apply(lambda row: get_color(row, self.cfg['parameter'], max_val), axis=1)
-        return df
-
-    def add_markers(self,p,df):
+    def get_prop_size(self, df):
         def get_size(x):
             result = x / self.cfg['max_value'] * self.cfg['max_prop_size']
             if result > self.cfg['max_prop_size']:
@@ -70,50 +47,53 @@ class Map:
                 result = self.cfg['min_prop_size']
             return result
 
+        df[cn.PROP_SIZE_COL] = 0
+        df[cn.PROP_SIZE_COL] = list(map(get_size, list(df[st.session_state.config.value_col])))
+        return df
+
+    def add_markers(self, p, df):
         if 'parameter' in self.cfg:
             if self.cfg['prop_size_method'] == 'color':
                 color_mapper = LinearColorMapper(palette=self.cfg['lin_palette'], 
-                                                low=df[self.cfg['parameter']].min(), 
-                                                high=df[self.cfg['parameter']].mean() * 2)
+                                                low=0, 
+                                                high=self.cfg['max_value'])
                 p.scatter(x="x", y="y", 
                         size=self.cfg['symbol_size'], 
-                        color={'field': self.cfg['parameter'], 'transform': color_mapper}, 
+                        color={'field': st.session_state.config.value_col, 'transform': color_mapper}, 
                         fill_alpha=self.cfg['fill_alpha'], source=df)
             else:
-                # = df.apply(lambda x: get_size(x))
-                df['_size'] = list(map(get_size, list(df[self.cfg['parameter']])))
-                p.circle(x="x", y="y", size='_size', fill_color=self.cfg['fill_colors'][0], fill_alpha=self.cfg['fill_alpha'], source=df)
+                df = self.get_prop_size(df)
+                p.circle(x="x", y="y", size=cn.PROP_SIZE_COL, fill_color=self.cfg['fill_colors'][0], fill_alpha=self.cfg['fill_alpha'], source=df)
         else:
             p.circle(x="x", y="y", size=self.cfg['symbol_size'], fill_color=self.cfg['fill_colors'][0], fill_alpha=self.cfg['fill_alpha'], source=df)
         return p
 
     def get_plot(self):
-        x = st.session_state.config.key2col()
-
-        lat = x[st.session_state.config.latitude_col]
-        lon = x[st.session_state.config.longitude_col]
+        lat = st.session_state.config.latitude_col
+        lon = st.session_state.config.longitude_col
         # if paramter is set, then create a color column
         if 'parameter' in self.cfg:
-            df = self.add_color_column(self.data)
+            df = helper.aggregate_data(source=self.data,
+                                       group_cols=st.session_state.config.station_cols, 
+                                       val_col=st.session_state.config.value_col, 
+                                       agg_func=self.cfg['aggregation'])
+            tooltips = f"""Station: @station<br>
+                        {self.cfg['parameter']}: @{{{st.session_state.config.value_col}}}{{0.00}}"""
         else:
-            df = self.data[st.session_state.config.sample_station_cols].drop_duplicates()
-
+            df = self.data[st.session_state.config.station_cols].drop_duplicates()
+            tooltips = f"Station: @station"
+            
         df = df.rename(columns={st.session_state.config.station_col: 'station'})
         df = self.wgs84_to_web_mercator_df(df, lat, lon)
         tile_provider = get_provider(xyz.OpenStreetMap.Mapnik)
-        x_min, y_min, x_max, y_max = self.get_map_rectangle(df, self.cfg['extent'], lat, lon)
+        x_min, y_min, x_max, y_max = self.get_map_rectangle(df)
         
-        if 'parameter' in self.cfg:
-            tooltips = f"""Station: @station,
-                        {self.cfg['parameter']}: @{self.cfg['parameter']}"""
-        else:
-            tooltips = f"Station: @station"
         p = figure(x_range=(x_min,x_max),
-                    y_range=(y_min,y_max),
-                    x_axis_type="mercator",
-                    y_axis_type="mercator",
-                    width = 800,
-                    tooltips=tooltips)
+                   y_range=(y_min,y_max),
+                   x_axis_type="mercator",
+                   y_axis_type="mercator",
+                   width = self.cfg['plot_width'],
+                   tooltips=tooltips)
         p.add_tile(tile_provider)
         p = self.add_markers(p, df)
         
