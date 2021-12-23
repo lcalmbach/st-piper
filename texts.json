@@ -47,7 +47,7 @@
         "menu_options": ["Summary", "Sample detail"]
     },
     "stations": {
-        "menu_options": ["Summary", "Sampling events"]
+        "menu_options": ["Show stations"]
     },
     "parameter": {
         "menu_options": ["Summary", "Measured value detail"]

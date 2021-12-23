@@ -38,7 +38,9 @@ def select_prepared_dataset():
     lst_projects = list(df['name'])
     sel_dataset = st.selectbox("Select a dataset", options=lst_projects)
     id = lst_projects.index(sel_dataset)
+    st.markdown("**Description**")
     st.markdown(datasets[id]['description'])
+    st.markdown("Press the button to load this dataset")
     if st.button('Load dataset'):
         st.session_state.config.current_dataset = datasets[id]
         st.success(f"{st.session_state.config.current_dataset['name']} has been successfully loaded.")

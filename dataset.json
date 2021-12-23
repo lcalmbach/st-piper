@@ -1,8 +1,9 @@
 [
     {
         "name": "Groundwater monitoring in Basel/Switzerland",
-        "description": "The city of Basel is located in northern Switzerland at the so called 'knee' of the River Rhine. It has a population of approximately 200,000. Basel monitores water levels and water quality in 84 monitoring wells. 28 are sampled biannually for water quality samples. Complete analyses include major inorganic constituents, inorganic and organic trace elements and nutrients. The raw data used in this app is published on the cantons [opendata portal](https://data.bs.ch/explore/dataset/100067/).\n\nGeological situation:",
+        "description": "The city of Basel is located in northern Switzerland at the so called 'knee' of the River Rhine. It has a population of approximately 200,000. Basel monitores water levels and water quality in 84 monitoring wells. 28 are sampled biannually for water quality samples. Complete analyses include major inorganic constituents, inorganic and organic trace elements and nutrients. The raw data used in this app is published on the cantons [opendata portal](https://data.bs.ch/explore/dataset/100067/).",
         "image": "https://www.aue.bs.ch/.imaging/default/dam/aue/Bilder/wasser/grundwasser/8-3_gewaesser-gw/jcr:content.jpg",
+        "image_text": "Geological situation:",
         "row_is": "value",
         "date_format":"%d.%m.%Y",
         "separator": ";",

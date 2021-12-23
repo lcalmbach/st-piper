@@ -27,8 +27,8 @@ class Time_series:
         p = figure(title=self.cfg['plot_title'], x_axis_type="datetime", 
                    toolbar_location="above", 
                    tools = [],
-                   plot_width = self.cfg['width'], 
-                   plot_height=self.cfg['height'])
+                   plot_width = self.cfg['plot_width'], 
+                   plot_height=self.cfg['plot_height'])
         p.title.align = "center"
         p.yaxis.axis_label = 'Concentration (mg/L)'
         color = itertools.cycle(palettes.Category20_20) #helper.color_gen(self.cfg['palette'], 10)

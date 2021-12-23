@@ -35,13 +35,13 @@ def show_guidelines():
 
 def show_menu(td: dict):
     global texts_dict
-
+    
     texts_dict = td
     MENU_OPTIONS = texts_dict["menu_options"]
     menu_action = st.sidebar.selectbox('Options', MENU_OPTIONS)
     if menu_action == MENU_OPTIONS[0]:
         st.markdown("### Guidelines")
         show_guidelines()
-    
+        
     else:
         st.write('menu option does not exist')

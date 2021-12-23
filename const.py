@@ -10,6 +10,9 @@ DEFAULT_PLOT_WIDTH_L = 800
 DEFAULT_PLOT_HEIGHT_L = 600
 DEFAULT_PLOT_WIDTH_M = 600
 DEFAULT_PLOT_HEIGHT_M = 400
+DEFAULT_PLOT_WIDTH_S = 350
+DEFAULT_PLOT_HEIGHT_S = 250
+
 piper_cfg = {
     'gap': 20,
     'figure_padding_left': 10,
@@ -47,6 +50,7 @@ scatter_cfg = {
     'fill_alpha': 0.8,
     'symbol_size': 10,
     'plot_width': DEFAULT_PLOT_WIDTH_L,
+    'plot_height': DEFAULT_PLOT_HEIGHT_L,
 }
 
 histogram_cfg = {
@@ -80,8 +84,8 @@ time_series_cfg = {
     'yl_unit': 'mg/L',
     'has_yr_axis': False,
     'plot_title': '',
-    'width': DEFAULT_PLOT_WIDTH_L,
-    'height': DEFAULT_PLOT_HEIGHT_M,
+    'plot_width': DEFAULT_PLOT_WIDTH_L,
+    'plot_height': DEFAULT_PLOT_HEIGHT_M,
 }
 
 sin60 = math.sin(math.radians(60))
@@ -155,3 +159,4 @@ GUIDELINE_ROOT = './guidelines/'
 
 COMPARE_OPTIONS = ['>', '<', '=', '>=', '<=', '!=']
 SPLASH_IMAGE = "water-2630618-wide.jpg"
+LOTTIE_URL = 'https://assets2.lottiefiles.com/packages/lf20_B6txqj.json'
