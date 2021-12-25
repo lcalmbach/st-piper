@@ -16,6 +16,7 @@ import data
 import plots
 from config import Config
 import guideline
+import calculator
 
 __version__ = '0.0.1' 
 __author__ = 'Lukas Calmbach'
@@ -65,7 +66,13 @@ def main():
                 st_lottie(lottie_search_names, height=40, loop=True)
         with cols[1]:
             st.markdown(f"### {APP_NAME}\n\n")
-
+    
+    def show_menu():
+        # trial: having a top row for menu options so the sidebar is reserved for the filters and settings.
+        cols = st.columns([9,1])
+        with cols[1]:
+            if st.button('Login'):
+                st.info("not implemented yet")
     st.set_page_config(page_title=APP_NAME, page_icon=APP_EMOJI, layout="wide", initial_sidebar_state="auto", menu_items=None)
     # read file
     texts_dict = get_texts()
@@ -76,7 +83,7 @@ def main():
 
     MENU_OPTIONS = st.session_state.config.get_menu_options()
     show_app_name()    
-    
+    show_menu()
     menu_action = st.sidebar.selectbox('Menu', list(MENU_OPTIONS.keys()),
         format_func=lambda x: MENU_OPTIONS[x])
 
@@ -94,6 +101,8 @@ def main():
         plots.show_menu(texts_dict['plots'])
     elif menu_action == 6:
         guideline.show_menu(texts_dict['guideline'])
+    elif menu_action == 7:
+        calculator.show_menu(texts_dict['calculator'])
     else:
         st.write(menu_action)
     st.sidebar.markdown(APP_INFO, unsafe_allow_html=True)

@@ -4,11 +4,12 @@ latitude;station;Latitude;;Latitude;;;;;°;True
 longitude;station;Longitude;;Longitude;;;;;°;True
 ca;chem;Calcium;7440-70-2;Ca;Ca;40.077;2;1;mg/L;True
 na;chem;Sodium;7440-23-5;Na;Na;22.99;2;1;mg/L;True
-k;chem;Potassium;7440-09-7;K;K;39.0983;1;1;mg/L;False
+k_;chem;Potassium;7440-09-7;K;K;39.0983;1;1;mg/L;False
 mg;chem;Magnesium;7439-95-4;Mg;Mg;24.305;2;1;mg/L;True
 cl;chem;Chloride;16887-00-6;Cl;Cl;35.453;-1;1;mg/L;True
 so4;chem;Sulfate;14808-79-8;SO4;SO4;96.063;-2;1;mg/L;True
 alk;chem;Alkalinity;;Alk;CaCO3;100;1;1;mg/L;True
+Alkalinity;chem;Alkalinity;Ca0.5(CO3)0.5;50.0436;-1;;1;mg/L;False
 hco3;chem;Bicarbonate;;HCO3;HCO3;61.0168;1;1;mg/L;True
 co3;chem;Carbonate;3812-32-6;CO3;CO361;60.0089;1;1;mg/L;True
 no3;chem;Nitrate;12033-49-7;NO3;NO3;62.0049;-2;1;mg/L;False

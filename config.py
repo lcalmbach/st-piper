@@ -210,6 +210,11 @@ class Config():
             pivot_data()
 
         def import_row_sample():
+            """
+            data in the format 1 row per sample are melted to the format 1 row per value: the values are grouped by station 
+            and sample fields. the additional parameter rows each build a new row per row.
+            """
+
             def melt_data():
                 parameter_cols = self.parameter_cols
                 self._row_value_df = pd.melt(frame=self.row_sample_df,
@@ -227,11 +232,18 @@ class Config():
                                             sep=ds['separator'], 
                                             encoding=ds['encoding'])
             # read column mapping
-            self.column_map_df = pd.read_csv(folder / ds['column_map'], sep=';')
+            df = pd.read_csv(folder / ds['column_map'], sep=';')
+            df = df[df['type']]
+            self.column_map_df = df
             # read parameter mapping
-            self.parameter_map_df = pd.read_csv(folder / ds['parameter_map'], sep=';')
-            self._column_map_df.loc['value'] = [cn.ND_QUAL_VALUE_COL, cn.CTYPE_VAL_META, None]
-            self._column_map_df.loc['parameter'] = [cn.PARAMETER_COL, cn.CTYPE_VAL_META, None]
+            df = pd.read_csv(folder / ds['parameter_map'], sep=';')
+            df.loc['parameter'] = [cn.PARAMETER_COL, cn.CTYPE_VAL_META, None]
+            df.loc['value'] = [cn.ND_QUAL_VALUE_COL, cn.CTYPE_VAL_META, None]
+            df.loc['num_value'] = [cn.VALUE_NUM_COL, cn.CTYPE_VAL_META, None]
+            df.loc['unit'] = [cn.UNIT_COL, cn.CTYPE_VAL_META, None]
+            df.loc['detection_limit'] = [cn.DL_COL, cn.CTYPE_VAL_META, None]
+            self.parameter_map_df = df
+
             melt_data()
             # trigger set column map, since only now all information is available. this triggers the formatting of essential 
             # columsn such as date
@@ -283,6 +295,7 @@ class Config():
             result[4] = "Parameters"
             result[5] = "Plots"
             result[6] = "Guidelines"
+            result[7] = "Calculators"
         return result
     
     def get_plots_options(self):

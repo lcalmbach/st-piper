@@ -5,7 +5,6 @@ MARKERS = ['circle','square','triangle','diamond','inverted_triangle','hex','ast
             'circle_x','circle_y','cross','dash','diamond_cross','diamond_dot','dot','hex_dot','plus','square_cross',
             'square_dot','square_pin','square_x','star','star_dot','triangle_dot','triangle_pin','x','y']
 
-
 DEFAULT_PLOT_WIDTH_L = 800
 DEFAULT_PLOT_HEIGHT_L = 600
 DEFAULT_PLOT_WIDTH_M = 600
@@ -129,7 +128,7 @@ VALUE_NUM_COL = 'Numeric value'
 
 ND_FLAG_COL = '_nd_flag'
 ND_QUAL_COL = '<DL qualifier'
-ND_QUAL_VALUE_COL = '<DL qualifier + numeric value' 
+ND_QUAL_VALUE_COL = '<DL qualifier + numeric value'
 UNIT_COL = 'Unit'
 METHOD_COL = 'Method'
 COMMENT_COL = 'Comment'

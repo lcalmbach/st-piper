@@ -1,0 +1,104 @@
+key;type;name;casnr;short_name;formula;fmw;valence;unit_cat;unit;is_mandatory
+station;station;Station;; Station;;;;;;True
+latitude;station;Latitude;;Latitude;;;;;°;True
+longitude;station;Longitude;;Longitude;;;;;°;True
+ca;chem;Calcium;7440-70-2;Ca;Ca;40.077;2;1;mg/L;True
+na;chem;Sodium;7440-23-5;Na;Na;22.99;2;1;mg/L;True
+k_;chem;Potassium;7440-09-7;K;K;39.0983;1;1;mg/L;False
+mg;chem;Magnesium;7439-95-4;Mg;Mg;24.305;2;1;mg/L;True
+cl;chem;Chloride;16887-00-6;Cl;Cl;35.453;-1;1;mg/L;True
+so4;chem;Sulfate;14808-79-8;SO4;SO4;96.063;-2;1;mg/L;True
+alk;chem;Alkalinity;;Alk;CaCO3;100;1;1;mg/L;True
+Alkalinity;chem;Alkalinity;Ca0.5(CO3)0.5;50.0436;-1;;1;mg/L;False
+hco3;chem;Bicarbonate;;HCO3;HCO3;61.0168;1;1;mg/L;True
+co3;chem;Carbonate;3812-32-6;CO3;CO361;60.0089;1;1;mg/L;True
+no3;chem;Nitrate;12033-49-7;NO3;NO3;62.0049;-2;1;mg/L;False
+fe;chem;Iron;7439-89-6;Fe;Fe;55.845;2;1;mg/L;False
+mn;chem;Manganese;7439-96-5;Mn;Mn;54.938045;2;1;mg/L;False
+as;chem;Arsenic;7440-38-2;As;As;74.9216;3;1;ug/L;False
+cond_25;chem;conductivity_25°C;;Cond;;;;;uS/cm;False
+tds;chem;conductivity_25°C;;TDS;;;;;mg/L;False
+temp;chem;Temperature;;Temp;;;;;°C;False
+pH;chem;pH;;pH;;;;;;False
+key;type;name;casnr;short_name;formula;fmw;valence;unit_cat;unit;is_mandatory
+orp (field);chem;ORP (Field);;ORP (Field);;0;0;1;mV;False
+sio2;chem;Silica as SiO2;7631-86-9 ;SiO2;SiO2;60.0843;0;1;mg/L;False
+ba;chem;Barium;7440-39-3;Ba;Ba;137.327;2;1;μg/L;False
+zn;chem;Zinc;7440-66-6;Zn;Zn;65.39;2;1;μg/L;False
+ph (field);chem;pH Field;;pH (Field);;0;0;1;;False
+cu;chem;Copper;7440-50-8;Cu;Cu;63.546;2;1;μg/L;False
+ni;chem;Nickel;7440-02-0;Ni;Ni;58.6934;2;1;μg/L;False
+f_;chem;Fluoride;16984-48-8;F;F;18.9984;-1;1;mg/L;False
+b_;chem;Boron;7440-42-8;B;B;10.811;-1;1;μg/L;False
+al;chem;Aluminum;7429-90-5;Al;Al;26.98154;3;1;μg/L;False
+cd;chem;Cadmium;7440-43-9;Cd;Cd;112.41;2;1;μg/L;False
+cr;chem;Chromium;7440-47-3;Cr;Cr;52;0;1;μg/L;False
+pb;chem;Lead;7439-92-1;Pb;Pb;207.2;0;1;μg/L;False
+hg;chem;Mercury;7439-97-6;Hg;Hg;201.6;0;1;μg/L;False
+ag;chem;Silver;7440-22-4;Ag;Ag;107.87;0;1;μg/L;False
+tritium;chem;Tritium;;Tritium;;0;0;1;pCi/L;False
+tss;chem;Total Suspended Solids;;TSS;;0;0;1;mg/L;False
+alkalinity;chem;Alkalinity;;Alkalinity;Ca0.5(CO3)0.5;50.0436;-1;1;mg/L;False
+total hardness;chem;Total hardness, reported;;Total hardness;CaCO3;100.08;2;1;mg/L;False
+no2-;chem;Nitrite as NO2;14797-65-0;NO2-;NO2;46.00554;0;1;mg/L;False
+bi;chem;Bismuth;7440-69-9;Bi;Bi;208.98;0;1;μg/L;False
+v_;chem;Vanadium;7440-62-2;V;V;50.94;0;1;μg/L;False
+se;chem;Selenium;7782-49-2;Se;Se;78.96;0;1;μg/L;False
+sn;chem;Tin;7440-31-5;Sn;Sn;118.71;0;1;μg/L;False
+mo;chem;Molybdenum;7439-98-7;Mo;Mo;95.94;0;1;μg/L;False
+be;chem;Beryllium;7440-41-7;Be;Be;9.01;0;1;μg/L;False
+sb;chem;Antimony;7440-36-0;Sb;Sb;121.76;0;1;μg/L;False
+po4;chem;Orthophosphate;14265-44-2;PO4;PO4;94.97;0;1;mg/L;False
+co;chem;Cobalt;7440-48-4;Co;Co;58.93;0;1;μg/L;False
+tl;chem;Thallium;7440-28-0;Tl;Tl;204.38;0;1;μg/L;False
+cn;chem;Cyanide;57-12-5;CN;CN;26.02;-1;1;mg/L;False
+deut;chem;Deuterium;7782-39-0;Deut;;0;0;1;‰;False
+do;chem;Dissolved Oxygen;7782-44-7;DO;;31.998;0;1;mg/L;False
+ph (lab);chem;pH Lab;;pH (Lab);;0;0;1;;False
+sc (field);chem;Spec Conductivity (Field);;SC (Field);;0;0;1;µS/cm;False
+sc (lab);chem;Spec Conductivity (Lab);;SC (Lab);;0;0;1;µS/cm;False
+turb (lab);chem;Turbidity (Lab);;Turb (Lab);;0;0;1;FNU;False
+doc;chem;Dissolved organic carbon;;DOC;C;12.011;0;1;mg/L;False
+toc;chem;Total Organic Carbon filtered;;TOC;C;12.011;0;1;mg/L;False
+no3no2n;chem;Nitrate+Nitrite as N;;NO3NO2N;N;62;-1;1;mg/L;False
+fe ii;chem;Iron(II);;Fe II;;55.847;0;1;mg/L;False
+turb (field);chem;Turbidity (Field);;Turb (Field);;0;0;1;FNU;False
+do (field %);chem;Dissolved Oxygen % Saturation;7782-44-7;DO (FIELD %);;31.998;0;1;;False
+sr;chem;Strontium;7440-24-6;Sr;Sr;87.62;0;1;μg/L;False
+br;chem;Bromide;24959-67-9;Br;Br;79.904;-1;1;mg/L;False
+tds (calc);chem;Total dissolved solids, calculated;;TDS (calc);;0;0;1;mg/L;False
+sar;chem;Sodium adsorption ratio, reported;;SAR;;0;0;1;;False
+co2;chem;Carbon dioxide;124-38-9;CO2;;44.01;0;1;mg/L;False
+tds180;chem;Total solids dried at 180;;TDS180;;0;0;1;mg/L;False
+nitrate-n;chem;Nitrate as N;;Nitrate-N;N;14.012;0;1;mg/L;False
+nh3;chem;Ammonia as NH3;;NH3;NH4;18.039;0;1;mg/L;False
+li;chem;Lithium;7439-93-2;Li;Li;6.941;1;1;mg/L;False
+18o;chem;Delta oxygen-18/oxygen-16;;18O;;0;0;1;‰;False
+barometric pressure;chem;Barometric pressure;;Barometric pressure;;0;0;1;atm;False
+p_;chem;Phosphorus;7723-14-0;P;P;30.974;0;1;mg/L;False
+organic n;chem;Organic nitrogen;;Organic N;N;14.012;0;1;mg/L;False
+total hardness calc;chem;Total hardness, calculated;;Total hardness calc;CaCO3;100.0872;2;1;mg/L;False
+temp air;chem;Temperature air;;Temp air;;0;0;1;°C;False
+i_;chem;Iodide;20461-54-5;I;I;126.9;0;1;mg/L;False
+ammonia + organic nitrogen;chem;Ammonia plus organic nitrogen;;Ammonia + organic nitrogen;N;14.012;0;1;mg/L;False
+total n;chem;Total nitrogen;;Total N;;0;0;1;mg/L;False
+u;chem;Uranium;7440-61-1;U;;238.03;0;1;μg/L;False
+discharge;chem;Discharge;;Discharge;;0;0;1;m3/s;False
+sb;chem;Antimony;7440-36-0;Sb;;121.76;0;1;;False
+p_tot;chem;Phosphorus unfiltered;7723-14-0;P (tot);;30.974;0;1;;False
+noncarbonate hardness;chem;Noncarbonate hardness;;Noncarbonate hardness;CaCO3;100.0872;0;1;mg/L;False
+ammonia_org_n;chem;Ammonia plus organic nitrogen;;Ammonia + org N;N;14.012;0;1;mg/L;False
+total_n;chem;Total nitrogen unfiltered;;Total N (tot);N;14.012;0;1;mg/L;False
+organic_n;chem;Organic nitrogen, unfiltered;;Organic N (tot);N;14.012;0;1;mg/L;False
+wl depth;chem;Depth to water level;;WL depth;;0;0;1;m;False
+tribromomethane;chem;Tribromomethane;75-25-2;Tribromomethane;CHBr3;252.731;0;1;mg/L;False
+tetrachloroethene;chem;Tetrachloroethene;127-18-4;Tetrachloroethene;C2Cl4;165.834;0;1;μg/L;False
+benzene;chem;Benzene;71-43-2;Benzene;C6H6;78.1134;0;1;μg/L;False
+trichloroethene;chem;Trichloroethene;79-01-6;Trichloroethene;C2HCl3;131.3889;0;1;μg/L;False
+flowrate;chem;Flowrate, instant, l/mn;;Flowrate;;0;0;1;L/s;False
+ra-226;chem;Radium 226;13982-63-3;Ra-226;Ra;0;0;1;mg/L;False
+gross beta;chem;Gross beta radioactivity;;Gross beta;;0;0;1;pCi/L;False
+alpha act;chem;Alpha radioactivity;;Alpha act;;0;0;1;pCi/L;False
+sar_calc;chem;Sodium Adsorption Ratio, calculated;;SAR calculated;CaCO3;0;0;1;;False
+rn-222;chem;Radon 222;14859-67-7;Rn-222;;0;0;1;pCi/L;False
+ion_balance_error;chem;Anions Cations balance error;;Ion balance error;;0;0;1;%;False

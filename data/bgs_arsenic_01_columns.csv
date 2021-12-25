@@ -13,24 +13,9 @@ THANA;Not used;st;cat
 UNION;Not used;st;cat
 MOUZA;Not used;st;cat
 GEOCODE;Not used;st;None
-As;as;pa;None
-Al;Not used;pa;None
-B_;Not used;pa;None
-Ba;Not used;pa;None
-Ca;ca;pa;None
-Co;Not used;pa;None
-Cr;Not used;pa;None
-Cu;Not used;pa;None
-Fe;fe;pa;None
-K_;k;pa;None
-Li;Not used;pa;None
-Mg;mg;pa;None
-Mn;Not used;pa;None
-Na;na;pa;None
-P_;Not used;pa;None
-Si;Not used;pa;None
-SO4;so4;pa;None
-Sr;Not used;pa;None
-V_;Not used;pa;None
-Zn;Not used;pa;None
+parameter;Detection limit;md;None
+value;Numeric value;md;None
+num_value;<DL qualifier + numeric value;md;None
+unit;Unit;md;None
+detection_limit;Detection limit;md;None
 

@@ -1,42 +1,21 @@
-parameter;casnr;key
-As;7440-38-2;as
-Al;7429-90-5;Not used
-B_;7440-42-8;Not used
-Ba;7440-39-3;Not used
-Ca;7440-70-2;ca
-Co;7440-48-4;Not used
-Cr;7440-47-3;Not used
-Cu;7440-50-8;Not used
-Fe;7439-89-6;fe
-K_;7440-09-7;k
-Li;7439-93-2;Not used
-Mg;7439-95-4;mg
-Mn;7439-96-5;Not used
-Na;7440-23-5;na
-P_;7723-14-0;Not used
-Si;7440-21-3;Not used
-SO4;14808-79-8;so4
-Sr;7440-24-6;Not used
-V_;7440-62-2;Not used
-Zn;7440-66-6;Not used
-column_name;casnr;key
-As;7440-38-2;as
-Al;7429-90-5;Not used
-B_;7440-42-8;Not used
-Ba;7440-39-3;Not used
-Ca;7440-70-2;ca
-Co;7440-48-4;Not used
-Cr;7440-47-3;Not used
-Cu;7440-50-8;Not used
-Fe;7439-89-6;fe
-K_;7440-09-7;k
-Li;7439-93-2;Not used
-Mg;7439-95-4;mg
-Mn;7439-96-5;Not used
-Na;7440-23-5;na
-P_;7723-14-0;Not used
-Si;7440-21-3;Not used
-SO4;14808-79-8;so4
-Sr;7440-24-6;Not used
-V_;7440-62-2;Not used
-Zn;7440-66-6;Not used
+parameter;casnr;key;unit
+As;7440-38-2;as;μg/L
+Al;7429-90-5;al;μg/L
+B_;7440-42-8;b_;μg/L
+Ba;7440-39-3;ba;μg/L
+Ca;7440-70-2;ca;mg/L
+Co;7440-48-4;co;μg/L
+Cr;7440-47-3;cr;μg/L
+Cu;7440-50-8;cu;μg/L
+Fe;7439-89-6;fe;μg/L
+K_;7440-09-7;k_;μg/L
+Li;7439-93-2;li;μg/L
+Mg;7439-95-4;mg;mg/L
+Mn;7439-96-5;mn;μg/L
+Na;7440-23-5;na;μg/L
+P_;7723-14-0;p_;μg/L
+Si;7440-21-3;si;μg/L
+SO4;14808-79-8;so4;μg/L
+Sr;7440-24-6;sr;μg/L
+V_;7440-62-2;v_;μg/L
+Zn;7440-66-6;zn;μg/L
