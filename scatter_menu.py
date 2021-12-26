@@ -2,38 +2,19 @@ from bokeh.models.tools import SaveTool
 import pandas as pd
 import numpy as np
 import streamlit as st
-import itertools  
 from st_aggrid import AgGrid
 from scatter import Scatter
 import helper
 import const as cn
 
-gap = 20
-figure_padding_left = 10
-figure_padding_right = 10
-figure_padding_top = 10
-figure_padding_bottom = 20
-marker_size = 10
-tick_len = 2
-grid_color = 'silver'
-line_color = 'black'
-grid_line_pattern = 'dashed'
-tick_label_font_size = 8
-axis_title_font_size = 10
-grid_line_pattern = 'dotted'
-legend_location = "top_right"
-arrow_length = 5
-arrow_size = 5
-image_file_format = 'png'
-
-group_by_options = ['None', 'Station', 'Year']
-legend_options = ['None', 'Station', 'Year']
+group_by_options = [None, 'Station', 'Year']
+legend_options = [None, 'Station', 'Year']
 
 
 def get_parameters(df:pd.DataFrame):
     parameter_options = list(st.session_state.config._parameter_map_df.index)
     parameter_options.sort()
-    x_par = st.sidebar.selectbox('X-parameter', parameter_options, 0)
+    x_par = st.sidebar.selectbox('X-Parameter', parameter_options, 0)
     y_par = st.sidebar.selectbox('Y-Parameter', parameter_options, 1)
     
     return x_par, y_par
@@ -52,12 +33,11 @@ def get_filter(df:pd.DataFrame):
     return df, sel_stations
 
 
-def show_scatter_plot(data, cfg, sel_stations):
-
-    def get_settings(cfg):
+def show_scatter_plot():
+    def get_settings(cfg, data):
         with st.sidebar.expander('⚙️ Settings'):
             cfg['group_plot_by'] = st.selectbox('Group plots by', group_by_options)
-            cfg['legend'] = st.selectbox('Legend', legend_options)
+            cfg['group_legend_by'] = st.selectbox('Legend', legend_options)
             cfg['symbol_size'] = st.number_input('Marker size', min_value=1, max_value=50, step=1, value=int(cfg['symbol_size']))
             cfg['fill_alpha'] = st.number_input('Marker alpha', min_value=0.0,max_value=1.0,step=0.1, value=cfg['fill_alpha'])
 
@@ -79,19 +59,33 @@ def show_scatter_plot(data, cfg, sel_stations):
             cfg['show_corr_line'] = st.checkbox("Show correlation", False)
         return cfg
 
-    cfg = get_settings(cfg)
-    df = st.session_state.config.row_sample_df
+    data = st.session_state.config.row_sample_df
+    cfg = cn.scatter_cfg
+    cfg['x_par'], cfg['y_par'] = get_parameters(data)
+    data, sel_stations = get_filter(data)
+    cfg = get_settings(cfg, data)
     if cfg['group_plot_by'] == group_by_options[0]:
-        scatter = Scatter(df, cfg)
+        scatter = Scatter(data, cfg)
         plot, df_stats = scatter.get_plot()
         st.bokeh_chart(plot)
         if cfg['show_corr_line']:
             with st.expander("Stats"):
                 AgGrid(df_stats)
     else:
-        # e.g. group by station: 1 plot per station
-        pass
-
+        if len(sel_stations) == 0:
+            sel_stations = data[st.session_state.config.station_col].unique()
+        for station in sel_stations:
+            df = data[data[st.session_state.config.station_col] == station]
+            if len(df)>0:
+                cfg['plot_title'] = station
+                scatter = Scatter(df, cfg)
+                plot, df_stats = scatter.get_plot()
+                st.bokeh_chart(plot)
+                if cfg['show_corr_line']:
+                    with st.expander("Stats"):
+                        AgGrid(df_stats)
+            else:
+                st.info(f"No records found for station {station}")
 def show_settings():
     def show_axis_settings():
         
@@ -125,13 +119,9 @@ def verify_columns(data, cfg):
 def show_menu(texts_dict:dict):
     menu_options = texts_dict["menu_options"]
     menu_action = st.sidebar.selectbox('Options', menu_options)
-    data = st.session_state.config.row_sample_df
-    cfg = cn.scatter_cfg
-    cfg['x_par'], cfg['y_par'] = get_parameters(data)
-    data, sel_stations = get_filter(data)
-    # data = verify_columns(data, cfg)
+    
     if menu_action == menu_options[0]:
-        show_scatter_plot(data, cfg, sel_stations)
+        show_scatter_plot()
     elif menu_action == menu_options[1]:
         pass # correlation matrix to come
     

@@ -7,6 +7,7 @@ import uuid
 from streamlit_lottie import st_lottie
 import requests
 
+import helper
 import const as cn
 import info
 import sample
@@ -18,10 +19,11 @@ from config import Config
 import guideline
 import calculator
 
-__version__ = '0.0.1' 
+
+__version__ = '0.0.2' 
 __author__ = 'Lukas Calmbach'
 __author_email__ = 'lcalmbach@gmail.com'
-VERSION_DATE = '2021-11-03'
+VERSION_DATE = '2021-12-26'
 APP_NAME = 'Fontus'
 APP_EMOJI = '🌎'
 GIT_REPO = 'https://github.com/lcalmbach/st-piper'
@@ -56,6 +58,12 @@ def get_lottie():
         st.write(r.status)
         ok = False
     return r,ok
+
+def show_help_icon():
+    help_html = "<a href = '{}' alt='Girl in a jacket' target='_blank'><img src='data:image/png;base64,{}' class='img-fluid' style='width:45px;height:45px;'></a><br>".format(
+        cn.HELP_SITE, helper.get_base64_encoded_image("./help1600.png")
+    )
+    st.sidebar.markdown(help_html, unsafe_allow_html=True)
 
 def main():
     def show_app_name():
@@ -105,6 +113,7 @@ def main():
         calculator.show_menu(texts_dict['calculator'])
     else:
         st.write(menu_action)
+    show_help_icon()
     st.sidebar.markdown(APP_INFO, unsafe_allow_html=True)
 
 

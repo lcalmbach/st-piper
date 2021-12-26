@@ -45,11 +45,16 @@ map_cfg = {
 scatter_cfg = {
     'x_par': '',
     'y_par': '',
+    'plot_title': '',
     'colors': ['blue', 'orange', 'green'],
     'fill_alpha': 0.8,
     'symbol_size': 10,
     'plot_width': DEFAULT_PLOT_WIDTH_L,
     'plot_height': DEFAULT_PLOT_HEIGHT_L,
+    'group_plot_by': None,
+    'group_legend_by': None,
+    'legend': None,
+    'show_corr_line': False
 }
 
 histogram_cfg = {
@@ -159,3 +164,4 @@ GUIDELINE_ROOT = './guidelines/'
 COMPARE_OPTIONS = ['>', '<', '=', '>=', '<=', '!=']
 SPLASH_IMAGE = "water-2630618-wide.jpg"
 LOTTIE_URL = 'https://assets2.lottiefiles.com/packages/lf20_B6txqj.json'
+HELP_SITE = 'https://lcalmbach.github.io/fontus-help/'

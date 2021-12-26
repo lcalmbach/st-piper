@@ -6,7 +6,8 @@ import numpy as np
 from datetime import datetime
 import const as cn
 from bokeh import palettes
-import itertools  
+import itertools
+import base64
 
 def flash_text(text:str,type:str):
     placeholder = st.empty()
@@ -20,7 +21,6 @@ def get_random_filename(prefix: str, ext: str):
     folder = 'images'
     suffix = datetime.now().strftime("%y%m%d_%H%M%S")
     return f"./{folder}/{prefix}-{suffix}.{ext}"
-    
 
 def isnan(text):
     return text != text
@@ -219,3 +219,10 @@ def aggregate_data(source: pd.DataFrame, group_cols: list, val_col: str, agg_fun
     df.reset_index(inplace=True)
     df = df.dropna()
     return df
+
+def get_base64_encoded_image(image_path):
+    """
+    returns bytecode for an image file
+    """
+    with open(image_path, "rb") as img_file:
+        return base64.b64encode(img_file.read()).decode('utf-8')
