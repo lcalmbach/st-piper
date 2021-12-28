@@ -58,6 +58,9 @@ class Scatter:
                     plot_width = self.cfg['plot_width'], 
                     plot_height = self.cfg['plot_height'],
                     title = self.cfg['plot_title'])
+            if self.cfg['axis_auto'] == False:
+                plot.x_range = Range1d(float(self.cfg['x_axis_min']), float(self.cfg['x_axis_max']))
+                plot.y_range = Range1d(float(self.cfg['y_axis_min']), float(self.cfg['y_axis_max']))
             plot.title.align = "center"
             plot.yaxis.axis_label = f"{self.cfg['y_par']} (mg/L)"
             plot.xaxis.axis_label = f"{self.cfg['x_par']} (mg/L)"
@@ -101,5 +104,30 @@ class Scatter:
             sign_result = 'Correlation is statisticically significant' if corr_coeff[3] < p_val else 'Correlation is not statisticically significant'
             df_stats = pd.DataFrame({'stat': ['Pearson correlation coefficient', 'associated two-tailed p-value',f'Intepretation (p = {p_val})','Y-axis intercept','slope'],
                                'value': [corr_coeff[2], corr_coeff[3], sign_result, corr_coeff[0], corr_coeff[1]]})
+
+        if self.cfg['show_h_line']:
+            if plot.x_range.end == None:
+                x = [self.data[self.cfg['x_par']].min(), self.data[self.cfg['x_par']].max()]
+            else:
+                x = [plot.x_range.start, plot.x_range.end]
+            y = [self.cfg['h_line'], self.cfg['h_line']]
+            plot.line(x, 
+                      y, 
+                      line_width=int(self.cfg['h_line_width']), 
+                      color=self.cfg['h_line_color'], 
+                      line_dash=self.cfg['h_line_pattern'])
+        
+        if self.cfg['show_v_line']:
+            if plot.y_range.end == None:
+                y = [self.data[self.cfg['y_par']].min(), self.data[self.cfg['y_par']].max()]
+            else:
+                x = [plot.x_range.start, plot.x_range.end]
+            x = [self.cfg['v_line'], self.cfg['v_line']]
+            plot.line(x, 
+                      y, 
+                      line_width=int(self.cfg['v_line_width']), 
+                      color=self.cfg['v_line_color'], 
+                      line_dash=self.cfg['v_line_pattern'])
+
 
         return plot, df_stats

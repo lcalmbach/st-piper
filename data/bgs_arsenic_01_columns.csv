@@ -1,5 +1,5 @@
 column_name;key;type;data_type
-SAMPLE_ID;Station identifier;st;None
+STATION_ID;Station identifier;st;None
 SAMPLE_FIELD_ID;Sample identifier;sa;None
 SAMPLE_DATE;Sampling date;sa;None
 LAT_DEG;Latitude;st;None
@@ -13,9 +13,4 @@ THANA;Not used;st;cat
 UNION;Not used;st;cat
 MOUZA;Not used;st;cat
 GEOCODE;Not used;st;None
-parameter;Detection limit;md;None
-value;Numeric value;md;None
-num_value;<DL qualifier + numeric value;md;None
-unit;Unit;md;None
-detection_limit;Detection limit;md;None
 

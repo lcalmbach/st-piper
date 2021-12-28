@@ -74,14 +74,17 @@
         }
     },
     "guideline": {
-        "menu_options": ["Show guidelines"],
+        "menu_options": ["Show guidelines", "Upload guideline"],
         "info": "Select the guidelines you wish to include in the result output table. The last column in this table shows the respective guidline name. If you select a parameter from your dataset, the guideline table will be filtered for this parameter if the parameter exists in the guideline and if the dataset and guideline parameters can be matched. Fontes tries to match parameter names and CASNr. CASNr is the more reliable matchmaker, however not all parameters have a CASNr (e.g. pH, Beta particles, Temperature) and your dataset may not include a CASNr."
     },
     "calculator": {
         "menu_options": ["Molar weight transformation", "SAR calculator"],
-        "Molar weight transformation": "This options allows to convert chemical elements expressed as mg/L of a chemical species as mg/L of a different species. Example: nitrogen is present in water as mostly nitrata (NO3) and therefore concentraations are also expressed as NO3 mg/L. Sometimes Nitrate is also expressed as N mg/L. continue this...",
+        "Molar weight transformation": "This options allows to convert chemical elements expressed as mg/L of a chemical species as mg/L of a different species. Example: the dominant aqueous species for dissolved nitrogen is NO3 and commonly concentrations for Nitrate in water are therefore expressed as NO3 mg/L. Sometimes Nitrate is also expressed as N mg/L. 50 mg of Nitrate espressed as NO3 correspond to 11.2 mg/L Nitrate as N. When comparing nitrate concentrations from different laboratories or to a guideline value, it is important to verify, if all values are expressed as the same species and if not, are converted using the tool below.",
         "SAR calculator": "The Sodium adsorption ratio (SAR) is an irrigation water quality parameter used in the management of sodium-affected soils. It is an indicator of the suitability of water for use in agricultural irrigation, as determined from the concentrations of the main alkaline and earth alkaline cations present in the water. [more](https://en.wikipedia.org/wiki/Sodium_adsorption_ratio)"
 
+    },
+    "login": {
+        "menu_options": ["login", "account"]
     }
 
 }

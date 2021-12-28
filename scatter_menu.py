@@ -1,8 +1,9 @@
-from bokeh.models.tools import SaveTool
+import streamlit as st
 import pandas as pd
 import numpy as np
-import streamlit as st
 from st_aggrid import AgGrid
+from bokeh.core.enums import MarkerType, LineDash
+
 from scatter import Scatter
 import helper
 import const as cn
@@ -20,14 +21,12 @@ def get_parameters(df:pd.DataFrame):
     return x_par, y_par
 
 def get_filter(df:pd.DataFrame):
-    x = st.session_state.config.key2col()
-    station_col = x[cn.STATION_IDENTIFIER_COL]
     with st.sidebar.expander('🔎 Filter'):
-        lst_stations = list(df[station_col].unique())
-        sel_stations = st.multiselect('Station', lst_stations, lst_stations[0])
+        lst_stations = list(df[st.session_state.config.station_col].unique())
+        sel_stations = st.multiselect('Station', lst_stations)
     
     if len(sel_stations)> 0:
-        df = df[df[station_col].isin(sel_stations)]
+        df = df[df[st.session_state.config.station_col].isin(sel_stations)]
     else:
         sel_stations = lst_stations
     return df, sel_stations
@@ -41,8 +40,8 @@ def show_scatter_plot():
             cfg['symbol_size'] = st.number_input('Marker size', min_value=1, max_value=50, step=1, value=int(cfg['symbol_size']))
             cfg['fill_alpha'] = st.number_input('Marker alpha', min_value=0.0,max_value=1.0,step=0.1, value=cfg['fill_alpha'])
 
-            cfg['y_axis_auto'] = st.checkbox("Y axis auto", True)
-            if not cfg['y_axis_auto']:
+            cfg['axis_auto'] = st.checkbox("axis auto", True)
+            if not cfg['axis_auto']:
                 cols = st.columns(2)
                 with cols[0]:
                     cfg['x_axis_min'] = st.text_input("X-axis Start")
@@ -50,12 +49,18 @@ def show_scatter_plot():
                 with cols[1]:
                     cfg['x_axis_max'] = st.text_input("X-axis End")
                     cfg['y_axis_max'] = st.text_input("Y-axis End")
+            
             cfg['show_h_line'] = st.checkbox("Show horizontal line", False)
             if cfg['show_h_line']:
-                cfg['h_line'] = st.number_input("y axis intercept", 0)
+                cfg['h_line'] = st.number_input("Y axis intercept", 0)
+                cfg['h_line_pattern'] = st.selectbox("Horizontal line pattern", list(LineDash), key='h_line_pattern')
+                cfg['h_line_color'] = st.color_picker("Horizontal line color", cfg['h_line_color'])
+
             cfg['show_v_line'] = st.checkbox("Show vertical line", False)
             if cfg['show_v_line']:
-                cfg['v_line'] = st.number_input("x axis intercept", 0)
+                cfg['v_line'] = st.number_input("X axis intercept", 0)
+                cfg['v_line_pattern'] = st.selectbox("Vertical line pattern", list(LineDash), key='v_line_pattern')
+                cfg['v_line_color'] = st.color_picker("Vertical line color", cfg['v_line_color'])
             cfg['show_corr_line'] = st.checkbox("Show correlation", False)
         return cfg
 

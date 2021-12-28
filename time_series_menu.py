@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import streamlit as st
 from bokeh.io import export_png, export_svgs
-from bokeh.plotting import figure
+from bokeh.core.enums import MarkerType, LineDash
 
 import helper
 import const as cn

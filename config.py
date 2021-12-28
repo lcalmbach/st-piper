@@ -12,6 +12,7 @@ import helper
 
 class Config():
     def __init__(self):
+        self.logged_in_user = None
         self.title = ''
         self.encoding = cn.ENCODINGS[0]
         self.separator = cn.SEPARATORS[0]
@@ -132,8 +133,8 @@ class Config():
         return fields
 
     @property
-    def parameter_cols(self) -> list:
-        return list(self.coltype2dict(cn.CTYPE_PARAMETER).keys())
+    def parameter_list(self) -> list:
+        return list(self.parameter_map_df.index)
 
     @property
     def date_col(self) -> str:
@@ -157,6 +158,11 @@ class Config():
                 and self.par_is_mapped(cn.PAR_SULFATE)
                 and self.par_is_mapped(cn.PAR_CHLORIDE))
         return ok
+    
+    @property
+    def logged_in_user_name(self):
+        return 'please login'if self.logged_in_user == None else self.logged_in_user
+
 
 # functions----------------------------------------------------------------------------------------
     def check_columns(self):
@@ -216,13 +222,16 @@ class Config():
             """
 
             def melt_data():
-                parameter_cols = self.parameter_cols
-                self._row_value_df = pd.melt(frame=self.row_sample_df,
+                df = pd.melt(frame=self.row_sample_df,
                                              id_vars=self.sample_station_cols, 
-                                             value_vars = parameter_cols,
+                                             value_vars = self.parameter_list,
                                              var_name = 'parameter',
                                              value_name = 'value'
                 )
+                df['unit'] = ''
+                df['detection_limit'] = 0
+                return df
+
 
             # read the data
             folder = Path("data/")
@@ -232,22 +241,23 @@ class Config():
                                             sep=ds['separator'], 
                                             encoding=ds['encoding'])
             # read column mapping
-            df = pd.read_csv(folder / ds['column_map'], sep=';')
-            df = df[df['type']]
-            self.column_map_df = df
-            # read parameter mapping
-            df = pd.read_csv(folder / ds['parameter_map'], sep=';')
+            self.column_map_df = pd.read_csv(folder / ds['column_map'], sep=';')
+            df = self.column_map_df
+            df = df[df['type'].isin(['sa', 'st'])]
             df.loc['parameter'] = [cn.PARAMETER_COL, cn.CTYPE_VAL_META, None]
             df.loc['value'] = [cn.ND_QUAL_VALUE_COL, cn.CTYPE_VAL_META, None]
             df.loc['num_value'] = [cn.VALUE_NUM_COL, cn.CTYPE_VAL_META, None]
             df.loc['unit'] = [cn.UNIT_COL, cn.CTYPE_VAL_META, None]
             df.loc['detection_limit'] = [cn.DL_COL, cn.CTYPE_VAL_META, None]
-            self.parameter_map_df = df
-
-            melt_data()
+            self.column_map_df = df.reset_index()
+            
+            # read parameter mapping
+            self.parameter_map_df = pd.read_csv(folder / ds['parameter_map'], sep=';')
+            self._row_value_df = melt_data()
             # trigger set column map, since only now all information is available. this triggers the formatting of essential 
-            # columsn such as date
+            # columns such as date
             self.check_columns()
+            
 
         def init_data():
             self._row_value_df = pd.DataFrame()
@@ -288,14 +298,14 @@ class Config():
         return ok
 
     def get_menu_options(self):
-        result = {0: "Info", 1: "Select or load dataset"}
+        result = {0: "Info", 1: "Select or load dataset", 2: "Login"}
         if self.columns_are_mapped() and self.parameters_are_mapped():
-            result[2] = "Samples"
-            result[3] = "Stations"
-            result[4] = "Parameters"
-            result[5] = "Plots"
-            result[6] = "Guidelines"
-            result[7] = "Calculators"
+            result[3] = "Samples"
+            result[4] = "Stations"
+            result[5] = "Parameters"
+            result[6] = "Plots"
+            result[7] = "Guidelines"
+            result[8] = "Calculators"
         return result
     
     def get_plots_options(self):
@@ -537,5 +547,8 @@ class Config():
             except:
                 print('error occurred when retriebving the guideline list')
         return result
+
+    def is_logged_in(self):
+        return self.logged_in_user != None
 
 

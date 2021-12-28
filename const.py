@@ -13,12 +13,14 @@ DEFAULT_PLOT_WIDTH_S = 350
 DEFAULT_PLOT_HEIGHT_S = 250
 
 piper_cfg = {
+    'plot_width': DEFAULT_PLOT_WIDTH_L,
     'gap': 20,
     'figure_padding_left': 10,
     'figure_padding_right': 10,
     'figure_padding_top': 10,
     'figure_padding_bottom': 20,
-    'marker_size': 10,
+    'symbol_size': 10,
+    'fill_alpha': 0.8,
     'tick_len': 2,
     'grid_color': 'silver',
     'line_color': 'black',
@@ -54,7 +56,18 @@ scatter_cfg = {
     'group_plot_by': None,
     'group_legend_by': None,
     'legend': None,
-    'show_corr_line': False
+    'show_corr_line': False,
+    'axis_auto': True,
+    'x_axis_min': 0,
+    'x_axis_max': 0,
+    'y_axis_min': 0,
+    'y_axis_max': 0,
+    'h_line_pattern': 'solid',
+    'v_line_pattern': 'solid',
+    'h_line_color': '#FF0000',
+    'v_line_color': '#FF0000',
+    'h_line_width': 2,
+    'v_line_width': 2
 }
 
 histogram_cfg = {
@@ -165,3 +178,4 @@ COMPARE_OPTIONS = ['>', '<', '=', '>=', '<=', '!=']
 SPLASH_IMAGE = "water-2630618-wide.jpg"
 LOTTIE_URL = 'https://assets2.lottiefiles.com/packages/lf20_B6txqj.json'
 HELP_SITE = 'https://lcalmbach.github.io/fontus-help/'
+MAX_LEGEND_ITEMS = 20

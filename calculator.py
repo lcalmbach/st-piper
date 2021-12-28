@@ -18,10 +18,10 @@ def transform_molar_weight():
         st.markdown(text)
         cols = st.columns(2)
         with cols[0]:
-            st.text_input(f"Formula weight ({fmw_in})", Substance.from_formula(formula_in).mass)
+            st.text_input(f"Formula weight ({formula_in})", Substance.from_formula(formula_in).mass)
             st.text_input("factor", factor)
         with cols[1]:
-            st.text_input(f"Formula weight ({fmw_out})", Substance.from_formula(formula_out).mass)
+            st.text_input(f"Formula weight ({formula_out})", Substance.from_formula(formula_out).mass)
             st.text_input("Result", result)
 
     with st.form("my_form"):

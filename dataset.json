@@ -17,7 +17,7 @@
         "description": "Arsenic contamination has been identified any many regions araound the world and Bangladesh is the most infamous example. The British Geological Society has conducted a study in 1993 and all the data is published on the [BGS website](https://www2.bgs.ac.uk/groundwater/health/arsenic/Bangladesh/data.html). The survey of water wells (n=3534) from throughout Banladesh has shown that water from 46% of shallow tubewells (<150m deep) exceed the WHO standard for arsenic in drinking water (10 ug/). According to the BGS [study report](https://www2.bgs.ac.uk/downloads/start.cfm?id=2221), the arsenic is of natural origin and is beieved to be released to groundwater as  result of a number of mechanisms which are poorly understood. The release appears to be associated with the burial of fresh sediment and the generation of aneobic (oxygen deficient) groundwater condition.",
         "image": "https://www2.bgs.ac.uk/groundwater/images/Smoothed11.png",
         "row_is": "sample",
-        "date_format":"%d/%m/%Y",
+        "date_format":"%Y/%m/%d",
         "separator": ",",
         "encoding": "utf8",
         "data": "bgs_arsenic_01.csv",

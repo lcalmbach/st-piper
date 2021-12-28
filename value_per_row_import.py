@@ -63,9 +63,9 @@ class Value_per_row_import():
         with cols[0]:
             id = cn.SEPARATORS.index(st.session_state.config.separator)
             st.session_state.config.separator = st.selectbox('Separator character', options=cn.SEPARATORS, index=id)
-            gl_list = st.session_state.config.guideline_list()
-            id = 0
-            st.session_state.config.guidelines[0]['name'] = st.selectbox('Standard/Guideline', options=gl_list, index=id)
+            # gl_list = st.session_state.config.guideline_list()
+            # id = 0
+            # st.session_state.config.guidelines[0]['name'] = st.selectbox('Standard/Guideline', options=gl_list, index=id)
         with cols[1]:
             id = cn.ENCODINGS.index(st.session_state.config.encoding)
             st.session_state.config.encoding = st.selectbox('File encoding', options=cn.ENCODINGS, index=id)
@@ -147,7 +147,7 @@ class Value_per_row_import():
                         df.loc[idx]['type'] = cn.CTYPE_SAMPLE
                     
                     if df.loc[idx]['key'] == cn.SAMPLE_DATE_COL and not st.session_state.config.date_is_formatted:
-                        st.session_state.config.format_date_column()
+                        st.session_state.config.format_date_column(df)
 
                     
     def identify_values_meta_data_columns(self, show_only_matched)->list:
