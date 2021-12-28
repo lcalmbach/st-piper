@@ -20,10 +20,10 @@ import guideline
 import calculator
 import login
 
-__version__ = '0.0.2' 
+__version__ = '0.0.3' 
 __author__ = 'Lukas Calmbach'
 __author_email__ = 'lcalmbach@gmail.com'
-VERSION_DATE = '2021-12-26'
+VERSION_DATE = '2021-12-28'
 APP_NAME = 'Fontus'
 APP_EMOJI = '🌎'
 GIT_REPO = 'https://github.com/lcalmbach/st-piper'
