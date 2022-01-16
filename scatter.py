@@ -91,7 +91,7 @@ class Scatter:
             for item in item_list:
                 df = self.data[self.data[st.session_state.config.station_col] == item]
                 clr = next(color)
-                m =plot.scatter(x=self.cfg['x_par'], y=self.cfg['y_par'], source=df, marker=cn.MARKERS[0], 
+                m = plot.scatter(x=self.cfg['x_par'], y=self.cfg['y_par'], source=df, marker=cn.MARKERS[0], 
                 size = self.cfg['symbol_size'], color=clr, alpha=self.cfg['fill_alpha'])
                 legend_items.append((item,[m]))
 

@@ -1,0 +1,79 @@
+{
+    "must_be_logged_in": {
+        "en": "You must be logged in to use this menu option",
+        "de": "You must be logged in to use this menu option",
+        "zh": "You must be logged in to use this menu option"
+    },
+
+    "menu_options": {
+        "en": ["Create new project","Update project", "Load custom dataset (rows = samples)", "Samples", "Stations", "Parameters"],
+        "de": ["Create new project","Update project", "Load custom dataset (rows = samples)", "Samples", "Stations", "Parameters"],
+        "zh": ["Create new project","Update project", "Load custom dataset (rows = samples)", "Samples", "Stations", "Parameters"]
+    },
+
+    "project_name": {
+        "en": "Project name",
+        "de": "Projekt Name",
+        "zh": "Project name"
+    },
+    "description": {
+        "en": "Description",
+        "de": "Description",
+        "zh": "Description"
+    },
+    "value_per_row": {
+        "en": "1 value per row",
+        "de": "1 value per row",
+        "zh": "1 value per row"
+    },
+    "sample": {
+        "en": "1 sample per row",
+        "de": "1 sample per row",
+        "zh": "1 sample per row"
+    },
+    "data_format": {
+        "en": "Data format",
+        "de": "Data format",
+        "zh": "Data format"
+    },
+    "file_encoding": {
+        "en": "File encoding",
+        "de": "File encoding",
+        "zh": "File encoding"
+    },
+    "dataset_is_public": {
+        "en": "Dataset is public",
+        "de": "Dataset is public",
+        "zh": "Dataset is public"
+    },
+    "dataset_is_public_help": {
+        "en": "If checked, this dataset can be viewed by all other users",
+        "de": "If checked, this dataset can be viewed by all other users",
+        "zh": "If checked, this dataset can be viewed by all other users"
+    },
+    "save": {
+        "en": "Save",
+        "de": "Save",
+        "zh": "Save"
+    },
+    "cancel": {
+        "en": "Cancel",
+        "de": "Cancel",
+        "zh": "Cancel"
+    },
+    "project_created_confirmation": {
+        "en": "Project has been created",
+        "de": "Project has been created",
+        "zh": "Project has been created"
+    },
+    "options": {
+        "en": "Options",
+        "de": "Options",
+        "zh": "Options"
+    },
+    "date_field_format": {
+        "en": "Date field format",
+        "de": "Date field format",
+        "zh": "Date field format"
+    }
+}

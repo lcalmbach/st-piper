@@ -1,17 +1,20 @@
-import const as cn
+import streamlit as st
 import pandas as pd
 import numpy as np
 import uuid
-import streamlit as st
 import json
 from pathlib import Path
+import random
 
+import const as cn
 from metadata import Metadata
 from value_per_row_import import Value_per_row_import
 import helper
 
 class Config():
     def __init__(self):
+        self.language = 'en'
+        self.session_key = uuid.uuid1()
         self.logged_in_user = None
         self.title = ''
         self.encoding = cn.ENCODINGS[0]
@@ -27,16 +30,13 @@ class Config():
         self.file_format = ''
         self.date_is_formatted = False
         self.params_params_valid = False
-        self.sessionid = uuid.uuid1()
         self.lookup_parameters = Metadata() # metadata for a wide selection of parameters 
         self.piper_config = cn.piper_cfg
         self.time_stations_config = {}
         self.time_parameters_config = {}
         self.map_parameters_config = {}
-        with open('dataset.json') as f:
-            self.datasets = json.load(f)
-        self._current_dataset = {}
-        self.current_dataset = self.datasets[0]
+        self.projects_df = self.get_projects()
+        self.current_project = random.choice(list(self.projects_df.index))
         self.unit_row = 1
         
 
@@ -49,13 +49,19 @@ class Config():
 
 # properties---------------------------------------------------------------------------------------
     @property
-    def current_dataset(self):
-        return self._current_dataset
+    def project_dict(self)->dict:
+        df = pd.DataFrame(self.projects_df)
+        dic = dict(zip(list(df.index), df['name']))
+        return dic
+
+    @property
+    def current_project(self):
+        return self._current_project
        
-    @current_dataset.setter
-    def current_dataset(self, df):
-        self._current_dataset = df
-        self.load_data(self.current_dataset)
+    @current_project.setter
+    def current_project(self, id:int):
+        self._current_project = self.projects_df.loc[id]
+        self.load_data(self.current_project)
 
     @property
     def row_sample_df(self):
@@ -165,6 +171,13 @@ class Config():
 
 
 # functions----------------------------------------------------------------------------------------
+    def get_projects(self)->pd.DataFrame:
+        ds = []
+        with open(cn.PROJECT_FILE) as f:
+            ds = json.load(f)
+        ds = pd.DataFrame(ds).set_index('id')
+        return ds
+        
     def check_columns(self):
         """
         sets the format of matched columns such as date column. This is only possible if the sample_row df 
@@ -185,6 +198,9 @@ class Config():
         if len(self._row_sample_df) > 0:
             if self.col_is_mapped(cn.SAMPLE_DATE_COL):
                 self.format_date_column(self._row_sample_df)
+                if not 'year' in self._row_sample_df.columns:
+                    self._row_sample_df['year'] = self._row_sample_df[cn.SAMPLE_DATE_COL].dt.year
+                    st.write(self._row_sample_df)
             if self.col_is_mapped(cn.LATITUDE_COL):
                 self._row_sample_df[self.latitude_col] = self._row_sample_df[self.latitude_col].astype(float)
                 self._row_sample_df[self.longitude_col] = self._row_sample_df[self.longitude_col].astype(float)
@@ -296,17 +312,6 @@ class Config():
             ok = False
             err_msg = 'Column map could not be initialized'
         return ok
-
-    def get_menu_options(self):
-        result = {0: "Info", 1: "Select or load dataset", 2: "Login"}
-        if self.columns_are_mapped() and self.parameters_are_mapped():
-            result[3] = "Samples"
-            result[4] = "Stations"
-            result[5] = "Parameters"
-            result[6] = "Plots"
-            result[7] = "Guidelines"
-            result[8] = "Calculators"
-        return result
     
     def get_plots_options(self):
         result = []

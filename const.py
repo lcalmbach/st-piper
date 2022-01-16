@@ -12,6 +12,15 @@ DEFAULT_PLOT_HEIGHT_M = 400
 DEFAULT_PLOT_WIDTH_S = 350
 DEFAULT_PLOT_HEIGHT_S = 250
 
+TEXT_FILE_TEMPLATE = 'texts_{}.json'
+
+# https://www.loc.gov/standards/iso639-2/php/code_list.php
+LANGAUAGE_DICT = {
+    'en': 'English',
+    'de': 'German',
+    'zh': '中文'
+}
+
 piper_cfg = {
     'plot_width': DEFAULT_PLOT_WIDTH_L,
     'gap': 20,
@@ -70,10 +79,50 @@ scatter_cfg = {
     'v_line_width': 2
 }
 
+schoeller_cfg = {
+    'show_symbols': False,
+    'y_auto': False,
+    'y_axis_min': 0.01,
+    'y_axis_max': 100,
+    'alkaline_par': 'na+k',
+    'plot_title': '',
+    'colors': ['blue', 'orange', 'green'],
+    'fill_alpha': 0.8,
+    'symbol_size': 10,
+    'plot_width': DEFAULT_PLOT_WIDTH_L,
+    'plot_height': DEFAULT_PLOT_HEIGHT_L,
+    'group_plot_by': None,
+    'group_legend_by': None,
+    'legend': None,
+    'show_corr_line': False,
+
+}
+
+boxplot_cfg = {
+    'box_group_variable': 'Station',
+    'box_group_values':[],
+    'y_auto': False,
+    'y_axis_min': 0.01,
+    'y_axis_max': 100,
+    'alkaline_par': 'na+k',
+    'plot_title': '',
+    'colors': ['blue', 'orange', 'green'],
+    'fill_alpha': 0.8,
+    'symbol_size': 10,
+    'plot_width': DEFAULT_PLOT_WIDTH_L,
+    'plot_height': DEFAULT_PLOT_HEIGHT_L,
+    'group_plot_by': None,
+    'group_legend_by': None,
+    'legend': None,
+    'show_corr_line': False,
+
+}
+
+
 histogram_cfg = {
     'par': '',
     'bin_width': '',
-    'colors': ['#00FFAA', 'orange', 'green'],
+    'fill_color': '#B0E0E6',
     'fill_alpha': 0.8,
     'y_max': 0,
     'plot_height': DEFAULT_PLOT_HEIGHT_L,
@@ -173,6 +222,7 @@ DATE_FORMAT_LIST = ['%Y-%m-%d', '%Y/%m/%d', '%d.%m.%Y']
 ENCODINGS = ['utf8', 'cp1252']
 DEFAULT_GUIDELINE = 'epa_mcl'
 GUIDELINE_ROOT = './guidelines/'
+PROJECT_FILE = 'projects.json'
 
 COMPARE_OPTIONS = ['>', '<', '=', '>=', '<=', '!=']
 SPLASH_IMAGE = "water-2630618-wide.jpg"

@@ -34,7 +34,7 @@ class Histogram:
         p.quad(bottom=0, top=bins['counts'], 
                fill_alpha=self.cfg['fill_alpha'],
                left=bins['left'], right=bins['right'],
-               fill_color=self.cfg['colors'][0], 
+               fill_color=self.cfg['fill_color'], 
                line_color='grey')
         return p
 

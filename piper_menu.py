@@ -13,23 +13,34 @@ import helper
 import const as cn
 from piper import Piper
 
-image_file_format = 'png'
-group_by_options = [None, 'Station']
-legend_options = [None, 'Station']
+lang = {}
+
+group_by_options = []
+legend_options = []
+
+def set_lang():
+    global group_by_options
+    global legend_options
+    global lang
+    
+    lang = helper.get_language(__name__, st.session_state.config.language)
+    group_by_options = [None, lang['station']]
+    legend_options = [None, lang['station']]
+
 
 def get_cfg(cfg: dict, df: pd.DataFrame):
-    with st.sidebar.expander("⚙️ Settings"):
-        cfg['group_plot_by'] = st.selectbox('Group plots by', group_by_options)
-        cfg['group_legend_by'] = st.selectbox('Legend', legend_options)
-        cfg['symbol_size'] = st.number_input('Marker size', min_value=1, max_value=50, step=1, value=int(cfg['symbol_size']))
-        cfg['fill_alpha'] = st.number_input('Marker alpha', min_value=0.0,max_value=1.0,step=0.1, value=cfg['fill_alpha'])
-        cfg['plot_width'] = st.number_input('Plot width', cfg['plot_width'])
+    with st.sidebar.expander(lang['settings']):
+        cfg['group_plot_by'] = st.selectbox(label=lang['group_plots_by'], options=group_by_options)
+        cfg['group_legend_by'] = st.selectbox(label=lang['legend'], options=legend_options)
+        cfg['symbol_size'] = st.number_input(label=lang['symbol_size'], min_value=1, max_value=50, step=1, value=int(cfg['symbol_size']))
+        cfg['fill_alpha'] = st.number_input(label=lang['symbol_alpha'], min_value=0.0,max_value=1.0,step=0.1, value=cfg['fill_alpha'])
+        cfg['plot_width'] = st.number_input(label=lang['plot_width'], value=cfg['plot_width'])
     return cfg
 
 def show_filter(df: pd.DataFrame):
-    with st.sidebar.expander("🔎 Filter"):
+    with st.sidebar.expander(lang['filter']):
         station_options = st.session_state.config.get_station_list()
-        sel_stations = st.multiselect("Stations", station_options)
+        sel_stations = st.multiselect(label=lang['stations'], options=station_options)
         if len(sel_stations)>0:
             df = df[(df[st.session_state.config.station_col].isin(sel_stations)) & (df['alk_pct'] > 0)]
         #if st.session_state.config.col_is_mapped(cn.SAMPLE_DATE_COL):
@@ -55,9 +66,10 @@ def show_piper_plot():
     st.bokeh_chart(p)
     #helper.show_save_file_button(p, 'key1')
 
-def show_menu(texts_dict:dict):
-    menu_options = texts_dict["menu_options"]
-    menu_action = st.sidebar.selectbox('Options', menu_options)
+def show_menu():
+    set_lang()
+    menu_options = lang["menu_options"]
+    menu_action = st.sidebar.selectbox(label=lang['options'], options=menu_options)
     
     if menu_action == menu_options[0]:
         show_piper_plot()

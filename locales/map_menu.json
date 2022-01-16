@@ -1,0 +1,166 @@
+{
+    "menu_options": {
+        "en": ["Station locations", "Parameters"],
+        "de": ["Station locations", "Parameters"],
+        "zh": ["Station locations", "Parameters"]
+    },
+    "options": {
+        "en": "Options",
+        "de": "Options",
+        "zh": "Options"
+    },
+    "group_by_options": {
+        "en": [null, "Station", "Year"],
+        "de": [null, "Station", "Year"],
+        "zh": [null, "Station", "Year"]
+    },
+    "legend_options": {
+        "en": [null, "Station", "Year"],
+        "de": [null, "Station", "Year"],
+        "zh": [null, "Station", "Year"]
+    },
+    "filter": {
+        "en": "Filter",
+        "de": "Filter",
+        "zh": "Filter"
+    },
+    "parameter": {
+        "en": "Parameter",
+        "de": "Parameter",
+        "zh": "Parameter"
+    },
+    "station": {
+        "en": "Station",
+        "de": "Station",
+        "zh": "Station"
+    },
+    "stations": {
+        "en": "Stations",
+        "de": "Stationen",
+        "zh": "Station"
+    },
+    "settings": {
+        "en": "⚙️ Settings",
+        "de": "⚙️ Settings",
+        "zh": "⚙️ Settings"
+    },
+    "legend": {
+        "en": "Legend",
+        "de": "Legend",
+        "zh": "Legend"
+    },
+    "marker_size": {
+        "en": "Marker size",
+        "de": "Marker size",
+        "zh": "Marker size"
+    },
+    "marker_alpha": {
+        "en": "Marker alpha",
+        "de": "Marker alpha",
+        "zh": "Marker alpha"
+    },
+    "group_plots_by": {
+        "en": "Group plots by",
+        "de": "Group plots by",
+        "zh": "Group plots by"
+    },
+    "from_date": {
+        "en": "From date",
+        "de": "From date",
+        "zh": "From date"
+    },
+    "to_date": {
+        "en": "To date",
+        "de": "To date",
+        "zh": "To date"
+    },
+    "value": {
+        "en": "Value",
+        "de": "Wert",
+        "zh": "To date"
+    },
+    "min": {
+        "en": "Minimum",
+        "de": "Minimum",
+        "zh": "Minimum"
+    },
+    "max": {
+        "en": "Maximum",
+        "de": "Maximum",
+        "zh": "Maximum"
+    },
+    "mean": {
+        "en": "Mean",
+        "de": "Mean",
+        "zh": "Mean"
+    },
+    "filter_fields": {
+        "en": ["station","date", "value"],
+        "de": ["station","date", "value"],
+        "zh": ["station","date", "value"]
+    },
+    "date": {
+        "en": "Date",
+        "de": "Date",
+        "zh": "Date"
+    },
+    "prop_color_size": {
+        "en": "Proportinal color or size",
+        "de": "Proportinal color or size",
+        "zh": "Proportinal color or size"
+    },
+    "color": {
+        "en": "Color",
+        "de": "Color",
+        "zh": "Color"
+    },
+    "size": {
+        "en": "Size",
+        "de": "Size",
+        "zh": "Size"
+    },
+    "aggregation_station_help": {
+        "en": "Aggregation for stations with multiple values",
+        "de": "Aggregation for stations with multiple values",
+        "zh": "Aggregation for stations with multiple values"
+    },
+    "aggregation": {
+        "en": "Aggregation",
+        "de": "Aggregation",
+        "zh": "Aggregation"
+    },
+    "max_value": {
+        "en": "Maximum value",
+        "de": "Maximum value",
+        "zh": "Maximum value"
+    },"max_radius": {
+        "en": "Maximum radius",
+        "de": "Maximum radius",
+        "zh": "Maximum radius"
+    },
+    "min_radius": {
+        "en": "Minimum radius",
+        "de": "Minimum radius",
+        "zh": "Minimum radius"
+    },
+    "color_palette": {
+        "en": "Color palette",
+        "de": "Color palette",
+        "zh": "Color palette"
+    },
+    "symbol_size": {
+        "en": "Symbol size",
+        "de": "Symbol size",
+        "zh": "Symbol size"
+    },
+    "symbol_alpha": {
+        "en": "Symbol alpha",
+        "de": "Symbol alpha",
+        "zh": "Symbol alpha"
+    },
+    "plot_width": {
+        "en": "Plot_width",
+        "de": "Plot_width",
+        "zh": "Plot_width"
+    }
+}

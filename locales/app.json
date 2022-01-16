@@ -1,0 +1,38 @@
+{
+    
+    "menu_options": {
+        "en": ["Home", "Projects", "Plots","Analyses","Calculators"],
+        "de": ["Home", "Projekte", "Grafiken","Analysen","Rechner"],
+        "zh": ["家", "專案", "情節","分析","計算機"]
+    },
+    "app_created_by": {
+        "en": "App created by",
+        "de": "Software von",
+        "zh": "創建者的應用"
+    },
+    "version": {
+        "en": "Version",
+        "de": "Version",
+        "zh": "版本"
+    },
+    "logged_in_user": {
+        "en": "Logged in user",
+        "de": "Aktueller Benutzer",
+        "zh": "登錄使用者"
+    },
+    "menu": {
+        "en": "Menu", 
+        "de": "Menu", 
+        "zh": "功能表"
+    },
+    "options": {
+        "en": "Options", 
+        "de": "Optionen", 
+        "zh": "選項"
+    },
+    "please_login": {
+        "en": "please login",
+        "de": "Bitte einloggen",
+        "zh": "請登錄"
+    }
+}

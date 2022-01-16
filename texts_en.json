@@ -1,0 +1,101 @@
+{
+    "general": {
+        "menu": "Menu", 
+        "options": "Options",
+        "must_be_logged_in": "You must be logged in to use this menu option"
+    },
+    
+    "main": {
+        "menu_options": ["Home", "Projects", "Plots","Analyses","Calculators"],
+        "app_created_by": "App created by",
+        "version": "Version",
+        "logged_in_user": "Logged in user",
+        "menu": "Menu", 
+        "options": "Options", 
+        "please_login": "please login"
+    },
+
+    "home": {
+        "menu_options": ["Projects", "Login", "Account"],
+        "intro_text": "### Introduction\n\nFontus is a data-exploration software specifically designed to be used with water quality datasets. It offers most of the numeric and graphics features required for the interpretation of hydrochemical data. You may explore one of the preconfigured datasets to familiarize yourself with the software.\n\nIf you want to upload your own dataset, you must have an account and be logged in. Create an account for free using the `Create Account option` in the sidebar menu or login now to use all program options.",
+        "select_language": "Select your language"
+    },
+
+    "data": {
+        "menu_options": ["Create new project","Update project", "Load custom dataset (rows = samples)", "Samples", "Stations", "Parameters"],
+        "value_per_row_import": {
+            "steps": ["Load data", "Match station columns", "Match sample columns", "Match metadata columns", "Match parameters", "Pivot table"],
+            "step0_title":"Load Data From File",
+            "step0_info":"Define the column separator character of the csv file to be uploaded and upload the file.",
+            "step1_title":"Identify Station Columns",
+            "step1_info":"In the imported columns below, identify all columns that belong the the sampling station. A column representing a unique station name or code is mandatory. Also coordinates (lat/long in decimal degrees) are mandatory, if maps should be created. Additional non mandatory parmeters may include: station-type, geology, nearest location, landuse etc. Use the *Show only matched parameters* checkbox option to limit the list of parameters to the ones that have been mapped.",
+            "step2_title":"Identify Sample Columns",
+            "step2_info":"In the imported columns below, identify all columns that belong the the sample event. Sample columns must include a sampling date column. Other sample parameters may include a unique sample code, sampling personel information, comments related to the sampling event etc. If a dataset includes only one sample per station and no field related to the sampling event, check the *no columns related to the sample* checkbox.  Use the *Show only matched parameters* checkbox option to limit the list of parameters to the ones that have been mapped.",
+            "step3_title":"Identify Value Metadata Columns",
+            "step3_info":"The format *One value per row* requires a minimum of the following columns:\n\n-parameter name\n\n-value column\n\nHowever the advantage of this format is, that it may contain additional parameters such as a parameter code (often the CAS-Nr), the detection limit, the unit of measurment, the method of measurement, information on whether the parameter was detected etc.\n\nIn the columns below, columns that hold such information must be marked with the respective information.",
+            "step4_title":"Match Parameters",
+            "step4_info":"Fontus has metadata for a number of frequently used parameters, found in groundwater data. The metadata includes information required for certain analyses, for example the piper diagram needs know which parameters correspond to the main cations and anions and converts the concentration typically given in mg/L to meq/L%. Fontus assumes that every expression appearin in the parameter column is a parameter, however in order to use features such as conversion to mmmol/L or meq/L, these parameters must be matched to the Fontus internal parameters.",
+            "step5_title":"Pivot Table",
+            "step5_info":"For some plots, data must be present in the one sample per row format, the current format is one sample per value and must be pivoted."
+        },
+        "sample_per_row_import": {
+            "steps": ["Load data", "Match station columns", "Match sample columns", "Match metadata columns", "Match parameters", "Pivot table"],
+            "step0_title":"Load Data From File",
+            "step0_info":"Define the column separator character of the csv file to be uploaded and upload the file.",
+            "step1_title":"Identify Station Columns",
+            "step1_info":"In the imported columns below, identify all columns that belong the the sampling station. A column representing a unique station name or code is mandatory. Also coordinates (lat/long in decimal degrees) are mandatory, if maps should be created. Additional non mandatory parmeters may include: station-type, geology, nearest location, landuse etc. Use the *Show only matched parameters* checkbox option to limit the list of parameters to the ones that have been mapped.",
+            "step2_title":"Identify Sample Columns",
+            "step2_info":"In the imported columns below, identify all columns that belong the the sample event. Sample columns must include a sampling date column. Other sample parameters may include a unique sample code, sampling personel information, comments related to the sampling event etc. If a dataset includes only one sample per station and no field related to the sampling event, check the *no columns related to the sample* checkbox.  Use the *Show only matched parameters* checkbox option to limit the list of parameters to the ones that have been mapped.",
+            "step3_title":"Identify Value Metadata Columns",
+            "step3_info":"The format *One value per row* requires a minimum of the following columns:\n\n-parameter name\n\n-value column\n\nHowever the advantage of this format is, that it may contain additional parameters such as a parameter code (often the CAS-Nr), the detection limit, the unit of measurment, the method of measurement, information on whether the parameter was detected etc.\n\nIn the columns below, columns that hold such information must be marked with the respective information.",
+            "step4_title":"Match Parameters",
+            "step4_info":"Fontus has metadata for a number of frequently used parameters, found in groundwater data. The metadata includes information required for certain analyses, for example the piper diagram needs know which parameters correspond to the main cations and anions and converts the concentration typically given in mg/L to meq/L%. Fontus assumes that every expression appearin in the parameter column is a parameter, however in order to use features such as conversion to mmmol/L or meq/L, these parameters must be matched to the Fontus internal parameters.",
+            "step5_title":"Pivot Table",
+            "step5_info":"For some plots, data must be present in the one sample per row format, the current format is one sample per value and must be pivoted."
+        },
+        "samples": {
+            "menu_options": ["Summary", "Sample detail"]
+        },
+        "stations": {
+            "menu_options": ["Show stations"]
+        },
+        "parameter": {
+            "menu_options": ["Summary", "Measured value detail"]
+        }
+    },
+    "plots": {
+        "menu_options": ["Time series", "Scatter", "Maps", "Piper", "Schoeller", "Boxplot"],
+        "piper":{
+            "menu_options": ["Show Piper plot", "Plot settings"]
+        },
+        "map":{
+            "menu_options": ["Station locations", "Parameters"]
+        },
+        "scatter":{
+            "menu_options": ["Show scatter plot"]
+        },
+        "boxplot":{
+            "menu_options": ["Show boxplot"]
+        },
+        "histogram":{
+            "menu_options": ["Show histogram"]
+        },
+        "time_series":{
+            "menu_options": ["Time series (multiple parameters)", "Time series (multiple stations)", "Plot settings"]
+        }
+    },
+    "guideline": {
+        "menu_options": ["Show guidelines", "Upload guideline"],
+        "info": "Select the guidelines you wish to include in the result output table. The last column in this table shows the respective guidline name. If you select a parameter from your dataset, the guideline table will be filtered for this parameter if the parameter exists in the guideline and if the dataset and guideline parameters can be matched. Fontes tries to match parameter names and CASNr. CASNr is the more reliable matchmaker, however not all parameters have a CASNr (e.g. pH, Beta particles, Temperature) and your dataset may not include a CASNr."
+    },
+    "calculator": {
+        "menu_options": ["Molar weight transformation", "SAR calculator"],
+        "Molar weight transformation": "This options allows to convert chemical elements expressed as mg/L of a chemical species as mg/L of a different species. Example: the dominant aqueous species for dissolved nitrogen is NO3 and commonly concentrations for Nitrate in water are therefore expressed as NO3 mg/L. Sometimes Nitrate is also expressed as N mg/L. 50 mg of Nitrate espressed as NO3 correspond to 11.2 mg/L Nitrate as N. When comparing nitrate concentrations from different laboratories or to a guideline value, it is important to verify, if all values are expressed as the same species and if not, are converted using the tool below.",
+        "SAR calculator": "The Sodium adsorption ratio (SAR) is an irrigation water quality parameter used in the management of sodium-affected soils. It is an indicator of the suitability of water for use in agricultural irrigation, as determined from the concentrations of the main alkaline and earth alkaline cations present in the water. [more](https://en.wikipedia.org/wiki/Sodium_adsorption_ratio)"
+
+    },
+    "login": {
+        "menu_options": ["login", "account"]
+    }
+
+}

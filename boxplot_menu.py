@@ -1,59 +1,108 @@
-from bokeh.models.tools import SaveTool
+import streamlit as st
 import pandas as pd
 import numpy as np
-import streamlit as st
-import xyzservices.providers as xyz
-from bokeh.io import export_png, export_svgs
-from bokeh.plotting import figure
-from bokeh.tile_providers import CARTODBPOSITRON, get_provider
-from bokeh.models import ColumnDataSource, GMapOptions, HoverTool
+from st_aggrid import AgGrid
 from bokeh.core.enums import MarkerType, LineDash
-from bokeh.models import ColumnDataSource, GMapOptions
-from bokeh.plotting import gmap
-from streamlit.delta_generator import MAX_DELTA_BYTES
-from datetime import datetime, timedelta
 
+from boxplot import Boxplot
 import helper
 import const as cn
-from map import Map
+from helper import get_language, flash_text, bokeh_palettes, show_save_file_button
 
 
-def filter_stations(df: pd.DataFrame):
-    with st.sidebar.expander("🔎 Filter"):
-        station_col = st.session_state.config.key2col()[cn.STATION_IDENTIFIER_COL]
-        station_options = st.session_state.config.get_station_list()
-        sel_stations = st.sidebar.multiselect("Stations", station_options)
-        if st.session_state.config.col_is_mapped(cn.SAMPLE_DATE_COL):
-            date_col = st.session_state.config.key2col()[cn.SAMPLE_DATE_COL]
-            df[date_col] = pd.to_datetime(df[date_col], format='%d.%m.%Y', errors='ignore')
-            min_date = df[date_col].min().to_pydatetime().date()
-            max_date = df[date_col].max().to_pydatetime().date()
-            
-            from_date = st.sidebar.date_input("From date", min_date)
-            to_date = st.sidebar.date_input("From date", max_date)
-            if (from_date != min_date) or (to_date != max_date):
-                df = df[(df[date_col].dt.date >= from_date) & (df[date_col].dt.date < to_date)]
-        if len(sel_stations)>0:
-            df = df[df[station_col].isin(sel_stations)]
-        return df
+lang = {}
+def set_lang():
+    global lang
+    lang = get_language(__name__, st.session_state.config.language)
 
-def get_locations_map_cfg():
-    return cn.map_cfg
 
-def show_locations_map():
-    df = filter_stations(st.session_state.config.row_sample_df)
-    cfg = get_locations_map_cfg()
-    map = Map(df, cfg)
-    p = map.get_map()
-    st.bokeh_chart(p)
-    helper.show_save_file_button(p)
+def get_parameters(df:pd.DataFrame):
+    parameter_options = list(st.session_state.config._parameter_map_df.index)
+    parameter_options.sort()
+    x_par = st.sidebar.selectbox(label=lang['x_parameter'], options=parameter_options, index=0)
+    y_par = st.sidebar.selectbox(label=lang['y_parameter'], options=parameter_options, index=1)
+    return x_par, y_par
 
-def show_menu(texts_dict:dict):
-    menu_options = texts_dict["menu_options"]
-    menu_action = st.sidebar.selectbox('Options', menu_options)
+
+def get_filter(df:pd.DataFrame):
+    with st.sidebar.expander(lang['filter']):
+        lst_stations = list(df[st.session_state.config.station_col].unique())
+        sel_stations = st.multiselect(label=lang['station'], options=lst_stations)
     
-    if menu_action == menu_options[0]:
-        show_locations_map()
-        
-    
+    if len(sel_stations)> 0:
+        df = df[df[st.session_state.config.station_col].isin(sel_stations)]
+    else:
+        sel_stations = lst_stations
+    return df, sel_stations
 
+
+def get_boxes(cfg):
+    result = []
+    group_options = []
+
+    if cfg['box_group_variable'].lower() == 'parameter':
+        group_options = list(st.session_state.config.parameter_map_df.index)
+        def_values = group_options[:5]
+        result = st.multiselect(label=lang['parameters'], options=group_options, default=def_values)
+    elif cfg['box_group_variable'].lower() == 'station':
+        group_options = st.session_state.config.get_station_list()
+        def_values = group_options[:5]
+        result = st.sidebar.multiselect(label=cfg['box_group_variable'], options=group_options, default=def_values)
+    
+    elif cfg['box_group_variable'].lower() == 'year':
+        group_options = helper.get_distinct_values(st.session_state.config.self._row_sample_df, 'year')
+        def_values = group_options[:5]
+        result = st.multiselect(label=cfg['box_group_variable'], options=group_options, default=def_values)
+    return result
+
+
+def  get_parameter(cfg):
+    group_options = list(st.session_state.config.parameter_map_df.index)
+    result = st.sidebar.selectbox(label=lang['parameter'], options=group_options, index=0)
+    return result
+
+def get_group_parameter(cfg):
+    result = []
+    result = st.sidebar.selectbox(label=lang['group_by_options_label'], options=lang['group_by_options'], index=0)
+    return result
+
+def show_box_plot():
+    def get_settings(cfg, data):
+        # field used to aggregate values for boxes 
+        cfg['box_group_parameter'] = get_group_parameter(cfg)
+        # selection of values to be shown as boxes 
+        cfg['box_group_values'] = get_boxes(cfg)
+        if cfg['box_group_parameter'].lower() != 'parameter':
+            cfg['y_parameter'] = get_parameter(cfg)
+
+        with st.sidebar.expander(lang['settings']):
+            cfg['y_auto'] = st.checkbox(label=lang['y_auto'], value=True)
+            if not cfg['y_auto']:
+                cols = st.columns(2)
+                with cols[0]:
+                    cfg['y_axis_min'] = st.text_input(label=lang['y_axis_min'], value = cfg['y_axis_min'] )
+                with cols[1]:
+                    cfg['y_axis_max'] = st.text_input(label=lang['y_axis_max'], value = cfg['y_axis_max'] )
+        return cfg
+
+    data = st.session_state.config.row_value_df
+    cfg = cn.boxplot_cfg
+    data, sel_stations = get_filter(data)
+    cfg = get_settings(cfg, data)
+    data = data[(data[st.session_state.config.station_col].isin(cfg['box_group_values'])) & (data[st.session_state.config.parameter_col] == cfg['y_parameter'])]
+    data = data[[st.session_state.config.station_col, st.session_state.config.value_col]]
+    data.columns =  ['group','score']
+
+    boxplot = Boxplot(data, cfg)
+    plot = boxplot.get_plot()
+    st.bokeh_chart(plot)
+    
+def show_menu():
+    set_lang()
+    MENU_OPTIONS = lang["menu_options"]
+    menu_action = st.sidebar.selectbox(label=lang['options'], options=MENU_OPTIONS)
+
+    if menu_action == MENU_OPTIONS[0]:
+        show_box_plot()
+    elif menu_action == MENU_OPTIONS[1]:
+        pass # correlation matrix to come

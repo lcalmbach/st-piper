@@ -8,10 +8,16 @@ import const as cn
 from bokeh import palettes
 import itertools
 import base64
+import json
 
-def flash_text(text:str,type:str):
+def flash_text(text:str, type:str):
     placeholder = st.empty()
-    placeholder.info(text)
+    if type=='info':
+        placeholder.info(text)
+    elif type=='success':
+        placeholder.success(text)
+    elif type=='warning':
+        placeholder.warning(text)
     time.sleep(5)
     placeholder.write("")
 
@@ -226,3 +232,27 @@ def get_base64_encoded_image(image_path):
     """
     with open(image_path, "rb") as img_file:
         return base64.b64encode(img_file.read()).decode('utf-8')
+
+
+def get_language(py_file: str, lang:str):
+    """ 
+    extract the language dict from a json file located in ./locales folder
+    """
+
+    lang_file = f"./locales/{py_file}.json"
+    with open(lang_file, 'r', encoding='utf8') as myfile:
+        data=myfile.read()
+    lang_df = pd.DataFrame(json.loads(data)).reset_index()
+    land_df = lang_df[lang_df['index']==lang]
+    lang_dict = land_df.iloc[0].to_dict()
+    return lang_dict
+
+def merge_sentences(sentences: list):
+    text = ''
+    for item in sentences:
+        text+=item
+    return text
+
+def get_distinct_values(df: pd.DataFrame, field:str):
+    result = df[field].unique()
+

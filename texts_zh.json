@@ -1,14 +1,26 @@
 {
-    "main": {
+    "general": {
+        "menu": "Menu", 
+        "options": "Options"
     },
 
-    "info": {
-        "intro_text": "### Introduction\n\nFontus is a data-exploration software specifically designed to be used with water quality datasets. You may explore one of the preconfigured datasets to familiarize yourself with the software. You may also upload your own dataset, explore it and save and download the generated plots. When using your own dataset, a important step in order to take advante of all Fontus features is to map some important parameters. For example, in order to draw maps or time series diagrams, the columns latitude/longitude or the column holding the sampling date must be specified.",
-        "no_data_text": "Currently no data has been loaded. Please use the `Select or load dataset` menu option to load a sample dataset or to upload your own data."
+    "main": {
+        "menu_options": ["家", "项目", "情节","析","计算器"],
+        "app_created_by": "App created by",
+        "version": "Version",
+        "logged_in_user": "Logged in user",
+        "menu": "Menu", 
+        "options": "Options", 
+        "please_login": "please login"
+    },
+
+    "home": {
+        "menu_options": ["项目", "登录", "帐户"],
+        "intro_text": "### 绍介\n\nFontus为一款数探软件,专以水质数集. 供说水化学数、图形功能。 君可览其一预配之数集,以习该软件.\n\n若欲上传数集,则必有帐户而录之。 用侧栏菜单中 `创建帐户选项`免费创建帐户,或即录以尽用诸程选项."
     },
 
     "data": {
-        "menu_options": ["Load sample dataset","Load custom dataset (rows = values)", "Load custom dataset (rows = samples)"],
+        "menu_options": ["Load sample dataset","Load custom dataset (rows = values)", "Load custom dataset (rows = samples)", "Samples", "Stations", "Parameters"],
         "value_per_row_import": {
             "steps": ["Load data", "Match station columns", "Match sample columns", "Match metadata columns", "Match parameters", "Pivot table"],
             "step0_title":"Load Data From File",
@@ -38,19 +50,16 @@
             "step4_info":"Fontus has metadata for a number of frequently used parameters, found in groundwater data. The metadata includes information required for certain analyses, for example the piper diagram needs know which parameters correspond to the main cations and anions and converts the concentration typically given in mg/L to meq/L%. Fontus assumes that every expression appearin in the parameter column is a parameter, however in order to use features such as conversion to mmmol/L or meq/L, these parameters must be matched to the Fontus internal parameters.",
             "step5_title":"Pivot Table",
             "step5_info":"For some plots, data must be present in the one sample per row format, the current format is one sample per value and must be pivoted."
+        },
+        "samples": {
+            "menu_options": ["Summary", "Sample detail"]
+        },
+        "stations": {
+            "menu_options": ["Show stations"]
+        },
+        "parameter": {
+            "menu_options": ["Summary", "Measured value detail"]
         }
-    },
-
-    
-    
-    "samples": {
-        "menu_options": ["Summary", "Sample detail"]
-    },
-    "stations": {
-        "menu_options": ["Show stations"]
-    },
-    "parameter": {
-        "menu_options": ["Summary", "Measured value detail"]
     },
     "plots": {
         "menu_options": ["Time series", "Scatter", "Maps", "Piper", "Schoeller", "Boxplot"],

@@ -10,14 +10,16 @@ from bokeh.models import ColumnDataSource, Legend, Range1d, LabelSet, Label, Hov
 from bokeh.transform import factor_mark, factor_cmap
 from bokeh import palettes
 import itertools
-import helper
+
+from helper import get_language
 import const as cn
 
-
+    
 class Time_series:
     def __init__(self, df: pd.DataFrame, cfg: dict):
         self.data = df
         self.cfg = cfg
+        self.lang = get_language(__name__, st.session_state.config.language)
 
     def add_markers(self, p, df):
         p.circle(x="x", y="y", size=self.cfg['symbol_size'], fill_color=self.cfg['fill_colors'][0], fill_alpha=self.cfg['fill_alpha'], source=df)
