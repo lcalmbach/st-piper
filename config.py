@@ -10,12 +10,15 @@ import const as cn
 from metadata import Metadata
 from value_per_row_import import Value_per_row_import
 import helper
+import database as db
 
 class Config():
     def __init__(self):
         self.language = 'en'
         self.session_key = uuid.uuid1()
         self.logged_in_user = None
+        self.pwd = None
+        self.conn = db.get_connection()
         self.title = ''
         self.encoding = cn.ENCODINGS[0]
         self.separator = cn.SEPARATORS[0]

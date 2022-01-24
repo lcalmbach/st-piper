@@ -3,22 +3,15 @@ import numpy as np
 import streamlit as st
 from bokeh.models.tools import SaveTool
 from bokeh.plotting import figure
-from bokeh.models import Legend, Range1d, LabelSet, Label, HoverTool, Arrow, NormalHead, OpenHead, VeeHead, Span, Grid, Line, LinearAxis, Plot, SingleIntervalTicker, FuncTickFormatter
-import itertools
-from bokeh.palettes import Category10
+# from bokeh.models import Legend, Range1d, LabelSet, Label, HoverTool, Arrow, NormalHead, OpenHead, VeeHead, Span, Grid, Line, LinearAxis, Plot, SingleIntervalTicker, FuncTickFormatter
 
 import helper
 import const as cn
 
 class Boxplot:
     def __init__(self, df: pd.DataFrame, cfg: dict):
-        self.identifier_col = 'Probennummer'
         self.cfg = cfg
         self.data = df
-        
-    def color_gen(self):
-        yield from itertools.cycle(Category10[10])
-
 
     def get_plot(self):
         df = self.data
@@ -71,6 +64,6 @@ class Boxplot:
         p.ygrid.grid_line_color = "lightgrey"
         p.ygrid.grid_line_dash = "dashed"
         p.grid.grid_line_width = 1
-        p.xaxis.major_label_text_font_size="16px"
+        p.xaxis.major_label_text_font_size="12px"
 
         return p

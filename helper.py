@@ -9,6 +9,9 @@ from bokeh import palettes
 import itertools
 import base64
 import json
+import smtplib, ssl
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 def flash_text(text:str, type:str):
     placeholder = st.empty()
@@ -256,3 +259,25 @@ def merge_sentences(sentences: list):
 def get_distinct_values(df: pd.DataFrame, field:str):
     result = df[field].unique()
 
+
+class Mail:
+    def __init__(self):
+        self.port = 465
+        self.smtp_server_domain_name = "smtp.gmail.com"
+        self.sender_mail = "lcalmbach@gmail.com"
+        self.password = "d@d63 rocks!"
+
+    def send(self, emails, subject, content):
+        ssl_context = ssl.create_default_context()
+        service =  smtplib.SMTP_SSL(self.smtp_server_domain_name, self.port, context=ssl_context)
+        service.login(self.sender_mail, self.password)
+        msg = MIMEMultipart('html')
+        msg['Subject'] = subject
+        msg['From'] = self.sender_mail
+        msg['To'] = emails[0]
+        html = MIMEText(content, 'html')
+        msg.attach(html)
+        result = service.sendmail(from_addr=self.sender_mail, to_addrs=emails, msg=msg.as_string())
+        service.quit()
+        return result
+    

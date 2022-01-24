@@ -13,8 +13,6 @@ import home
 import projects
 import plots
 from config import Config
-import guideline
-import calculator
 
 __version__ = '0.0.3' 
 __author__ = 'Lukas Calmbach'
@@ -28,11 +26,6 @@ GIT_REPO = 'https://github.com/lcalmbach/st-piper'
 # -----------------------------------------------------------------------------
 # functions
 # -----------------------------------------------------------------------------
-def get_data():
-    df = pd.read_csv(cn.TEST_DATASET, sep=';')
-    df = data.calc_meql(df)
-    df = data.calc_pct(df)
-    return df
 
 @st.experimental_memo()
 def get_lottie():
@@ -101,7 +94,6 @@ def main():
     MENU_OPTIONS = lang['menu_options']
     show_app_name()    
     menu_action = st.sidebar.selectbox(lang['menu'], MENU_OPTIONS)
-    
     #login_request = show_login_button()
     #if login_request:
     #    login_result = login.show_form()
