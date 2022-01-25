@@ -50,7 +50,7 @@ def execute_non_query(cmd: str, conn: object):
     except Exception as ex:
         ok = False
         err_msg = ''# ex.message
-    print(ok)
+    print(cmd)
     return ok, err_msg
 
 # @st.cache(suppress_st_warning=True)
@@ -58,12 +58,13 @@ def execute_query(query, conn):
     """Executes a query and returns a dataframe with the results"""
     ok=False
     err_msg=''
+    print(query)
     try:
         ok = True
         result = pd.read_sql_query(query, conn)
     except Exception as ex:
-        err_msg = ''#ex.message
-        result = None
+        err_msg = ex.message
+        result = pd.DataFrame()
     return result, ok, err_msg
 
 

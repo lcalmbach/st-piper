@@ -7,7 +7,9 @@ import database as db
 from query import qry 
 from passlib.context import CryptContext
 import random
+from config import User
 
+import const
 import helper
 
 lang = {}
@@ -99,6 +101,7 @@ def show_login_form():
                     df, ok, message = db.execute_query(sql, st.session_state.config.conn)
                     if ok:
                         st.session_state.config.logged_in_user = df.iloc[0]['email']
+                        st.session_state.config.language = df.iloc[0]['language']
                         message = f"Welcome back {df.iloc[0]['first_name']}"
                 else:
                     ok=False
@@ -112,13 +115,45 @@ def show_login_form():
     if action in ('login','reset'):
         if ok:
             helper.flash_text(message, 'success')
+            st.experimental_rerun()
         else:
             helper.flash_text(message, 'warning')
+        
     
 
 
 def show_account_form():
-    st.info("Not implemented yet")
+    message = ''
+    ok = False
+    with st.form('login_form'):
+        email = st.session_state.config.logged_in_user
+        user = User(email)
+        user.first_name = st.text_input('First name', user.first_name)
+        user.last_name = st.text_input('Last name', user.last_name)
+        user.company = st.text_input('Company', user.company)
+        country_dict = helper.get_country_list()
+        id = list(country_dict.keys()).index(user.country)
+        user.country = st.selectbox('Country', 
+            options = list(country_dict.keys()),
+            format_func=lambda x: country_dict[x],
+            index = id)
+        id = list(const.LANGAUAGE_DICT.keys()).index(user.language)
+        user.language = st.selectbox('Language', 
+            options = list(const.LANGAUAGE_DICT.keys()),
+            format_func=lambda x: const.LANGAUAGE_DICT[x],
+            index = id)
+
+        if st.form_submit_button(label='Save'):     
+            ok, message = user.save()
+            message_type = 'success' if ok else 'warning'
+            helper.flash_text(message, message_type)
+
+    #if key was pressed
+    if message > '':
+        if ok:
+            helper.flash_text(message, 'success')
+        else:
+            helper.flash_text(message, 'warning')
 
 
 def show_create_account_form():
@@ -126,9 +161,8 @@ def show_create_account_form():
 
 
 def show_logout_form():
-    if st.button(lang['logout']):
-        st.session_state.config.logged_in_user = None
-        helper.flash_text(lang["logout_confirmation"], 'success')
+    st.session_state.config.logged_in_user = None
+    helper.flash_text(lang["logout_confirmation"], 'success')
 
 
 def show_info():
@@ -162,7 +196,7 @@ def show_menu():
     menu_options = lang['menu_options']
     # set the menuoption for login/logout to the corresponding expression depending on the current state
     menu_options[1] = lang['logout'] if st.session_state.config.is_logged_in() else lang['login']
-    menu_options[2] = lang['account_settings'] if st.session_state.config.is_logged_in() else lang['create_account']
+    menu_options[2] = lang['account_setting'] if st.session_state.config.is_logged_in() else lang['create_account']
     menu_action = st.sidebar.selectbox(lang['options'], menu_options) 
     if menu_action == menu_options[0]:
         show_info()

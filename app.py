@@ -53,25 +53,6 @@ def main():
         with cols[1]:
             st.markdown(f"### {APP_NAME}\n\n")
     
-    # LC: moved to menu, should go to menu
-    # def show_login_button():
-    #     login_request = False
-    #     # trial: having a top row for menu options so the sidebar is reserved for the filters and settings.
-        
-    #     cols = st.columns([9,1])
-    #     if st.session_state.config.is_logged_in() == False:
-    #         with cols[0]:
-    #             st.write('') #workaround, otherwise button appears on the left
-    #         with cols[1]:
-    #             if st.button('Login'):
-    #                 login_request = True
-    #     else:
-    #         with cols[0]:
-    #             st.write('') #workaround, otherwise button appears on the left
-    #         with cols[1]:
-    #             if st.button('Logout'):
-    #                 st.session_state.config.logged_in_user = None
-    #     return login_request
 
     def get_app_info():
         return f"""<div style="background-color:powderblue; padding: 10px;border-radius: 15px;">
@@ -80,6 +61,7 @@ def main():
         version: {__version__} ({VERSION_DATE})<br>
         <a href="{GIT_REPO}">git-repo</a><br>
         {lang['logged_in_user']}: {st.session_state.config.logged_in_user_name} <br>
+        language: {st.session_state.config.language} <br>
         </small>
         """
 

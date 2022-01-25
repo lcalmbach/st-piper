@@ -4,6 +4,11 @@
         "de": ["Projektauswahl", "Login", "Konto"],
         "zh": ["專案", "登錄", "帳戶"]
     },
+    "account_setting": {
+        "en": "Account settings",
+        "de": "Account settings",
+        "zh": "Account settings"
+    },
     "intro_title": {
         "en": "Introduction",
         "de": "Einführung",

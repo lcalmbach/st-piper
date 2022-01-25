@@ -11,6 +11,47 @@ from metadata import Metadata
 from value_per_row_import import Value_per_row_import
 import helper
 import database as db
+from query import qry
+
+class User():
+    def __init__(self, email):
+        self.conn = st.session_state.config.conn
+        self.email = email
+        self.set_user_info()
+
+    def set_user_info(self):
+        ok = False
+        sql = qry['user_info'].format(self.email)
+        df, ok, err_msg = db.execute_query(sql,self.conn)
+        if len(df)>0:
+            ok = True
+            self.first_name = df.iloc[0]['first_name']
+            self.last_name = df.iloc[0]['last_name']
+            self.company = df.iloc[0]['company']
+            self.country = df.iloc[0]['country']
+            self.language = df.iloc[0]['language']
+        else:
+            self.first_name = None
+            self.last_name = None
+            self.company = None
+            self.country = None
+            self.language = None
+    
+    def save(self):
+        sql = qry['update_user'].format(self.first_name, 
+            self.last_name, 
+            self.company,
+            self.country,
+            self.language,
+            self.email) 
+        ok, message = db.execute_non_query(sql, st.session_state.config.conn)
+        message = 'Account settings have been saved successfully.' if ok else f"Account settings could not be save, the following error occurred: '{message}'"
+        if ok:
+            st.session_state.config.language = self.language
+        return ok, message
+    
+    def delete():
+        pass
 
 class Config():
     def __init__(self):

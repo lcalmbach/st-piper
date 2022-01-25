@@ -12,6 +12,10 @@ import json
 import smtplib, ssl
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+import pycountry
+
+for c in pycountry.countries:
+    print (c.name, c.alpha_3)
 
 def flash_text(text:str, type:str):
     placeholder = st.empty()
@@ -281,3 +285,8 @@ class Mail:
         service.quit()
         return result
     
+def get_country_list():
+    result = {}
+    for country in pycountry.countries:
+        result[country.alpha_3] = country.name
+    return result
