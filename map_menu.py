@@ -32,7 +32,7 @@ def show_filter(df: pd.DataFrame, filters: list, cfg: dict):
             if len(sel_stations)>0:
                 df = df[df[station_col].isin(sel_stations)]
         
-        if lang['datge'].lower() in filters and st.session_state.config.col_is_mapped(cn.SAMPLE_DATE_COL):
+        if lang['date'].lower() in filters and st.session_state.config.col_is_mapped(cn.SAMPLE_DATE_COL):
             date_col = st.session_state.config.key2col()[cn.SAMPLE_DATE_COL]
             df[date_col] = pd.to_datetime(df[date_col], format='%d.%m.%Y', errors='ignore')
             min_date = df[date_col].min().to_pydatetime().date()

@@ -160,8 +160,6 @@ sin30 = math.sin(math.radians(30))
 cos30 = math.cos(math.radians(30))
 tan60 = math.tan(math.radians(60))
 
-SAMPLE_FORMATS = ["One row per sample", "One row per value"]
-
 NOT_USED = 'Not used'
 NOT_MAPPED = 'Not mapped'
 SEPARATORS = [';',',','\t']
@@ -218,7 +216,7 @@ PAR_TEMPERATURE = 'temp'
 PAR_COND = 'cond_25'
 PAR_PH = 'ph'
 
-DATE_FORMAT_LIST = ['%Y-%m-%d', '%Y/%m/%d', '%d.%m.%Y']
+DATE_FORMAT_LIST = ['%Y-%m-%d', '%Y/%m/%d', '%d.%m.%Y', '%d/%m/%Y']
 ENCODINGS = ['utf8', 'cp1252']
 DEFAULT_GUIDELINE = 'epa_mcl'
 GUIDELINE_ROOT = './guidelines/'
@@ -229,3 +227,9 @@ SPLASH_IMAGE = "water-2630618-wide.jpg"
 LOTTIE_URL = 'https://assets2.lottiefiles.com/packages/lf20_B6txqj.json'
 HELP_SITE = 'https://lcalmbach.github.io/fontus-help/'
 MAX_LEGEND_ITEMS = 20
+
+DEFAULT_PROJECT = 1
+# Project access roles
+PROJECT_OWNER = 3
+READ = 1
+WRITE = 2

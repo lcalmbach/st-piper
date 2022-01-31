@@ -6,13 +6,19 @@ import json
 from streamlit_lottie import st_lottie
 import requests
 import sys
+from streamlit_option_menu import option_menu
 
 import helper
 import const as cn
 import home
 import projects
 import plots
-from config import Config
+from fontus import Config
+from database import get_connection
+import login
+import calculator
+import analysis
+import data
 
 __version__ = '0.0.3' 
 __author__ = 'Lukas Calmbach'
@@ -38,10 +44,11 @@ def get_lottie():
     return r, ok
 
 def show_help_icon():
-    help_html = "<a href = '{}' alt='water' target='_blank'><img src='data:image/png;base64,{}' class='img-fluid' style='width:35px;height:35px;'></a><br>".format(
+    help_html = "<a href = '{}' alt='water' target='_blank'><img src='data:image/png;base64,{}' class='img-fluid' style='width:25px;height:25px;'></a><br>".format(
         cn.HELP_SITE, helper.get_base64_encoded_image("./help1600.png")
     )
     st.sidebar.markdown(help_html, unsafe_allow_html=True)
+
 
 def main():
     def show_app_name():
@@ -65,37 +72,33 @@ def main():
         </small>
         """
 
+    st.session_state.conn = get_connection()
     st.set_page_config(page_title=APP_NAME, page_icon=APP_EMOJI, layout="wide", initial_sidebar_state="auto", menu_items=None)
     # read file
-    
-    if len(st.session_state) == 0:
+    if 'config' not in st.session_state:
         st.session_state.config = Config()
-    
     lang = helper.get_language(sys.argv[0].replace('.py',""), st.session_state.config.language)
-
+    
     MENU_OPTIONS = lang['menu_options']
-    show_app_name()    
-    menu_action = st.sidebar.selectbox(lang['menu'], MENU_OPTIONS)
-    #login_request = show_login_button()
-    #if login_request:
-    #    login_result = login.show_form()
-    #    print(login_result)
-    if menu_action == MENU_OPTIONS[0]:
-        home.show_menu()
-    elif menu_action == MENU_OPTIONS[1]:
-        projects.show_menu()
-    elif menu_action == MENU_OPTIONS[2]:
-         plots.show_menu()
-    # elif menu_action == 7:
-    #     guideline.show_menu(texts_dict['guideline'])
-    # elif menu_action == 8:
-    #     calculator.show_menu(texts_dict['calculator'])
-    # else: 
-    #     st.write(menu_action)
+    menu_actions = [home.show_menu
+        ,projects.show_menu
+        ,data.show_menu
+        ,plots.show_menu
+        ,analysis.show_menu
+        ,calculator.show_menu
+        ,login.show_menu
+    ]
+    
+    show_app_name()
+    menu_action = option_menu(None, MENU_OPTIONS, 
+        icons=['house', 'journal-text', "table", 'bar-chart-fill', "search", "calculator", "key"], 
+        menu_icon="cast", default_index=0, orientation="horizontal")
+    id = MENU_OPTIONS.index(menu_action)
+    
+    menu_actions[id]()
     
     show_help_icon()
     st.sidebar.markdown(get_app_info(), unsafe_allow_html=True)
-
 
 if __name__ == '__main__':
     main()

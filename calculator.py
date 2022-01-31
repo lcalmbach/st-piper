@@ -5,8 +5,13 @@ from chempy import Substance
 import math
 
 import const as cn
+import helper
 
-text = {}
+lang = {}
+def set_lang():
+    global lang
+    lang = helper.get_language(__name__, st.session_state.config.language)
+
 
 def get_fmw(formula):
         substance = Substance.from_formula(formula)
@@ -125,17 +130,17 @@ def sar_calculator():
             st.warning("Please enter formula for input and output")
 
 
-def show_menu(texts_dict: dict):
-    global text
+def show_menu():
+    set_lang()
 
-    text = texts_dict
-    menu_options = text['menu_options']
-    menu_action = st.sidebar.selectbox('Options', menu_options)
-    if menu_action == menu_options[0]:
+    MENU_OPTIONS = lang['menu_options']
+    menu_action = st.sidebar.selectbox('Options', MENU_OPTIONS)
+
+    if menu_action == MENU_OPTIONS[0]:
         with st.expander('Intro'):
-            st.markdown(text[menu_action])
+            st.markdown(lang['species_transformation'])
         transform_molar_weight()
-    if menu_action == menu_options[1]:
+    if menu_action == MENU_OPTIONS[1]:
         with st.expander('Intro'):
-            st.markdown(text[menu_action])
+            st.markdown(lang['sar'])
         sar_calculator()

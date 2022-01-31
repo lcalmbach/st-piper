@@ -13,9 +13,8 @@ import smtplib, ssl
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import pycountry
+from st_aggrid import GridOptionsBuilder, AgGrid, DataReturnMode,GridUpdateMode
 
-for c in pycountry.countries:
-    print (c.name, c.alpha_3)
 
 def flash_text(text:str, type:str):
     placeholder = st.empty()
@@ -290,3 +289,29 @@ def get_country_list():
     for country in pycountry.countries:
         result[country.alpha_3] = country.name
     return result
+
+def show_table(df: pd.DataFrame, cols, settings):
+    gb = GridOptionsBuilder.from_dataframe(df)
+    #customize gridOptions
+    gb.configure_default_column(groupable=False, value=True, enableRowGroup=False, aggFunc='sum', editable=False)
+    for col in cols:
+        gb.configure_column(col['name'], type=col['type'], precision=col['precision'], hide=col['hide'])
+    gb.configure_selection(settings['selection_mode'], use_checkbox=False)#, rowMultiSelectWithClick=rowMultiSelectWithClick, suppressRowDeselection=suppressRowDeselection)
+    gb.configure_grid_options(domLayout='normal')
+    gridOptions = gb.build()
+
+    grid_response = AgGrid(
+        df, 
+        gridOptions=gridOptions,
+        height=settings['height'], 
+        data_return_mode=DataReturnMode.AS_INPUT, 
+        update_mode=settings['update_mode'],
+        fit_columns_on_grid_load=settings['fit_columns_on_grid_load'],
+        allow_unsafe_jscode=False, 
+        enable_enterprise_modules=True,
+        )
+
+    df = grid_response['data']
+    selected = grid_response['selected_rows']
+    selected_df = pd.DataFrame(selected)
+    return selected_df

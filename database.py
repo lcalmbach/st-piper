@@ -58,12 +58,11 @@ def execute_query(query, conn):
     """Executes a query and returns a dataframe with the results"""
     ok=False
     err_msg=''
-    print(query)
     try:
         ok = True
         result = pd.read_sql_query(query, conn)
     except Exception as ex:
-        err_msg = ex.message
+        #err_msg = ex.message
         result = pd.DataFrame()
     return result, ok, err_msg
 

@@ -1,3 +1,4 @@
+import encodings
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -13,29 +14,104 @@ import helper
 import database as db
 from query import qry
 
+class Project():
+    def __init__(self, id):
+        ok = self.set_project_info(id)
+
+    def set_project_info(self, id:int):
+        sql = qry['project'].format(id)
+        df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
+        if len(df)>0:
+            ok = True
+            self.id = df.iloc[0]['id']
+            self.title = df.iloc[0]['title']
+            self.description= df.iloc[0]['description']
+            self.row_is = df.iloc[0]['row_is']
+            self.date_format = df.iloc[0]['date_format']
+            self.separator = df.iloc[0]['separator']
+            self.encoding = df.iloc[0]['encoding']
+            self.is_public = df.iloc[0]['is_public']
+            self.url_source = df.iloc[0]['url_source']
+            self.owner_id = df.iloc[0]['owner_id']
+            return True
+        else:
+            self.id = -1
+            self.title = 'Enter a title'
+            self.description= 'Enter a description'
+            self.row_is = 'one value per row'
+            self.date_format = '%Y/%m/%d'
+            self.separator = ';'
+            self.encoding = 'utf8'
+            self.url_source = ''
+            self.is_public = False
+            self.owner_id = 0
+            return True
+    
+    def save(self):
+        if self.id > 0:
+            sql = qry['update_project'].format(
+                self.title.replace("'","''")
+                ,self.description.replace("'","''")
+                ,self.row_is 
+                ,self.date_format
+                ,self.separator
+                ,self.encoding
+                ,self.url_source
+                ,self.is_public
+                ,self.id) 
+            st.write(sql)
+            ok, message = db.execute_non_query(sql, st.session_state.conn)
+            message = 'Account settings have been saved successfully.' if ok else f"Account settings could not be save, the following error occurred: '{message}'"
+        else:
+            sql = qry['insert_project'].format(
+                self.title 
+                ,self.description
+                ,self.row_is 
+                ,self.date_format
+                ,self.separator
+                ,self.encoding
+                ,self.url_source
+                ,self.is_public
+                ,st.session_state.config.user.id) #ownerid
+            ok, message = db.execute_non_query(sql, st.session_state.conn)
+            message = 'Project hase been created successfully.' if ok else f"Project could not be created, the following error occurred: '{message}'"
+            if ok:
+                sql = qry['max_project_id'].format(st.session_state.config.user.id)
+                id = db.get_value(sql, st.session_state.conn)
+                self.project = Project(id)
+                #add to user_project table
+                sql = qry['insert_user_project'].format(st.session_state.config.user.id, id, cn.PROJECT_OWNER)
+                ok, err_msg = db.execute_query(sql, st.session_state.conn)
+
+        
+        return ok, message
+
 class User():
     def __init__(self, email):
-        self.conn = st.session_state.config.conn
         self.email = email
         self.set_user_info()
 
     def set_user_info(self):
         ok = False
         sql = qry['user_info'].format(self.email)
-        df, ok, err_msg = db.execute_query(sql,self.conn)
+        df, ok, err_msg = db.execute_query(sql,st.session_state.conn)
         if len(df)>0:
             ok = True
+            self.id = df.iloc[0]['id']
             self.first_name = df.iloc[0]['first_name']
             self.last_name = df.iloc[0]['last_name']
             self.company = df.iloc[0]['company']
             self.country = df.iloc[0]['country']
             self.language = df.iloc[0]['language']
+            self.default_project = df.iloc[0]['default_project']
         else:
+            self.id = -1
             self.first_name = None
             self.last_name = None
             self.company = None
             self.country = None
             self.language = None
+            self.default_project = cn.DEFAULT_PROJECT
     
     def save(self):
         sql = qry['update_user'].format(self.first_name, 
@@ -44,10 +120,16 @@ class User():
             self.country,
             self.language,
             self.email) 
-        ok, message = db.execute_non_query(sql, st.session_state.config.conn)
+        ok, message = db.execute_non_query(sql, st.session_state.conn)
         message = 'Account settings have been saved successfully.' if ok else f"Account settings could not be save, the following error occurred: '{message}'"
         if ok:
             st.session_state.config.language = self.language
+        return ok, message
+    
+    def save_password(self, pwd):
+        sql = qry['update_password'].format(pwd, self.email) 
+        ok, message = db.execute_non_query(sql, st.session_state.conn)
+        message = 'Password was saved successfully.' if ok else f"Password could not be save, the following error occurred: '{message}'"
         return ok, message
     
     def delete():
@@ -59,13 +141,12 @@ class Config():
         self.session_key = uuid.uuid1()
         self.logged_in_user = None
         self.pwd = None
-        self.conn = db.get_connection()
         self.title = ''
         self.encoding = cn.ENCODINGS[0]
         self.separator = cn.SEPARATORS[0]
         self.date_format = cn.DATE_FORMAT_LIST[0]
         self._row_sample_df = pd.DataFrame()
-        self._ow_value_df = pd.DataFrame()
+        self._row_value_df = pd.DataFrame()
         self._column_map_df = pd.DataFrame({'column_name': [], 'key': []})
         self._parameter_map_df = pd.DataFrame({'parameter': [], 'casnr': [], 'key': []})
         self.guidelines_df = self.read_all_guidelines()
@@ -80,10 +161,11 @@ class Config():
         self.time_parameters_config = {}
         self.map_parameters_config = {}
         self.projects_df = self.get_projects()
-        self.current_project = random.choice(list(self.projects_df.index))
         self.unit_row = 1
-        
 
+        self._project = {}
+        self.user = User('x')
+        
         self.step = 0
         # true if either the value column is mapped or if the qual-value col is mapped and 
         # the value and detection-flag column is generated
@@ -95,17 +177,18 @@ class Config():
     @property
     def project_dict(self)->dict:
         df = pd.DataFrame(self.projects_df)
-        dic = dict(zip(list(df.index), df['name']))
+        dic = dict(zip(df['id'], df['title']))
         return dic
 
     @property
-    def current_project(self):
-        return self._current_project
+    def project(self):
+        return self._project
        
-    @current_project.setter
-    def current_project(self, id:int):
-        self._current_project = self.projects_df.loc[id]
-        self.load_data(self.current_project)
+    @project.setter
+    def project(self, prj:Project):
+        self._project = prj
+        # st.write(self.project.id)
+        self.load_data(self.project.id)
 
     @property
     def row_sample_df(self):
@@ -216,11 +299,12 @@ class Config():
 
 # functions----------------------------------------------------------------------------------------
     def get_projects(self)->pd.DataFrame:
-        ds = []
-        with open(cn.PROJECT_FILE) as f:
-            ds = json.load(f)
-        ds = pd.DataFrame(ds).set_index('id')
-        return ds
+        if self.is_logged_in():
+            sql = qry['user_projects'].format(self.user.id)
+        else:
+            sql = qry['public_projects']
+        df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
+        return df
         
     def check_columns(self):
         """
@@ -243,13 +327,27 @@ class Config():
             if self.col_is_mapped(cn.SAMPLE_DATE_COL):
                 self.format_date_column(self._row_sample_df)
                 if not 'year' in self._row_sample_df.columns:
-                    self._row_sample_df['year'] = self._row_sample_df[cn.SAMPLE_DATE_COL].dt.year
-                    st.write(self._row_sample_df)
+                    self._row_sample_df['year'] = self._row_sample_df[self.date_col].dt.year
             if self.col_is_mapped(cn.LATITUDE_COL):
                 self._row_sample_df[self.latitude_col] = self._row_sample_df[self.latitude_col].astype(float)
                 self._row_sample_df[self.longitude_col] = self._row_sample_df[self.longitude_col].astype(float)
     
     def load_data(self, ds):
+        def data_file():
+            """
+            required format: 000001_data.csv
+            """
+            result = str(self.project.id).rjust(6,'0') +'_data.csv'
+            return result
+        
+        def parameter_map_file():
+            result = str(self.project.id).rjust(6,'0') +'_parameters.csv'
+            return result
+        
+        def column_map_file():
+            result = str(self.project.id).rjust(6,'0') +'_columns.csv'
+            return result
+
         def import_row_value():
             def pivot_data():
                 sample_cols = self.sample_cols
@@ -264,15 +362,15 @@ class Config():
 
             # read the data
             folder = Path("data/")
-            self.date_format = ds['date_format']
-            self.row_value_df = pd.read_csv(folder / ds['data'], 
-                                            sep=ds['separator'], 
-                                            encoding=ds['encoding'])
+            self.date_format = self.project.date_format
+            self.row_value_df = pd.read_csv(folder / data_file(), 
+                                            sep=self.project.separator, 
+                                            encoding=self.project.encoding)
             # read column mapping
-            self.column_map_df = pd.read_csv(folder / ds['column_map'], sep=';')
+            self.column_map_df = pd.read_csv(folder / column_map_file(), sep=';')
 
             # read parameter mapping
-            self.parameter_map_df = pd.read_csv(folder / ds['parameter_map'], sep=';')
+            self.parameter_map_df = pd.read_csv(folder / parameter_map_file(), sep=';')
             pivot_data()
 
         def import_row_sample():
@@ -295,13 +393,12 @@ class Config():
 
             # read the data
             folder = Path("data/")
-            self.date_format = ds['date_format']
-            self.unit_row = ds['unit_row']
-            self.row_sample_df = pd.read_csv(folder / ds['data'], 
-                                            sep=ds['separator'], 
-                                            encoding=ds['encoding'])
+            self.date_format = self.project.date_format
+            self.row_sample_df = pd.read_csv(folder / data_file(), 
+                                            sep=self.project.separator, 
+                                            encoding=self.project.encoding)
             # read column mapping
-            self.column_map_df = pd.read_csv(folder / ds['column_map'], sep=';')
+            self.column_map_df = pd.read_csv(folder / column_map_file(), sep=';')
             df = self.column_map_df
             df = df[df['type'].isin(['sa', 'st'])]
             df.loc['parameter'] = [cn.PARAMETER_COL, cn.CTYPE_VAL_META, None]
@@ -312,7 +409,7 @@ class Config():
             self.column_map_df = df.reset_index()
             
             # read parameter mapping
-            self.parameter_map_df = pd.read_csv(folder / ds['parameter_map'], sep=';')
+            self.parameter_map_df = pd.read_csv(folder / parameter_map_file(), sep=';')
             self._row_value_df = melt_data()
             # trigger set column map, since only now all information is available. this triggers the formatting of essential 
             # columns such as date
@@ -326,7 +423,7 @@ class Config():
             self._parameter_map_df = pd.DataFrame()
 
         init_data()
-        if ds['row_is'] == 'value':
+        if self.project.row_is == "one value per row":
             import_row_value()
         else:
             import_row_sample()
@@ -450,9 +547,9 @@ class Config():
 
     def format_date_column(self, df):
         ok = False
-        date_col = self.key2col()[cn.SAMPLE_DATE_COL]
         try:
-            df[date_col] = pd.to_datetime(df[date_col], format=self.date_format, errors='ignore')
+            df[self.date_col] = pd.to_datetime(df[self.date_col], format=self.date_format, errors='ignore')
+            print('date column was formatted')
             ok = True
         except:
             print('date column could not be formatted')
@@ -526,13 +623,11 @@ class Config():
             df_pars.columns = ['parameter', 'casnr']
             df_pars['key'] = cn.NOT_USED
             self.parameter_map_df = df_pars
-            print('here')
         elif casnr_col == None:
             df_pars = pd.DataFrame(self.row_value_df[[self.parameter_col]].drop_duplicates())
             df_pars.columns = ['parameter']
             df_pars['key'] = cn.NOT_USED
             self.parameter_map_df = df_pars  
-            print('there')
     
     def map_parameter_with_casnr(self)->pd.DataFrame():
         """use mapped casnr fields in order to identify parameters automatically using 

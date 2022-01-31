@@ -1,9 +1,9 @@
 {
     
     "menu_options": {
-        "en": ["Home", "Projects", "Plots","Analyses","Calculators"],
-        "de": ["Home", "Projekte", "Grafiken","Analysen","Rechner"],
-        "zh": ["家", "專案", "情節","分析","計算機"]
+        "en": ["Home", "Projects", "Data", "Plots", "Analysis", "Calculators", "Login"],
+        "de": ["Home", "Projekte", "Daten", "Grafiken","Analysen","Rechner", "Login"],
+        "zh": ["家", "專案", "Data", "情節","分析","計算機", "登錄"]
     },
     "app_created_by": {
         "en": "App created by",

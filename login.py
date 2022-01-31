@@ -7,7 +7,7 @@ import database as db
 from query import qry 
 from passlib.context import CryptContext
 import random
-from fontus import User, Project
+from fontus import User
 
 import const
 import helper
@@ -88,11 +88,11 @@ def show_login_form():
     st.markdown('## 👤Login')
     with st.form('login_form'):
         action = ''
-        email = st.text_input('username')
+        email = st.text_input('email')
         pwd = st.text_input('password', type='password')
-        col1, col2 = st.columns((1,12))
+        cols = st.columns((1,2,2,9))
         st.session_state.logged_in = False
-        with col1:
+        with cols[0]:
             if st.form_submit_button(label='Login'):     
                 action = 'login'           
                 if is_valid_password(email, pwd):
@@ -107,8 +107,12 @@ def show_login_form():
                 else:
                     ok=False
                     message = 'Login was unsuccessful. Verify user and password or reset your password'
-        with col2:
-            if st.form_submit_button(label='Reset Password'):
+        with cols[1]:
+            if st.form_submit_button(label='Reset Password', help="Reset password if you have an account"):
+                action = 'reset'
+                ok, message = reset_password(email)
+        with cols[2]:
+            if st.form_submit_button(label='Create account', help="Create a new account"):
                 action = 'reset'
                 ok, message = reset_password(email)
 
@@ -184,7 +188,7 @@ def show_info():
         languages = cn.LANGAUAGE_DICT
         id = list(languages.keys()).index(st.session_state.config.language)
         old_id = st.session_state.config.language
-        st.session_state.config.language = st.sidebar.selectbox(lang['select_language'], list(languages.keys()),
+        st.session_state.config.language = st.selectbox(lang['select_language'], list(languages.keys()),
                     format_func=lambda x: languages[x], index=id)
         # rerender entire script if language has changed
         if st.session_state.config.language != old_id:
@@ -199,14 +203,12 @@ def show_info():
         set_language()
     
     projects = st.session_state.config.project_dict
-    prj_id = st.selectbox(lang["select_project"], projects.keys(),
+    
+    st.session_state.config.current_project = st.selectbox(lang["select_project"], projects.keys(),
                 format_func=lambda x: projects[x])
-    prj = Project(prj_id)
-    st.session_state.config.project = prj
-    st.markdown(f"**{prj.title}**")
-    st.markdown(prj.description)
+    st.markdown(f"**{st.session_state.config.current_project['title']}**")
+    st.markdown(st.session_state.config.current_project['description'])
 
 def show_menu():
     set_lang()
-    show_info()
-    
+    show_login_form()

@@ -2,14 +2,14 @@ from logging import NullHandler
 import streamlit as st
 import const as cn
 
-import piper_menu
+import menu_piper
 import time_series_menu
 import map_menu
-import histogram_menu
-import boxplot_menu
+import menu_histogram
+import menu_boxplot
 import scatter_menu
 import schoeller_menu
-import boxplot_menu
+import menu_boxplot
 from helper import get_language, flash_text
 
 lang = {}
@@ -29,13 +29,13 @@ def show_menu():
     elif menu_action == MENU_OPTIONS[2]:
         map_menu.show_menu()
     elif menu_action == MENU_OPTIONS[3]:
-        piper_menu.show_menu()
+        menu_piper.show_menu()
     elif menu_action == MENU_OPTIONS[4]:
-        histogram_menu.show_menu()
+        menu_histogram.show_menu()
     elif menu_action == MENU_OPTIONS[5]:
         schoeller_menu.show_menu()
     elif menu_action == MENU_OPTIONS[6]:
-        boxplot_menu.show_menu()
+        menu_boxplot.show_menu()
     else:
         # temp
         st.info(f'Plot {menu_action} has is not implemented yet').format

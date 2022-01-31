@@ -6,11 +6,16 @@
     },
 
     "menu_options": {
-        "en": ["Create new project","Update project", "Load custom dataset (rows = samples)", "Samples", "Stations", "Parameters"],
-        "de": ["Create new project","Update project", "Load custom dataset (rows = samples)", "Samples", "Stations", "Parameters"],
-        "zh": ["Create new project","Update project", "Load custom dataset (rows = samples)", "Samples", "Stations", "Parameters"]
+        "en": ["Edit project","Create project", "Import data", "export data"],
+        "de": ["Edit project","Create project", "Import data", "export data"],
+        "zh": ["Edit project","Create project", "Import data", "export data"]
     },
-
+    "menu_intro": {
+        "en": ["To edit an existing project, select a record in the table below and change the values in the form below the table, holding the project information. Press *Save* to save your changes. Use the *Import menu* option to upload the project data.",
+                "Create project", "Import data", "export data"],
+        "de": ["Edit project","Create project", "Import data", "export data"],
+        "zh": ["Edit project","Create project", "Import data", "export data"]
+    },
     "project_name": {
         "en": "Project name",
         "de": "Projekt Name",
@@ -22,14 +27,14 @@
         "zh": "Description"
     },
     "value_per_row": {
-        "en": "1 value per row",
-        "de": "1 value per row",
-        "zh": "1 value per row"
+        "en": "one value per row",
+        "de": "one value per row",
+        "zh": "one value per row"
     },
-    "sample": {
-        "en": "1 sample per row",
-        "de": "1 sample per row",
-        "zh": "1 sample per row"
+    "sample_per_row": {
+        "en": "one sample per row",
+        "de": "one sample per row",
+        "zh": "one sample per row"
     },
     "data_format": {
         "en": "Data format",
