@@ -21,139 +21,6 @@ LANGAUAGE_DICT = {
     'zh': '中文'
 }
 
-piper_cfg = {
-    'plot_width': DEFAULT_PLOT_WIDTH_L,
-    'gap': 20,
-    'figure_padding_left': 10,
-    'figure_padding_right': 10,
-    'figure_padding_top': 10,
-    'figure_padding_bottom': 20,
-    'symbol_size': 10,
-    'fill_alpha': 0.8,
-    'tick_len': 2,
-    'grid_color': 'silver',
-    'line_color': 'black',
-    'grid_line_pattern': 'dashed',
-    'tick_label_font_size': 8,
-    'axis_title_font_size': 10,
-    'grid_line_pattern': 'dotted',
-    'legend_location': "top_right",
-    'arrow_length': 5,
-    'arrow_size': 5,
-    'image_file_format': 'png'
-}
-map_cfg = {
-    'extent': 7000,
-    'fill_colors': ['blue', 'orange', 'green'],
-    'fill_alpha': 0.8,
-    'symbol_size': 10,
-    'max_prop_size': 20,
-    'min_prop_size': 2,
-    'lin_palette': 'Magma256',
-    'plot_width': DEFAULT_PLOT_WIDTH_L,
-}
-
-scatter_cfg = {
-    'x_par': '',
-    'y_par': '',
-    'plot_title': '',
-    'colors': ['blue', 'orange', 'green'],
-    'fill_alpha': 0.8,
-    'symbol_size': 10,
-    'plot_width': DEFAULT_PLOT_WIDTH_L,
-    'plot_height': DEFAULT_PLOT_HEIGHT_L,
-    'group_plot_by': None,
-    'group_legend_by': None,
-    'legend': None,
-    'show_corr_line': False,
-    'axis_auto': True,
-    'x_axis_min': 0,
-    'x_axis_max': 0,
-    'y_axis_min': 0,
-    'y_axis_max': 0,
-    'h_line_pattern': 'solid',
-    'v_line_pattern': 'solid',
-    'h_line_color': '#FF0000',
-    'v_line_color': '#FF0000',
-    'h_line_width': 2,
-    'v_line_width': 2
-}
-
-schoeller_cfg = {
-    'show_symbols': False,
-    'y_auto': False,
-    'y_axis_min': 0.01,
-    'y_axis_max': 100,
-    'alkaline_par': 'na+k',
-    'plot_title': '',
-    'colors': ['blue', 'orange', 'green'],
-    'fill_alpha': 0.8,
-    'symbol_size': 10,
-    'plot_width': DEFAULT_PLOT_WIDTH_L,
-    'plot_height': DEFAULT_PLOT_HEIGHT_L,
-    'group_plot_by': None,
-    'group_legend_by': None,
-    'legend': None,
-    'show_corr_line': False,
-
-}
-
-boxplot_cfg = {
-    'box_group_variable': 'Station',
-    'box_group_values':[],
-    'y_auto': False,
-    'y_axis_min': 0.01,
-    'y_axis_max': 100,
-    'alkaline_par': 'na+k',
-    'plot_title': '',
-    'colors': ['blue', 'orange', 'green'],
-    'fill_alpha': 0.8,
-    'symbol_size': 10,
-    'plot_width': DEFAULT_PLOT_WIDTH_L,
-    'plot_height': DEFAULT_PLOT_HEIGHT_L,
-    'group_plot_by': None,
-    'group_legend_by': None,
-    'legend': None,
-    'show_corr_line': False,
-
-}
-
-
-histogram_cfg = {
-    'par': '',
-    'bin_width': '',
-    'fill_color': '#B0E0E6',
-    'fill_alpha': 0.8,
-    'y_max': 0,
-    'plot_height': DEFAULT_PLOT_HEIGHT_L,
-    'plot_width': DEFAULT_PLOT_WIDTH_L,
-    'plot_title': "",
-    'x_axis_title': "",
-    'y_axis_title': "Count",
-    'bins': 20,
-    'x_min': 0,
-    'x_max': 0,
-}
-
-time_series_cfg = {
-    'parameters': False,
-    'parameters': ['chlorid'],
-    'stations': ['F_0795'],
-    'show_marker': True,
-    'show_line': True,
-    'show_guideline': True,
-    'markers': ['circle'],
-    'lines': ['blue'],
-    'fill_alpha': 0.8,
-    'symbol_size': 10,
-    'yl_axis_title': 'Concentration in mg/L',
-    'yl_unit': 'mg/L',
-    'has_yr_axis': False,
-    'plot_title': '',
-    'plot_width': DEFAULT_PLOT_WIDTH_L,
-    'plot_height': DEFAULT_PLOT_HEIGHT_M,
-}
-
 sin60 = math.sin(math.radians(60))
 cos60 = math.cos(math.radians(60))
 sin30 = math.sin(math.radians(30))
@@ -229,7 +96,51 @@ HELP_SITE = 'https://lcalmbach.github.io/fontus-help/'
 MAX_LEGEND_ITEMS = 20
 
 DEFAULT_PROJECT = 1
-# Project access roles
+# Project access
 PROJECT_OWNER = 3
 READ = 1
 WRITE = 2
+
+SCATTER_ID = 1
+TIME_SERIES_ID = 2
+PIPER_ID = 3
+BOXPLOT_ID = 4
+MAP_ID = 5
+SCHOELLER_ID = 6
+HISTOGRAM_ID = 7
+HEATMAP_ID = 8
+EXCEEDANCE_ANALYSIS_ID = 9
+TREND_ANALYSIS_ID = 10
+TRANSFORM_MOLAR_WEIGHT_ID = 11
+CALC_SAR_ID = 12
+
+SIMPLE_CONCENTRATION_CAT = 6
+MOL_CONCENTRATION_CAT = 7
+LENGTH_CAT = 8
+SURFACE_CAT = 9
+WEIGHT_CAT = 10
+TEMPERATURE_CAT = 11
+
+CALCIUM_ID = 4
+MAGNESIUM_ID = 7
+SODIUM_ID = 5
+POTASSIUM_ID = 6
+SULFATE_ID = 9
+CHLORID_ID = 8
+ALKALINITY_ID = 10
+BICARBONATE_ID = 11
+CARBONATE_ID = 12
+
+MAJOR_IONS = [
+    CALCIUM_ID ,
+    MAGNESIUM_ID,
+    SODIUM_ID, 
+    POTASSIUM_ID, 
+    SULFATE_ID, 
+    CHLORID_ID, 
+    ALKALINITY_ID, 
+    BICARBONATE_ID, 
+    CARBONATE_ID,
+]
+
+

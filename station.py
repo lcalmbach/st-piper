@@ -6,7 +6,6 @@ import const as cn
 import dataretrieval.nwis as nwis
 from st_aggrid import AgGrid
 import numpy as np
-from value_per_row_import import Value_per_row_import
 
 from map import Map
 texts_dict = ""

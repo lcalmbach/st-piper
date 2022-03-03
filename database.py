@@ -8,7 +8,7 @@ mydb = ''
 
 def save_db_table(table_name: str, df: pd.DataFrame, fields: list):
     ok = False
-    engine = sql.create_engine('postgresql+psycopg2://postgres:password@localhost:5432/edex')
+    engine = sql.create_engine('postgresql+psycopg2://postgres:password@localhost:5432/fontus')
     conn = engine.raw_connection()
     conn.cursor().execute("SET search_path TO 'imp'")
     try:

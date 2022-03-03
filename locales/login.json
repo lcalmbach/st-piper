@@ -81,10 +81,5 @@
         "en": "You have been successfully logged out",
         "de": "You have been successfully logged out",
         "zh": "You have been successfully logged out"
-    },
-    "logout_confirmation": {
-        "en": "You have been successfully logged out",
-        "de": "You have been successfully logged out",
-        "zh": "You have been successfully logged out"
     }
 }

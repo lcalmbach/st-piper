@@ -66,12 +66,12 @@
         "de": "Time axis auto",
         "zh": "Time axis auto"
     },
-    "time_axis_start": {
+    "time_axis_min": {
         "en": "Time-axis start",
         "de": "Time-axis start",
         "zh": "Time-axis start"
     },
-    "time_axis_end": {
+    "time_axis_max": {
         "en": "Time-axis end",
         "de": "Time-axis end",
         "zh": "Time-axis end"
@@ -80,6 +80,11 @@
         "en": "Y-axis auto",
         "de": "Y-axis auto",
         "zh": "Y-axis auto"
+    },
+    "y_axis_min": {
+        "en": "Y-axis minimum",
+        "de": "Y-axis minimum",
+        "zh": "Y-axis minimum"
     },
     "y_axis_max": {
         "en": "Y-axis maxiumum",

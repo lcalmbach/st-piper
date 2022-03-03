@@ -60,33 +60,31 @@ class Map:
                 p.scatter(x="x", y="y", 
                         size=self.cfg['symbol_size'], 
                         color={'field': st.session_state.config.value_col, 'transform': color_mapper}, 
-                        fill_alpha=self.cfg['fill_alpha'], source=df)
+                        fill_alpha=self.cfg['fill_alpha'], source=self.data)
             else:
                 df = self.get_prop_size(df)
-                p.circle(x="x", y="y", size=cn.PROP_SIZE_COL, fill_color=self.cfg['fill_colors'][0], fill_alpha=self.cfg['fill_alpha'], source=df)
+                p.circle(x="x", y="y", size=cn.PROP_SIZE_COL, fill_color=self.cfg['fill_colors'][0], fill_alpha=self.cfg['fill_alpha'], source=self.data)
         else:
-            p.circle(x="x", y="y", size=self.cfg['symbol_size'], fill_color=self.cfg['fill_colors'][0], fill_alpha=self.cfg['fill_alpha'], source=df)
+            p.circle(x="x", y="y", size=self.cfg['symbol_size'], fill_color=self.cfg['fill_colors'][0], fill_alpha=self.cfg['fill_alpha'], source=self.data)
         return p
 
     def get_plot(self):
-        lat = st.session_state.config.latitude_col
-        lon = st.session_state.config.longitude_col
         # if paramter is set, then create a color column
         if 'parameter' in self.cfg:
             df = helper.aggregate_data(source=self.data,
                                        group_cols=st.session_state.config.station_cols, 
                                        val_col=st.session_state.config.value_col, 
                                        agg_func=self.cfg['aggregation'])
-            tooltips = f"""Station: @station<br>
+            tooltips = f"""Station: @identifier<br>
                         {self.cfg['parameter']}: @{{{st.session_state.config.value_col}}}{{0.00}}"""
         else:
-            df = self.data[st.session_state.config.station_cols].drop_duplicates()
-            tooltips = f"Station: @station"
+            pass
+            tooltips = f"Station: @identifier"
             
-        df = df.rename(columns={st.session_state.config.station_col: 'station'})
-        df = self.wgs84_to_web_mercator_df(df, lat, lon)
+        #df = df.rename(columns={st.session_state.config.station_col: 'station'})
+        self.data = self.wgs84_to_web_mercator_df(self.data, self.cfg['long'], self.cfg['lat'])
         tile_provider = get_provider(xyz.OpenStreetMap.Mapnik)
-        x_min, y_min, x_max, y_max = self.get_map_rectangle(df)
+        x_min, y_min, x_max, y_max = self.get_map_rectangle(self.data)
         
         p = figure(x_range=(x_min,x_max),
                    y_range=(y_min,y_max),
@@ -95,7 +93,7 @@ class Map:
                    width = self.cfg['plot_width'],
                    tooltips=tooltips)
         p.add_tile(tile_provider)
-        p = self.add_markers(p, df)
+        p = self.add_markers(p, self.data)
         
         return p
 

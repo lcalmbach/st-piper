@@ -52,7 +52,7 @@ class Scatter:
         yield from itertools.cycle(Category10[10])
 
     def get_plot(self):
-        def init_plot():
+        def init_plot(x_col, y_col):
             plot = figure(toolbar_location="above", 
                     tools = [],
                     plot_width = self.cfg['plot_width'], 
@@ -62,24 +62,28 @@ class Scatter:
                 plot.x_range = Range1d(float(self.cfg['x_axis_min']), float(self.cfg['x_axis_max']))
                 plot.y_range = Range1d(float(self.cfg['y_axis_min']), float(self.cfg['y_axis_max']))
             plot.title.align = "center"
-            plot.yaxis.axis_label = f"{self.cfg['y_par']} (mg/L)"
-            plot.xaxis.axis_label = f"{self.cfg['x_par']} (mg/L)"
+            plot.yaxis.axis_label = f"{y_col} (mg/L)"
+            plot.xaxis.axis_label = f"{x_col} (mg/L)"
             return plot
 
-        plot = init_plot()
+        par_dict = st.session_state.config.project.get_parameter_dict()
+        x_col = par_dict[self.cfg['x_par']]
+        y_col = par_dict[self.cfg['y_par']]
+        plot = init_plot(x_col, y_col)
         color = self.color_gen()
         clr = next(color)
         df_stats = None
+        
         # markers are grouped as legends
         if self.cfg['group_legend_by'] == None:
-            m = plot.scatter(x=self.cfg['x_par'], y=self.cfg['y_par'], source=self.data, marker=cn.MARKERS[0], 
+            m = plot.scatter(x=x_col, y=y_col, source=self.data, marker=cn.MARKERS[0], 
                 size=self.cfg['symbol_size'], color=clr, alpha=self.cfg['fill_alpha'])
             plot.add_tools(HoverTool(
                 tooltips=[
-                    ('Station', f"@{st.session_state.config.station_col}"),
-                    (self.cfg['x_par'], f"@{{{self.cfg['x_par']}}}"),
+                    ('Station', f"@{'station_key'}"),
+                    (x_col, f"@{{{x_col}}}"),
                     # todo: columns must be renamed, since spaces are not allowed here 
-                    (self.cfg['y_par'], f"@{{{self.cfg['y_par']}}}")
+                    (y_col, f"@{{{y_col}}}")
                 ],
                 formatters={
                     '@date': 'datetime', # use 'datetime' formatter for 'date' field
@@ -91,7 +95,7 @@ class Scatter:
             for item in item_list:
                 df = self.data[self.data[st.session_state.config.station_col] == item]
                 clr = next(color)
-                m = plot.scatter(x=self.cfg['x_par'], y=self.cfg['y_par'], source=df, marker=cn.MARKERS[0], 
+                m = plot.scatter(x=x_col, y=y_col, source=df, marker=cn.MARKERS[0], 
                 size = self.cfg['symbol_size'], color=clr, alpha=self.cfg['fill_alpha'])
                 legend_items.append((item,[m]))
 
@@ -99,7 +103,7 @@ class Scatter:
                             location=(0, 0), click_policy="hide")
             plot.add_layout(legend, 'right')
         if self.cfg['show_corr_line']:
-            plot, corr_coeff = self.add_correlation(plot, self.data[[self.cfg['x_par'], self.cfg['y_par']]])
+            plot, corr_coeff = self.add_correlation(plot, self.data[[y_col, y_col]])
             p_val = 0.05
             sign_result = 'Correlation is statisticically significant' if corr_coeff[3] < p_val else 'Correlation is not statisticically significant'
             df_stats = pd.DataFrame({'stat': ['Pearson correlation coefficient', 'associated two-tailed p-value',f'Intepretation (p = {p_val})','Y-axis intercept','slope'],
@@ -107,10 +111,10 @@ class Scatter:
 
         if self.cfg['show_h_line']:
             if plot.x_range.end == None:
-                x = [self.data[self.cfg['x_par']].min(), self.data[self.cfg['x_par']].max()]
+                x = [self.data[x_col].min(), self.data[x_col].max()]
             else:
                 x = [plot.x_range.start, plot.x_range.end]
-            y = [self.cfg['h_line'], self.cfg['h_line']]
+            y = [self.cfg['h_line_intercept'], self.cfg['h_line_intercept']]
             plot.line(x, 
                       y, 
                       line_width=int(self.cfg['h_line_width']), 
@@ -119,10 +123,10 @@ class Scatter:
         
         if self.cfg['show_v_line']:
             if plot.y_range.end == None:
-                y = [self.data[self.cfg['y_par']].min(), self.data[self.cfg['y_par']].max()]
+                y = [self.data[y_col].min(), self.data[y_col].max()]
             else:
                 x = [plot.x_range.start, plot.x_range.end]
-            x = [self.cfg['v_line'], self.cfg['v_line']]
+            x = [self.cfg['v_line_intercept'], self.cfg['v_line_intercept']]
             plot.line(x, 
                       y, 
                       line_width=int(self.cfg['v_line_width']), 

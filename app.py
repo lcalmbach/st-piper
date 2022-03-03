@@ -11,14 +11,14 @@ from streamlit_option_menu import option_menu
 import helper
 import const as cn
 import home
-import projects
-import plots
+import menu_projects
+import menu_plots
 from fontus import Config
 from database import get_connection
 import login
-import calculator
-import analysis
-import data
+import menu_calculator
+import menu_analysis
+import menu_data
 
 __version__ = '0.0.3' 
 __author__ = 'Lukas Calmbach'
@@ -66,7 +66,7 @@ def main():
         <small>
         {lang['app_created_by']} <a href="mailto:{__author_email__}">{__author__}</a><br>
         version: {__version__} ({VERSION_DATE})<br>
-        <a href="{GIT_REPO}">git-repo</a><br>
+        {lang['curr_project']}: {st.session_state.config.project.short_name} <br>
         {lang['logged_in_user']}: {st.session_state.config.logged_in_user_name} <br>
         language: {st.session_state.config.language} <br>
         </small>
@@ -80,14 +80,18 @@ def main():
     lang = helper.get_language(sys.argv[0].replace('.py',""), st.session_state.config.language)
     
     MENU_OPTIONS = lang['menu_options']
+    
     menu_actions = [home.show_menu
-        ,projects.show_menu
-        ,data.show_menu
-        ,plots.show_menu
-        ,analysis.show_menu
-        ,calculator.show_menu
+        ,menu_projects.show_menu
+        ,menu_data.show_menu
+        ,menu_plots.show_menu
+        ,menu_analysis.show_menu
+        ,menu_calculator.show_menu
         ,login.show_menu
     ]
+    if st.session_state.config.is_logged_in():
+        MENU_OPTIONS[-1] = lang['logout']
+        menu_actions[-1]= login.show_logout_form
     
     show_app_name()
     menu_action = option_menu(None, MENU_OPTIONS, 

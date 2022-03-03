@@ -1,4 +1,5 @@
 import encodings
+from sys import settrace
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -9,22 +10,38 @@ import random
 
 import const as cn
 from metadata import Metadata
-from value_per_row_import import Value_per_row_import
 import helper
+
 import database as db
 from query import qry
 
+lang = {}
+def set_lang():
+    global lang
+    lang = helper.get_language(__name__, st.session_state.config.language)
+
+
 class Project():
-    def __init__(self, id):
+    def __init__(self, id: int):
         ok = self.set_project_info(id)
+        self.longitude_col = 'longitude'
+        self.latitude_col = 'latitude'
 
     def set_project_info(self, id:int):
+        def get_parameters():
+            sql = qry['project_parameters'].format(self.key)
+            df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
+            df = df.set_index('id')
+            return df
+
         sql = qry['project'].format(id)
         df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
         if len(df)>0:
             ok = True
             self.id = df.iloc[0]['id']
+            self.key = f"p{str(self.id).zfill(4)}"
             self.title = df.iloc[0]['title']
+            self.short_name = df.iloc[0]['short_name']
             self.description= df.iloc[0]['description']
             self.row_is = df.iloc[0]['row_is']
             self.date_format = df.iloc[0]['date_format']
@@ -33,6 +50,7 @@ class Project():
             self.is_public = df.iloc[0]['is_public']
             self.url_source = df.iloc[0]['url_source']
             self.owner_id = df.iloc[0]['owner_id']
+            self.parameters_df = get_parameters()
             return True
         else:
             self.id = -1
@@ -45,8 +63,49 @@ class Project():
             self.url_source = ''
             self.is_public = False
             self.owner_id = 0
+
             return True
     
+    # properties -----------------------------------------------------------
+
+
+    # functions ------------------------------------------------------------
+    def get_parameter_name_list(self, list_of_par_id:list, fieldname:str):
+        """converts a list of master parameter ids to corresponsding field names: eg. formula, shortname, name
+
+        Args:
+            list_of_par_id (list): master parameter ids
+            fieldname (str): name of field in master parameter table
+
+        Returns:
+            _type_: list of requested field
+        """
+        _df = self.parameters_df.reset_index()
+        _df = _df[_df['id'].isin(list_of_par_id)]
+        dic = dict(zip(list(_df['id']), list(_df[fieldname])))
+        result = [dic[item] for item in list_of_par_id]
+        return result
+    
+    def master_par_id_2_par_id(self,par_list: list):
+        """converts a list of system parameter id (metadata table) to the mapped parameter id of the current project
+
+        Args:
+            par_list (list): list of master parameter ids
+
+        Returns:
+            _type_: list of project parameter ids
+        """
+        result=[]
+        for sys_par_id in par_list:
+            par_id = self.parameters_df[self.parameters_df['sys_par_id']==sys_par_id]
+            # if the parameter has been mapped
+            if len(par_id) > 0:
+                result.append(par_id.iloc[0]['id'])
+            # if parameter is not mapped
+            else:
+                result.append(None)
+        return result
+
     def save(self):
         if self.id > 0:
             sql = qry['update_project'].format(
@@ -59,7 +118,6 @@ class Project():
                 ,self.url_source
                 ,self.is_public
                 ,self.id) 
-            st.write(sql)
             ok, message = db.execute_non_query(sql, st.session_state.conn)
             message = 'Account settings have been saved successfully.' if ok else f"Account settings could not be save, the following error occurred: '{message}'"
         else:
@@ -83,8 +141,78 @@ class Project():
                 sql = qry['insert_user_project'].format(st.session_state.config.user.id, id, cn.PROJECT_OWNER)
                 ok, err_msg = db.execute_query(sql, st.session_state.conn)
 
-        
         return ok, message
+
+    def configure_import(self):
+        if self.row_is=="one value per row":
+            imp = Value_per_row_import(self)
+        else:
+            imp = Sample_per_row_import(self)
+        imp.run_step()
+
+    def station_data(self):
+        sql = qry['station_data'].format(self.key)
+        df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
+        return df
+    
+    def station_samples(self, station_id):
+        sql = qry['station_samples'].format(self.key, station_id)
+        df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
+        return df
+    
+    def parameter_data(self):
+        sql = qry['parameter_data'].format(self.key)
+        df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
+        return df
+
+    def sample_observations(self, station_id, sample_date):
+        sql = qry['sample_observations'].format(self.key, station_id, sample_date)
+        df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
+        return df
+    
+    def parameter_observations(self, parameter_id:int, filter: str):
+        filter = " AND " + filter if filter >'' else ''
+        sql = qry['parameter_observations'].format(self.key, parameter_id, filter)
+        df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
+        return df
+    
+    def get_station_list(self, allow_none: bool=False):
+        # station_key = self.key2col()[cn.STATION_IDENTIFIER_COL]
+        sql = qry['station_list'].format(self.key)
+        df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
+        result = dict(zip(df['id'], df['identifier']))
+        if allow_none:
+            result = {-1:'Select stations', **result}
+        return result
+    
+    def get_parameter_dict(self, allow_none: bool=False, filter:str='')->dict:
+        sql = qry['parameter_list'].format(self.key,filter)
+        df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
+        if ok:
+            result = dict(zip(df['id'], df['parameter_name']))
+            #if allow_none:
+            #    result = {-1:'Select parameter', **result}
+        else:
+            result = {}
+        return result
+    
+    def min_max_date(self):
+        sql = qry['min_max_sampling_date'].format(self.key)
+        df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
+        return df.iloc[0]['min_date'], df.iloc[0]['max_date']
+    
+    def get_observations(self, filter_parameters:list, filter_stations:list):
+        csv_parameters = ",".join(map(str, filter_parameters)) if len(filter_parameters)>0 else ''
+        csv_stations = ",".join(map(str, filter_stations)) if len(filter_stations)>0 else ''
+        filter = ''
+        if csv_parameters>'':
+            filter = f" AND parameter_id in ({csv_parameters})"
+        if len(csv_stations)>0:
+            filter = f" AND station_id in ({csv_stations})"
+        sql = qry['observations'].format(self.key, filter)
+        df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
+        return df
+
 
 class User():
     def __init__(self, email):
@@ -92,9 +220,11 @@ class User():
         self.set_user_info()
 
     def set_user_info(self):
+        global lang
+
         ok = False
         sql = qry['user_info'].format(self.email)
-        df, ok, err_msg = db.execute_query(sql,st.session_state.conn)
+        df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
         if len(df)>0:
             ok = True
             self.id = df.iloc[0]['id']
@@ -110,8 +240,10 @@ class User():
             self.last_name = None
             self.company = None
             self.country = None
-            self.language = None
+            self.language = 'en'
             self.default_project = cn.DEFAULT_PROJECT
+        lang = helper.get_language(__name__, 'en')
+
     
     def save(self):
         sql = qry['update_user'].format(self.first_name, 
@@ -126,18 +258,115 @@ class User():
             st.session_state.config.language = self.language
         return ok, message
     
+    def delete(self):
+        """dummy routine for deleting a user
+
+        Returns:
+            [ok]:       boolean, result if account could be deleted
+            message:    success of warning text depending on delete result
+        """
+        message = "Account for {self.firstname} {self.lastname} has been locked. All datasets will be deleted automatically in 7 days."
+        ok = True
+        return message, ok
+    
     def save_password(self, pwd):
         sql = qry['update_password'].format(pwd, self.email) 
         ok, message = db.execute_non_query(sql, st.session_state.conn)
         message = 'Password was saved successfully.' if ok else f"Password could not be save, the following error occurred: '{message}'"
         return ok, message
     
-    def delete():
-        pass
+    def read_config(self, an_config_id:int, setting_name: str):
+        sql = qry['get_analysis_config'].format(self.id, an_config_id, setting_name) 
+        df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
+        cfg = df.iloc[0]['config'] if ok else {}
+        return cfg
+    
+    def save_config(self, an_config_id:int, setting_name: str, cfg:dict):
+        # check if there is a an entry, otherwise create it
+        cfg = json.dumps(cfg)
+        sql = qry['update_analysis_config'].format(cfg, self.id, an_config_id, setting_name)
+        ok, err_msg = db.execute_non_query(sql, st.session_state.conn)
+        return ok
+
+
+class Parameter():
+    def __init__(self, id):
+
+        self.set_parameter_info(id)
+
+    def set_parameter_info(self,id):
+        global lang
+
+        ok = False
+        sql = qry['parameter_detail'].format(st.session_state.config.project.key, id)
+        df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
+        if len(df)>0:
+            self.id = df.iloc[0]['id']
+            self.name = df.iloc[0]['parameter_name']
+            self.casnr = df.iloc[0]['casnr']
+            self.group1 = df.iloc[0]['group1']
+            self.group2 = df.iloc[0]['group1']
+            self.sys_par_id = df.iloc[0]['sys_par_id']
+        else:
+            self.id = -1
+            self.title = None
+            self.title_short = None
+            self.description = None
+
+
+class Guideline():
+    def __init__(self, id):
+        self.set_guideline_info(id)
+
+    def set_guideline_info(self, id):
+        sql = qry['guideline_detail'].format(id)
+        df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
+        if len(df)>0:
+            self.id = df.iloc[0]['id']
+            self.title = df.iloc[0]['title']
+            self.title_short = df.iloc[0]['title_short']
+            self.description = df.iloc[0]['description']
+
+            sql = qry['guideline_items'].format(id)
+            self.items_df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
+            self.items_df.set_index('id')
+        else:
+            self.id = -1
+            self.title = None
+            self.title_short = None
+            self.description = None
+        
+    def find_match(self, par: Parameter):
+        result = None
+        if par.sys_par_id != None:
+            result = self.items_df[self.items_df['sys_par_id']==par.sys_par_id]
+            result = dict(result.iloc[0]) if len(result)>0 else None
+        elif par.casnr != None:
+            result = self.items_df[self.items_df['casnr']==par.casnr]
+            result = dict(result.iloc[0]) if len(result)>0 else None
+        return result
+    
+    def get_parameter_dict(self, allow_none: bool=True):
+
+        sql = qry['standard_parameter_list'].format(self.id)
+        df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
+        if ok:
+            result = dict(zip(df['id'], df['parameter']))
+            if allow_none:
+                result = {-1:'Select parameter', **result}
+        else:
+            result = {}
+        return result
+
+    def get_standard(self,id:int):
+        result = self.items_df.loc[id]
+        return dict(result)
+
 
 class Config():
     def __init__(self):
         self.language = 'en'
+        lang = helper.get_language(__name__, self.language)
         self.session_key = uuid.uuid1()
         self.logged_in_user = None
         self.pwd = None
@@ -149,14 +378,11 @@ class Config():
         self._row_value_df = pd.DataFrame()
         self._column_map_df = pd.DataFrame({'column_name': [], 'key': []})
         self._parameter_map_df = pd.DataFrame({'parameter': [], 'casnr': [], 'key': []})
-        self.guidelines_df = self.read_all_guidelines()
-        self.guidelines_data_df = self.read_guideline_data()
         self.load_config_from_file_flag = False
         self.file_format = ''
         self.date_is_formatted = False
         self.params_params_valid = False
         self.lookup_parameters = Metadata() # metadata for a wide selection of parameters 
-        self.piper_config = cn.piper_cfg
         self.time_stations_config = {}
         self.time_parameters_config = {}
         self.map_parameters_config = {}
@@ -187,8 +413,6 @@ class Config():
     @project.setter
     def project(self, prj:Project):
         self._project = prj
-        # st.write(self.project.id)
-        self.load_data(self.project.id)
 
     @property
     def row_sample_df(self):
@@ -298,6 +522,13 @@ class Config():
 
 
 # functions----------------------------------------------------------------------------------------
+    def get_guideline_dict(self)->pd.DataFrame:
+        sql = qry['guidelines']
+        df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
+        result = dict(zip(df['id'], df['title']))
+        return result
+    
+
     def get_projects(self)->pd.DataFrame:
         if self.is_logged_in():
             sql = qry['user_projects'].format(self.user.id)
@@ -654,10 +885,7 @@ class Config():
         self.parameter_map_df = result_df
         return ok, err_msg
 
-    def get_station_list(self):
-        station_key = self.key2col()[cn.STATION_IDENTIFIER_COL]
-        result = list(self.row_value_df[station_key].unique())
-        return result
+
 
     def data_is_loaded(self) -> bool:
         return (len(self.row_sample_df)>0) | (len(self.row_value_df)> 0)
@@ -696,3 +924,546 @@ class Config():
         return self.logged_in_user != None
 
 
+class Sample_per_row_import():
+    def __init__(self, prj: Project):
+        self.project = prj
+        self.station_columns = {}
+        self.sample_columns = {}
+        self.metadata_columns = {}
+
+        self._step = st.session_state.config.step
+        self.file_format = cn.SAMPLE_FORMATS[1]
+
+    @property
+    def step(self):
+        return self._step
+
+    @step.setter
+    def step(self, s):
+        self._step = s
+        st.session_state.config.step = s
+
+    def load_new_dataset(self):
+        def load_data():
+            df = pd.read_csv(uploaded_file, 
+                sep=st.session_state.config.separator, 
+                encoding=st.session_state.config.encoding)
+            st.success(f"File was loaded: {len(df)} rows, {len(list(df.columns))} columns.")
+            with st.expander('Preview'):
+                st.write(df.head())
+            st.session_state.config.row_value_df = df
+        
+        def load_config():
+            uploaded_column_definition = st.file_uploader("Columns mapping file, csv")
+            if uploaded_column_definition:
+                st.session_state.config.column_map_df = pd.read_csv(uploaded_column_definition,
+                                                                    sep=st.session_state.config.separator)
+                with st.expander('Preview columns list'):
+                    AgGrid(st.session_state.config.column_map_df)
+            uploaded_parameters_definition = st.file_uploader("Parameters mapping file, csv")
+
+            if uploaded_parameters_definition:
+                st.session_state.config.parameter_map_df = pd.read_csv(uploaded_parameters_definition,
+                                                                       sep=st.session_state.config.separator)
+                sample_cols = st.session_state.config.sample_cols()
+                station_cols = st.session_state.config.station_cols()
+                df, ok = self.unmelt_data(st.session_state.config.row_value_df,
+                    st.session_state.config.parameter_col(), 
+                    st.session_state.config.value_col(), 
+                    sample_cols + station_cols)
+                with st.expander('Preview parameter list'):
+                    AgGrid(st.session_state.config.parameter_map_df)
+
+        st.title = st.text_input('Dataset title', 'New dataset')
+        cols = st.columns(3)
+        with cols[0]:
+            id = cn.SEPARATORS.index(st.session_state.config.separator)
+            st.session_state.config.separator = st.selectbox('Separator character', options=cn.SEPARATORS, index=id)
+            gl_list = st.session_state.config.guideline_list()
+            id = 0
+            st.session_state.config.guidelines[0]['name'] = st.selectbox('Standard/Guideline', options=gl_list, index=id)
+        with cols[1]:
+            id = cn.ENCODINGS.index(st.session_state.config.encoding)
+            st.session_state.config.encoding = st.selectbox('File encoding', options=cn.ENCODINGS, index=id)
+        with cols[2]:
+            id = cn.DATE_FORMAT_LIST.index(st.session_state.config.date_format)
+            st.session_state.config.date_format = st.selectbox('Date field format', options=cn.DATE_FORMAT_LIST, index=id)
+        uploaded_file = st.file_uploader("Data file (csv, 1 row per value format)")
+        if uploaded_file is not None:
+            load_data()
+        
+        if st.session_state.config.data_is_loaded():
+            load_config_from_file_flag = st.checkbox('Load config from file')
+
+            if load_config_from_file_flag:
+                load_config()
+
+
+    def unmelt_data(self, df, par_col, value_col, group_cols):
+        df = pd.pivot_table(df,
+            values=value_col,
+            index=group_cols,
+            columns=par_col,
+            aggfunc=np.mean
+        ).reset_index()
+        ok = len(df) > 0
+        return df, ok
+
+
+    def get_non_matched_options(self, options: list, df: pd.DataFrame()) -> list:
+        """Removes the options from the options list, that have already been assigned previously
+
+        Args:
+            options (list): list with all options
+            df (pd.DataFrame): grid with columns, having a key collumn
+
+        Returns:
+            list: list if options that have not been assigned yet
+        """
+        for idx, col in df.iterrows():
+            if (df.loc[idx]['key'] == idx):
+                options.remove(idx)
+        return options
+
+
+    def identify_station_columns(self, show_only_matched):
+        st.markdown("**Preview**")
+        df = st.session_state.config.column_map_df
+        with st.expander('Preview'):
+            st.dataframe(st.session_state.config.row_value_df.head(100))
+        filtered_columns = df[(df['type'] == cn.CTYPE_STATION) | (df['type'].isna())]
+        for idx, row in filtered_columns.iterrows():
+            if (df.loc[idx]['key'] not in [cn.NOT_USED, cn.NOT_MAPPED]) or (not show_only_matched):
+                id = cn.STATION_COLUMNS_OPTIONS.index(df.loc[idx]['key'])
+                df.loc[idx]['key'] = st.selectbox(idx, options=cn.STATION_COLUMNS_OPTIONS, index=id)
+                if df.loc[idx]['key'] == cn.NOT_USED:
+                    df.loc[idx]['type'] = None
+                else:
+                    df.loc[idx]['type'] = cn.CTYPE_STATION
+                                
+                if (df.loc[idx]['key'] == cn.GEOPOINT_COL) and (not st.session_state.config.col_is_mapped(cn.LONGITUDE_COL)):
+                    st.session_state.config.geopoint_to_lat_long()
+
+
+    def identify_sample_columns(self, show_only_matched):
+        with st.expander("Preview"):
+            st.dataframe(st.session_state.config.row_value_df.head())
+        st.session_state.config.has_sample_columns = st.checkbox("Dataset has no sample columns", False)
+        df = st.session_state.config.column_map_df
+        if not st.session_state.config.has_sample_columns:
+            id = cn.DATE_FORMAT_LIST.index(st.session_state.config.date_format)
+            st.session_state.config.date_format = st.selectbox("Sampling date format", options=cn.DATE_FORMAT_LIST, index=id)
+            filtered_columns = df[(df['type'] == cn.CTYPE_SAMPLE) | (df['type'].isnull())]
+            for idx, col in filtered_columns.iterrows():
+                if (df.loc[idx]['key'] != cn.NOT_USED) or (not show_only_matched):
+                    df.loc[idx]['key'] = st.selectbox(idx, options=cn.SAMPLE_COLUMN_OPTIONS, index=cn.SAMPLE_COLUMN_OPTIONS.index(df.loc[idx]['key']))
+                    if df.loc[idx]['key'] == cn.NOT_USED:
+                        df.loc[idx]['type'] = None
+                    else:
+                        df.loc[idx]['type'] = cn.CTYPE_SAMPLE
+                    
+                    if df.loc[idx]['key'] == cn.SAMPLE_DATE_COL and not st.session_state.config.date_is_formatted:
+                        st.session_state.config.format_date_column()
+
+                    
+    def identify_values_meta_data_columns(self, show_only_matched)->list:
+        st.markdown("**Preview**")
+        df = st.session_state.config.column_map_df
+        filtered_columns = df[(df['type'] == cn.CTYPE_VAL_META) | (df['type'].isnull())]
+        options = cn.META_COLUMN_OPTIONS
+        for idx, col in filtered_columns.iterrows():
+            if (df.loc[idx]['key'] != cn.NOT_USED) or (not show_only_matched):
+                df.loc[idx]['key'] = st.selectbox(idx, options=options, index=options.index(df.loc[idx]['key']))
+                
+                if df.loc[idx]['key'] == cn.NOT_USED:
+                    df.loc[idx]['type'] = None
+                else:
+                    df.loc[idx]['type'] = cn.CTYPE_VAL_META
+                
+                if df.loc[idx]['key'] == cn.ND_QUAL_VALUE_COL and not st.session_state.config.value_col_is_filled:
+                    ok = st.session_state.config.split_qual_val_column()
+                    df.loc[idx]['type'] = cn.CTYPE_VAL_META
+
+
+    def match_parameters(self, show_only_matched)->str:
+        ok, err_msg = True, ''
+        casnr_col = st.session_state.config.key2col()[cn.CASNR_COL]
+        df_pars = st.session_state.config.parameter_map_df
+        if len(df_pars) == 0: 
+            st.session_state.config.init_user_parameters()
+            st.write('parameters were initialized because none were found')
+        
+        if casnr_col != None:
+            if st.button("Map using CasNR"):
+                ok, err_msg = st.session_state.config.map_parameter_with_casnr()
+
+        options = st.session_state.config.lookup_parameters.key2par()
+        options = helper.add_not_used2dict(options)
+        st.markdown("#### Map parameters")
+
+        for idx, par in df_pars.iterrows():
+            # if an identical parameter erroneously uses various Casnr expressions the key is not unique anymore
+            # and an error is thrown
+
+            if not (helper.isnan(par['key']) and show_only_matched):                
+                try:
+                    id = list(options.keys()).index(par['key'])
+                except:
+                    id = 0
+                if not(show_only_matched) or (par['key'] != cn.NOT_USED):
+                    df_pars.loc[idx]['key'] = st.selectbox(idx, options=list(options.keys()), 
+                        format_func=lambda x:options[x], 
+                        index=id)
+
+
+    def pivot_table(self):
+        def filter_mapped_parameters() -> pd.DataFrame:
+            par_col = cols_dict[cn.PARAMETER_COL]
+            df = st.session_state.config.parameter_map_df
+            df = df.dropna(subset=['key'])
+            df = df[df['key'] != cn.NOT_USED]
+            lst_parameters = list(df.index)
+            
+            df_data = st.session_state.config.row_value_df.copy()
+            df_data = df_data[df_data[par_col].isin(lst_parameters)]
+            return df_data, lst_parameters
+        
+        def show_settings():
+            cols = st.columns([1,4])
+            with cols[0]:
+                st.markdown('Parameter column:')
+                st.markdown('Value column:')
+                st.markdown('Sample columns:')
+                st.markdown('Station columns:')
+            with cols[1]:
+                st.markdown(f"{par_col}")
+                st.markdown(f"{value_col}")
+                st.markdown(f"{','.join(sample_cols)}")
+                st.markdown(f"{','.join(station_cols)}")
+        
+        cols_dict = st.session_state.config.key2col()
+        par_col = st.session_state.config.parameter_col()
+        value_col = st.session_state.config.value_col()
+        sample_cols = st.session_state.config.sample_cols()
+        station_cols = st.session_state.config.station_cols()
+        sample_cols = sample_cols + station_cols
+        show_settings()
+        
+        use_only_matched_parameters = st.checkbox("Use only matched parameters")
+        if use_only_matched_parameters:
+            df, used_parameters = filter_mapped_parameters()
+        else:
+            df = st.session_state.config.row_value_df
+            used_parameters = list(st.session_state.config.parameter_map_df.index)
+        with st.expander("Used measured parameters"):
+            st.dataframe(used_parameters)
+        if st.button("Unmelt table"):
+            df, ok = self.unmelt_data(df, par_col, value_col, sample_cols)
+            if ok:
+                parameter_master_data = st.session_state.config.lookup_parameters.metadata_df
+                df = helper.complete_columns(df, st.session_state.config.key2par(), parameter_master_data)
+                df.to_csv('data.csv', sep=st.session_state.config.separator)
+                st.success("data was successfully transformed")
+                AgGrid(df.head(100))
+            st.session_state.config.row_sample_df = df
+
+            st.session_state.config.column_map_df.to_csv('columns.csv', sep=st.session_state.config.separator)
+            st.session_state.config.parameter_map_df.to_csv('parameters.csv', sep=st.session_state.config.separator)
+
+
+    def run_step(self):
+        steps = lang['steps']
+        option_item_sel = st.sidebar.selectbox('Import steps', steps)
+        self.step = steps.index(option_item_sel)
+        show_only_matched = st.sidebar.checkbox("Show only matched parameters")
+        
+        title = lang[f"step{self.step}_title"]
+        info = lang[f"step{self.step}_info"]
+        st.markdown(f"#### Step {self.step}: {title}")
+        with st.expander("Info"):
+            st.markdown(info)
+        if self.step == 0:
+            self.load_new_dataset()
+        elif self.step == 1:
+            self.identify_station_columns(show_only_matched)
+        elif self.step == 2:
+            self.identify_sample_columns(show_only_matched)
+        elif self.step == 3:
+            self.identify_values_meta_data_columns(show_only_matched)
+        elif self.step == 4:
+            self.match_parameters(show_only_matched)
+        elif self.step == 5:
+            self.pivot_table()
+            
+
+class Value_per_row_import():
+    def __init__(self, texts_dict):
+        self.station_columns = {}
+        self.sample_columns = {}
+        self.metadata_columns = {}
+
+        self._step = st.session_state.config.step
+        lang = texts_dict
+        self.file_format = 'one value per row'
+
+    @property
+    def step(self):
+        return self._step
+
+    @step.setter
+    def step(self, s):
+        self._step = s
+        st.session_state.config.step = s
+
+    def load_new_dataset(self):
+        def load_data():
+            df = pd.read_csv(uploaded_file, 
+                sep=st.session_state.config.separator, 
+                encoding=st.session_state.config.encoding)
+            st.success(f"File was loaded: {len(df)} rows, {len(list(df.columns))} columns.")
+            with st.expander('Preview'):
+                st.write(df.head())
+            st.session_state.config.row_value_df = df
+        
+        def load_config():
+            uploaded_column_definition = st.file_uploader("Columns mapping file, csv")
+            if uploaded_column_definition:
+                st.session_state.config.column_map_df = pd.read_csv(uploaded_column_definition,
+                                                                    sep=st.session_state.config.separator)
+                with st.expander('Preview columns list'):
+                    AgGrid(st.session_state.config.column_map_df)
+            uploaded_parameters_definition = st.file_uploader("Parameters mapping file, csv")
+
+            if uploaded_parameters_definition:
+                st.session_state.config.parameter_map_df = pd.read_csv(uploaded_parameters_definition,
+                                                                       sep=st.session_state.config.separator)
+                sample_cols = st.session_state.config.sample_cols()
+                station_cols = st.session_state.config.station_cols()
+                df, ok = self.unmelt_data(st.session_state.config.row_value_df,
+                    st.session_state.config.parameter_col(), 
+                    st.session_state.config.value_col(), 
+                    sample_cols + station_cols)
+                with st.expander('Preview parameter list'):
+                    AgGrid(st.session_state.config.parameter_map_df)
+
+        st.title = st.text_input('Dataset title', 'New dataset')
+        cols = st.columns(3)
+        with cols[0]:
+            id = cn.SEPARATORS.index(st.session_state.config.separator)
+            st.session_state.config.separator = st.selectbox('Separator character', options=cn.SEPARATORS, index=id)
+            # gl_list = st.session_state.config.guideline_list()
+            # id = 0
+            # st.session_state.config.guidelines[0]['name'] = st.selectbox('Standard/Guideline', options=gl_list, index=id)
+        with cols[1]:
+            id = cn.ENCODINGS.index(st.session_state.config.encoding)
+            st.session_state.config.encoding = st.selectbox('File encoding', options=cn.ENCODINGS, index=id)
+        with cols[2]:
+            id = cn.DATE_FORMAT_LIST.index(st.session_state.config.date_format)
+            st.session_state.config.date_format = st.selectbox('Date field format', options=cn.DATE_FORMAT_LIST, index=id)
+        uploaded_file = st.file_uploader("Data file (csv, 1 row per value format)")
+        if uploaded_file is not None:
+            load_data()
+        
+        if st.session_state.config.data_is_loaded():
+            load_config_from_file_flag = st.checkbox('Load config from file')
+
+            if load_config_from_file_flag:
+                load_config()
+
+
+    def unmelt_data(self, df, par_col, value_col, group_cols):
+        df = pd.pivot_table(df,
+            values=value_col,
+            index=group_cols,
+            columns=par_col,
+            aggfunc=np.mean
+        ).reset_index()
+        ok = len(df) > 0
+        return df, ok
+
+
+    def get_non_matched_options(self, options: list, df: pd.DataFrame()) -> list:
+        """Removes the options from the options list, that have already been assigned previously
+
+        Args:
+            options (list): list with all options
+            df (pd.DataFrame): grid with columns, having a key collumn
+
+        Returns:
+            list: list if options that have not been assigned yet
+        """
+        for idx, col in df.iterrows():
+            if (df.loc[idx]['key'] == idx):
+                options.remove(idx)
+        return options
+
+
+    def identify_station_columns(self, show_only_matched):
+        st.markdown("**Preview**")
+        df = st.session_state.config.column_map_df
+        with st.expander('Preview'):
+            st.dataframe(st.session_state.config.row_value_df.head(100))
+        filtered_columns = df[(df['type'] == cn.CTYPE_STATION) | (df['type'].isna())]
+        for idx, row in filtered_columns.iterrows():
+            if (df.loc[idx]['key'] not in [cn.NOT_USED, cn.NOT_MAPPED]) or (not show_only_matched):
+                id = cn.STATION_COLUMNS_OPTIONS.index(df.loc[idx]['key'])
+                df.loc[idx]['key'] = st.selectbox(idx, options=cn.STATION_COLUMNS_OPTIONS, index=id)
+                if df.loc[idx]['key'] == cn.NOT_USED:
+                    df.loc[idx]['type'] = None
+                else:
+                    df.loc[idx]['type'] = cn.CTYPE_STATION
+                                
+                if (df.loc[idx]['key'] == cn.GEOPOINT_COL) and (not st.session_state.config.col_is_mapped(cn.LONGITUDE_COL)):
+                    st.session_state.config.geopoint_to_lat_long()
+
+
+    def identify_sample_columns(self, show_only_matched):
+        with st.expander("Preview"):
+            st.dataframe(st.session_state.config.row_value_df.head())
+        st.session_state.config.has_sample_columns = st.checkbox("Dataset has no sample columns", False)
+        df = st.session_state.config.column_map_df
+        if not st.session_state.config.has_sample_columns:
+            id = cn.DATE_FORMAT_LIST.index(st.session_state.config.date_format)
+            st.session_state.config.date_format = st.selectbox("Sampling date format", options=cn.DATE_FORMAT_LIST, index=id)
+            filtered_columns = df[(df['type'] == cn.CTYPE_SAMPLE) | (df['type'].isnull())]
+            for idx, col in filtered_columns.iterrows():
+                if (df.loc[idx]['key'] != cn.NOT_USED) or (not show_only_matched):
+                    df.loc[idx]['key'] = st.selectbox(idx, options=cn.SAMPLE_COLUMN_OPTIONS, index=cn.SAMPLE_COLUMN_OPTIONS.index(df.loc[idx]['key']))
+                    if df.loc[idx]['key'] == cn.NOT_USED:
+                        df.loc[idx]['type'] = None
+                    else:
+                        df.loc[idx]['type'] = cn.CTYPE_SAMPLE
+                    
+                    if df.loc[idx]['key'] == cn.SAMPLE_DATE_COL and not st.session_state.config.date_is_formatted:
+                        st.session_state.config.format_date_column(df)
+
+                    
+    def identify_values_meta_data_columns(self, show_only_matched)->list:
+        st.markdown("**Preview**")
+        df = st.session_state.config.column_map_df
+        filtered_columns = df[(df['type'] == cn.CTYPE_VAL_META) | (df['type'].isnull())]
+        options = cn.META_COLUMN_OPTIONS
+        for idx, col in filtered_columns.iterrows():
+            if (df.loc[idx]['key'] != cn.NOT_USED) or (not show_only_matched):
+                df.loc[idx]['key'] = st.selectbox(idx, options=options, index=options.index(df.loc[idx]['key']))
+                
+                if df.loc[idx]['key'] == cn.NOT_USED:
+                    df.loc[idx]['type'] = None
+                else:
+                    df.loc[idx]['type'] = cn.CTYPE_VAL_META
+                
+                if df.loc[idx]['key'] == cn.ND_QUAL_VALUE_COL and not st.session_state.config.value_col_is_filled:
+                    ok = st.session_state.config.split_qual_val_column()
+                    df.loc[idx]['type'] = cn.CTYPE_VAL_META
+
+
+    def match_parameters(self, show_only_matched)->str:
+        ok, err_msg = True, ''
+        casnr_col = st.session_state.config.key2col()[cn.CASNR_COL]
+        df_pars = st.session_state.config.parameter_map_df
+        if len(df_pars) == 0: 
+            st.session_state.config.init_user_parameters()
+            st.write('parameters were initialized because none were found')
+        
+        if casnr_col != None:
+            if st.button("Map using CasNR"):
+                ok, err_msg = st.session_state.config.map_parameter_with_casnr()
+
+        options = st.session_state.config.lookup_parameters.key2par()
+        options = helper.add_not_used2dict(options)
+        st.markdown("#### Map parameters")
+
+        for idx, par in df_pars.iterrows():
+            # if an identical parameter erroneously uses various Casnr expressions the key is not unique anymore
+            # and an error is thrown
+
+            if not (helper.isnan(par['key']) and show_only_matched):                
+                try:
+                    id = list(options.keys()).index(par['key'])
+                except:
+                    id = 0
+                if not(show_only_matched) or (par['key'] != cn.NOT_USED):
+                    df_pars.loc[idx]['key'] = st.selectbox(idx, options=list(options.keys()), 
+                        format_func=lambda x:options[x], 
+                        index=id)
+
+
+    def pivot_table(self):
+        def filter_mapped_parameters() -> pd.DataFrame:
+            par_col = cols_dict[cn.PARAMETER_COL]
+            df = st.session_state.config.parameter_map_df
+            df = df.dropna(subset=['key'])
+            df = df[df['key'] != cn.NOT_USED]
+            lst_parameters = list(df.index)
+            
+            df_data = st.session_state.config.row_value_df.copy()
+            df_data = df_data[df_data[par_col].isin(lst_parameters)]
+            return df_data, lst_parameters
+        
+        def show_settings():
+            cols = st.columns([1,4])
+            with cols[0]:
+                st.markdown('Parameter column:')
+                st.markdown('Value column:')
+                st.markdown('Sample columns:')
+                st.markdown('Station columns:')
+            with cols[1]:
+                st.markdown(f"{par_col}")
+                st.markdown(f"{value_col}")
+                st.markdown(f"{','.join(sample_cols)}")
+                st.markdown(f"{','.join(station_cols)}")
+        
+        cols_dict = st.session_state.config.key2col()
+        par_col = st.session_state.config.parameter_col()
+        value_col = st.session_state.config.value_col()
+        sample_cols = st.session_state.config.sample_cols()
+        station_cols = st.session_state.config.station_cols()
+        sample_cols = sample_cols + station_cols
+        show_settings()
+        
+        use_only_matched_parameters = st.checkbox("Use only matched parameters")
+        if use_only_matched_parameters:
+            df, used_parameters = filter_mapped_parameters()
+        else:
+            df = st.session_state.config.row_value_df
+            used_parameters = list(st.session_state.config.parameter_map_df.index)
+        with st.expander("Used measured parameters"):
+            st.dataframe(used_parameters)
+        if st.button("Unmelt table"):
+            df, ok = self.unmelt_data(df, par_col, value_col, sample_cols)
+            if ok:
+                parameter_master_data = st.session_state.config.lookup_parameters.metadata_df
+                df = helper.complete_columns(df, st.session_state.config.key2par(), parameter_master_data)
+                df.to_csv('data.csv', sep=st.session_state.config.separator)
+                st.success("data was successfully transformed")
+                AgGrid(df.head(100))
+            st.session_state.config.row_sample_df = df
+
+            st.session_state.config.column_map_df.to_csv('columns.csv', sep=st.session_state.config.separator)
+            st.session_state.config.parameter_map_df.to_csv('parameters.csv', sep=st.session_state.config.separator)
+
+
+    def run_step(self):
+        set_lang()
+        steps = lang['steps']
+        option_item_sel = st.sidebar.selectbox('Import steps', steps)
+        self.step = steps.index(option_item_sel)
+        show_only_matched = st.sidebar.checkbox("Show only matched parameters")
+        
+        title = lang[f"step{self.step}_title"]
+        info = lang[f"step{self.step}_info"]
+        st.markdown(f"#### Step {self.step}: {title}")
+        with st.expander("Info"):
+            st.markdown(info)
+        if self.step == 0:
+            self.load_new_dataset()
+        elif self.step == 1:
+            self.identify_station_columns(show_only_matched)
+        elif self.step == 2:
+            self.identify_sample_columns(show_only_matched)
+        elif self.step == 3:
+            self.identify_values_meta_data_columns(show_only_matched)
+        elif self.step == 4:
+            self.match_parameters(show_only_matched)
+        elif self.step == 5:
+            self.pivot_table()

@@ -15,7 +15,7 @@ class Histogram:
 
     def get_plot(self):
         def get_bins(df, par):
-            arr_hist, edges = np.histogram(df[self.cfg['value_col']], 
+            arr_hist, edges = np.histogram(df['numeric_value'], 
                                            bins = int(self.cfg['bins']),
                                            range = [self.cfg['x_min'], self.cfg['x_max']])
             result = pd.DataFrame({'counts': arr_hist, 
@@ -30,7 +30,7 @@ class Histogram:
                     y_axis_label = self.cfg['y_axis_title'])
 
         # Add a quad glyph
-        bins = get_bins(self.data, self.cfg['par'])
+        bins = get_bins(self.data, self.cfg['parameter'])
         p.quad(bottom=0, top=bins['counts'], 
                fill_alpha=self.cfg['fill_alpha'],
                left=bins['left'], right=bins['right'],

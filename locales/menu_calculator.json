@@ -1,0 +1,19 @@
+{
+    
+    "menu_options": {
+        "en": ["Molar weight transformation", "SAR calculator"],
+        "de": ["Molar weight transformation", "SAR calculator"],
+        "zh": ["Molar weight transformation", "SAR calculator"]
+    },
+    "species_transformation": {
+        "en": "This options allows to convert chemical elements expressed as mg/L of a chemical species as mg/L of a different species. Example: the dominant aqueous species for dissolved nitrogen is NO3 and commonly concentrations for Nitrate in water are therefore expressed as NO3 mg/L. Sometimes Nitrate is also expressed as N mg/L. 50 mg of Nitrate espressed as NO3 correspond to 11.2 mg/L Nitrate as N. When comparing nitrate concentrations from different laboratories or to a guideline value, it is important to verify, if all values are expressed as the same species and if not, are converted using the tool below.",
+        "de": "This options allows to convert chemical elements expressed as mg/L of a chemical species as mg/L of a different species. Example: the dominant aqueous species for dissolved nitrogen is NO3 and commonly concentrations for Nitrate in water are therefore expressed as NO3 mg/L. Sometimes Nitrate is also expressed as N mg/L. 50 mg of Nitrate espressed as NO3 correspond to 11.2 mg/L Nitrate as N. When comparing nitrate concentrations from different laboratories or to a guideline value, it is important to verify, if all values are expressed as the same species and if not, are converted using the tool below.",
+        "zh": "This options allows to convert chemical elements expressed as mg/L of a chemical species as mg/L of a different species. Example: the dominant aqueous species for dissolved nitrogen is NO3 and commonly concentrations for Nitrate in water are therefore expressed as NO3 mg/L. Sometimes Nitrate is also expressed as N mg/L. 50 mg of Nitrate espressed as NO3 correspond to 11.2 mg/L Nitrate as N. When comparing nitrate concentrations from different laboratories or to a guideline value, it is important to verify, if all values are expressed as the same species and if not, are converted using the tool below."
+    },
+    "sar": {
+        "en": ["The Sodium adsorption ratio (SAR) is an irrigation water quality parameter used in the management of sodium-affected soils. It is an indicator of the suitability of water for use in agricultural irrigation, as determined from the concentrations of the main alkaline and earth alkaline cations present in the water. [more](https://en.wikipedia.org/wiki/Sodium_adsorption_ratio)"],
+        "de": ["The Sodium adsorption ratio (SAR) is an irrigation water quality parameter used in the management of sodium-affected soils. It is an indicator of the suitability of water for use in agricultural irrigation, as determined from the concentrations of the main alkaline and earth alkaline cations present in the water. [more](https://en.wikipedia.org/wiki/Sodium_adsorption_ratio)"],
+        "zh": ["The Sodium adsorption ratio (SAR) is an irrigation water quality parameter used in the management of sodium-affected soils. It is an indicator of the suitability of water for use in agricultural irrigation, as determined from the concentrations of the main alkaline and earth alkaline cations present in the water. [more](https://en.wikipedia.org/wiki/Sodium_adsorption_ratio)"]
+    }
+
+}

@@ -85,16 +85,18 @@ def get_parameter_map_cfg(cfg, df):
     return cfg
 
 def show_locations_map():
-    cfg = get_location_map_cfg()
-    filter_fields = [lang['station'], lang['date']]
-    df = show_filter(st.session_state.config.row_sample_df,filter_fields, cfg)
+    cfg= st.session_state.config.user.read_config(cn.MAP_ID,'default')
+    df = st.session_state.config.project.station_data()
+    cfg['long']= st.session_state.config.project.longitude_col
+    cfg['lat']= st.session_state.config.project.latitude_col
     map = Map(df, cfg)
     p = map.get_plot()
     st.bokeh_chart(p)
     helper.show_save_file_button(p, 'key1')
+    st.session_state.config.user.save_config(cn.MAP_ID, 'default', cfg)
 
 def show_parameters_map():
-    cfg = cn.map_cfg
+    cfg= st.session_state.config.user.read_config(cn.MAP_ID,'default')
     cfg['parameter'] = helper.select_parameter(sidebar_flag=True)
     df = st.session_state.config.row_value_df
     df = df[df[st.session_state.config.parameter_col] == cfg['parameter']]
@@ -103,11 +105,11 @@ def show_parameters_map():
     cfg = get_parameter_map_cfg(cfg, df)
     map = Map(df, cfg)
     p = map.get_plot()
-
     dic = {'min': lang['min'], 'max': lang['max'], 'mean': lang['mean'] }
     st.markdown(f"**{cfg['parameter']}, {dic[cfg['aggregation']]} value for each station.**")
     st.bokeh_chart(p)
     #helper.show_save_file_button(p, 'key1')
+    st.session_state.config.user.save_config(cn.MAP_ID, 'default', cfg)
 
 def show_menu():
     set_lang()

@@ -7,7 +7,7 @@ from st_aggrid import AgGrid
 import numpy as np
 
 from value_per_row_import import Value_per_row_import
-from sample_per_row_import import Sample_per_row_import
+from import import Sample_per_row_import
 import const as cn
 
 texts_dict = ""

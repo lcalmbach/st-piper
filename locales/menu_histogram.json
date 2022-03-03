@@ -1,0 +1,107 @@
+{
+    "menu_options": {
+        "en": ["Show scatter plot"],
+        "de": ["Show scatter plot"],
+        "zh": ["Show scatter plot"]
+    },
+    "year": {
+        "en": "Year",
+        "de": "Year",
+        "zh": "Year"
+    },
+    "options": {
+        "en": "Options",
+        "de": "Options",
+        "zh": "Options"
+    },
+    "group_by_options": {
+        "en": [null, "Station", "Year"],
+        "de": [null, "Station", "Year"],
+        "zh": [null, "Station", "Year"]
+    },
+    "parameter": {
+        "en": "Parameter",
+        "de": "Parameter",
+        "zh": "Parameter"
+    },
+    "station": {
+        "en": "Station",
+        "de": "Station",
+        "zh": "Station"
+    },
+    "stations": {
+        "en": "Stations",
+        "de": "Stations",
+        "zh": "Stations"
+    },
+    "date": {
+        "en": "Date",
+        "de": "Date",
+        "zh": "Date"
+    },
+    "settings": {
+        "en": "⚙️ Settings",
+        "de": "⚙️ Settings",
+        "zh": "⚙️ Settings"
+    },
+    "legend": {
+        "en": "Legend",
+        "de": "Legend",
+        "zh": "Legend"
+    },
+    "from_date": {
+        "en": "From date",
+        "de": "From date",
+        "zh": "From date"
+    },
+    "to_date": {
+        "en": "To date",
+        "de": "To date",
+        "zh": "To date"
+    },
+    "from_year": {
+        "en": "From year",
+        "de": "From year",
+        "zh": "From year"
+    },
+    "to_year": {
+        "en": "To year",
+        "de": "To year",
+        "zh": "To year"
+    },
+    "filter": {
+        "en": "🔎 Filter",
+        "de": "🔎 Filter",
+        "zh": "🔎 Filter"
+    },
+    "x_start": {
+        "en": "X-axis start",
+        "de": "X-axis start",
+        "zh": "X-axis start"
+    },
+    "x_end": {
+        "en": "X-axis end",
+        "de": "X-axis end",
+        "zh": "X-axis end"
+    },
+    "x_title": {
+        "en": "X-axis title",
+        "de": "X-axis title",
+        "zh": "X-axis title"
+    },
+    "y_title": {
+        "en": "Y-axis title",
+        "de": "Y-axis title",
+        "zh": "Y-axis title"
+    },
+    "bins": {
+        "en": "Bins",
+        "de": "Bins",
+        "zh": "Bins"
+    },
+    "fill_color": {
+        "en": "Fill color",
+        "de": "Fill color",
+        "zh": "Fill color"
+    }
+}

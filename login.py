@@ -18,6 +18,11 @@ def set_lang():
     lang = helper.get_language(__name__, st.session_state.config.language)
 
 
+def show_logout_form():
+    st.session_state.config.logged_in_user = None
+    helper.flash_text(lang["logout_confirmation"], 'success')
+
+
 def get_crypt_context():
     return CryptContext(
         schemes=["pbkdf2_sha256"],
@@ -25,8 +30,10 @@ def get_crypt_context():
         pbkdf2_sha256__default_rounds=50000
     )
 
+
 def encrypt_password(self, password):
     return CryptContext.encrypt(password)
+
 
 def is_valid_password(usr: str, pwd: str)->bool:
     """
@@ -42,6 +49,7 @@ def is_valid_password(usr: str, pwd: str)->bool:
     else:
         ok = False
     return ok
+
 
 def reset_password(usr):
     """

@@ -36,8 +36,7 @@ def get_filter(df:pd.DataFrame):
     return df, sel_stations
 
 
-def show_schoeller_plot():
-    def get_settings(cfg, data):
+def get_settings(cfg, data):
         with st.sidebar.expander(lang['settings']):
             cfg['group_plot_by'] = st.selectbox(label=lang['group_plots_by'], options=lang['group_by_options'])
             cfg['group_legend_by'] = st.selectbox(label=lang['legend'], options=lang['legend_options'])
@@ -51,6 +50,10 @@ def show_schoeller_plot():
                 with cols[1]:
                     cfg['y_axis_max'] = st.text_input(label=lang['y_axis_max'], value = cfg['y_axis_max'] )
         return cfg
+
+        
+def show_schoeller_plot():
+    
 
     data = st.session_state.config.row_sample_df
     cfg = cn.schoeller_cfg

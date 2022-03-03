@@ -22,7 +22,7 @@ def flash_text(text:str, type:str):
         placeholder.info(text)
     elif type=='success':
         placeholder.success(text)
-    elif type=='warning':
+    else:
         placeholder.warning(text)
     time.sleep(5)
     placeholder.write("")
@@ -37,12 +37,15 @@ def get_random_filename(prefix: str, ext: str):
 def isnan(text):
     return text != text
 
-def complete_columns(df:pd.DataFrame, par_dict:dict, pmd)->pd.DataFrame:
-    """converts mg/L concentrations to meq/L, meq% to be used in the piper diagram
+
+def add_pct_columns(df:pd.DataFrame, par_dict:dict, pmd)->pd.DataFrame:
+    """
+    converts mg/L concentrations to meq/L, meq% to be used in the piper diagram
     and the ion balance.
 
     Args:
-        df (pd.DataFrame): dataframe in the sample per row format with all major ions columns
+        df (pd.DataFrame):  dataframe in the sample per row format with all major ions columns
+        par_dict(dict):     dict holding formula weights
 
     Returns:
         pd.DataFrame: same dataframe with added columns xx_meqpl, xx_meqpct for each major ion
@@ -293,6 +296,8 @@ def get_country_list():
 def show_table(df: pd.DataFrame, cols, settings):
     gb = GridOptionsBuilder.from_dataframe(df)
     #customize gridOptions
+    if 'update_mode' not in settings:
+        settings['update_mode']=GridUpdateMode.SELECTION_CHANGED
     gb.configure_default_column(groupable=False, value=True, enableRowGroup=False, aggFunc='sum', editable=False)
     for col in cols:
         gb.configure_column(col['name'], type=col['type'], precision=col['precision'], hide=col['hide'])
@@ -307,11 +312,81 @@ def show_table(df: pd.DataFrame, cols, settings):
         data_return_mode=DataReturnMode.AS_INPUT, 
         update_mode=settings['update_mode'],
         fit_columns_on_grid_load=settings['fit_columns_on_grid_load'],
-        allow_unsafe_jscode=False, 
+        allow_unsafe_jscode=True, 
         enable_enterprise_modules=True,
         )
-
-    df = grid_response['data']
     selected = grid_response['selected_rows']
     selected_df = pd.DataFrame(selected)
     return selected_df
+
+def select_project_from_grid():
+    df = st.session_state.config.projects_df[['id', 'title']]
+    settings = {}
+    settings['height'] = 200
+    settings['width'] = "400px"
+    settings['selection_mode']='single'
+    settings['fit_columns_on_grid_load'] = True
+    settings['update_mode']=GridUpdateMode.SELECTION_CHANGED
+    cols = []
+    cols.append({'name': 'id', 'type':["numericColumn","numberColumnFilter","customNumericFormat"], 'precision':0, 'hide':True})
+    sel_row = show_table(df,cols,settings)
+    if len(sel_row)>0:
+        return int(sel_row.iloc[0]['id'])
+    else:
+        return -1
+
+def get_filter(filters):
+    expression = ''
+    with st.sidebar.expander('🔎 Filter'):
+        if 'stations' in filters:
+            station_dict=st.session_state.config.project.get_station_list(allow_none=False)
+            stations = st.multiselect(label="Stations", options=list(station_dict.keys()),
+                                        format_func=lambda x:station_dict[x])
+            if len(stations)>0:
+                stations = ",".join(map(str, stations))
+                expression = f"station_id in ({stations})"
+        if 'sampling_date' in filters:
+            min_date, max_date = st.session_state.config.project.min_max_date()
+            minmax = st.date_input("Date", min_value=min_date, max_value=max_date,value = (min_date,max_date))
+            if minmax !=  (min_date,max_date):
+                expression = "{expression} AND " if expression > '' else ""
+                expression += f"sampling_date >= '{minmax(0)}' and sampling_date <= '{minmax(1)}'"
+    
+    return expression
+
+def get_stations(default: list, filter:str):
+    station_dict=st.session_state.config.project.get_station_list(allow_none=False)
+    stations = st.sidebar.multiselect(label="Stations", options=list(station_dict.keys()),
+                                        format_func=lambda x:station_dict[x],
+                                        default = default)
+    return stations
+
+def get_parameters(default: list, filter: str):
+    parameter_dict = st.session_state.config.project.get_parameter_dict(allow_none=False, filter="")
+    sel_parameters = st.sidebar.multiselect(label='Parameter', options=list(parameter_dict.keys()), 
+                                            format_func=lambda x:parameter_dict[x], 
+                                            default=default)
+    return sel_parameters
+
+def get_parameter(default: int, filter: str = '', label: str = 'Parameter'):
+    parameter_dict = st.session_state.config.project.get_parameter_dict(allow_none=False, filter=filter)
+    id = list(parameter_dict.keys()).index(default)
+    sel_parameter = st.sidebar.selectbox(label=label, options=list(parameter_dict.keys()), 
+                                            format_func=lambda x:parameter_dict[x], 
+                                            index=id)
+    return sel_parameter
+
+def get_guideline(default: list):
+    guideline_dict = st.session_state.config.get_guideline_dict()
+    default_id = list(guideline_dict.keys()).index(default)
+    sel_guideline = st.sidebar.selectbox(label='Guideline', options=list(guideline_dict.keys()), 
+                                            format_func=lambda x:guideline_dict[x], 
+                                            index=default_id)
+    return sel_guideline
+
+def add_meqpl_columns(data, parameters, columns):
+    st.write(parameters)
+    for par_id in parameters:
+        id = parameters.index(par_id)
+        col = columns[id]
+        fact = st.session_state.config.lookup_parameters.unit_conversion(par_id, None, 'meq/L')

@@ -1,0 +1,81 @@
+﻿Parameter;;max_value;unit;Bemerkungen
+Acrylamid;79-06-1;0.1;µg/l;Der Parameterwert bezieht sich auf den Restmonomergehalt im Wasser, berechnet gemäss den Spezifikationen für den maximalen Migrationswert des betreffenden Polymers bei Wasserkontakt.
+Aluminium;7429-90-5;0.2;mg/l;
+Ammonium;14798-03-9;0.5;mg/l;"Für Trinkwasser vom reduzierten Typus; berechnet als NH4+."
+Ammonium;14798-03-9;0.1;mg/l;"Für Trinkwasser vom oxidierten Typus; berechnet als NH4+."
+Antimon;7440-36-0;5;µg/l;
+Arsen;7440-38-2;10;µg/l;
+Benzen (Benzol);71-43-2;1;µg/l;Siehe ebenfalls BTEX.
+Benzo[a]pyren;;0.01;µg/l;
+Blei;7439-92-1;10;µg/l;Proben ab Hausinstallationen sind nach einem Vorlauf von 500 ml zu entnehmen.
+Bor;7440-42-8;1;mg/l;
+Bromat;15541-45-4;10;µg/l;Aus Trinkwasseraufbereitung stammend, ohne Beeinträchtigung der Desinfektion.
+BTEX;;3;µg/l;Summe von Benzen, Methylbenzen, Ethylbenzen und Dimethylbenzen.
+Cadmium;7440-43-9;3;µg/l;
+Chlorat;14866-68-3;0.2;mg/l;Aus Trinkwasseraufbereitung stammend, ohne Beeinträchtigung der Desinfektion.
+Chlor (freies);;0.1;mg/l;
+Chlorit;14998-27-7;0.2;mg/l;Aus Trinkwasseraufbereitung stammend, ohne Beeinträchtigung der Desinfektion.
+Chlorid;16887-00-6;250;mg/l;Auf aggressive Wässer ist der Höchstwert nicht anwendbar.
+Chlormethyloxiran (Epichlorhydrin);106-89-8;0.1;µg/l;"Der Parameterwert bezieht sich auf den Restmonomergehalt im Wasser, berechnet
+gemäss den Spezifikationen für den maximalen Migrationswert des betreffenden Polymers bei Wasserkontakt."
+Chlorethen (Vinylchlorid);75-01-4;0.5;µg/l;Der Parameterwert bezieht sich auf den Restmonomergehalt im Wasser, berechnet gemäss den Spezifikationen für den maximalen Migrationswert des betreffenden Polymers bei Wasserkontakt.
+Chrom;7440-47-3;50;µg/l;
+Chrom(VI);18540-29-9;20;µg/l;
+Cyanid;57-12-5;50;µg/l;Gesamtes Cyanid, alle Formen, berechnet als Cyanid.
+Dichlorethan, 1,2-;107-06-2;3;µg/l;Siehe auch «Halogenkohlenwasserstoffe, flüchtige».
+Dichlormethan;75-09-2;20;µg/l;Siehe auch «Halogenkohlenwasserstoffe, flüchtige».
+Dioxan, 1,4-;123-91-1;6;µg/l;
+Eisen;7439-89-6;0.2;mg/l;Total
+Ethylendiamintetraacetat (EDTA);60-00-4;0.2;mg/l;
+ETBE + MTBE;;5;µg/l;Summe von 2-Methoxy-2-methylpropan und 2-Ethoxy-2-methylpropan. Gilt im Verteilnetz (ausgenommen Hausinstallationen).
+Fluorid;16984-48-8;1.5;mg/l;
+Halogenkohlenwasserstoffe, flüchtige: Summe aller halogenierten Substanzen mit einem Grundgerüst von 1 bis 3 C-Atomen und keinen weiteren funktionellen Gruppen;;10;µg/l;
+Kohlenwasserstoffe, polycyclische, aromatische;;0.1;µg/l;Summe von Benzo[b]fluoranthen, Benzo[k]fluoranthen, Benzo[ghi]perylen, Indeno[1,2,3-cd]pyren.
+Kohlenwasserstoff-Index C10–C40;;20;µg/l;Bestimmung mit einer Methode analog zur Methode ISO 9377-2, jedoch mit tieferer Bestimmungsgrenze.
+Kupfer;7440-50-8;1;mg/l;Proben ab Hausinstallationen sind nach einem Vorlauf von 500 ml zu entnehmen.
+Quecksilber;7439-97-6;1;µg/l;
+Mangan;7439-96-5;50;µg/l;
+Natrium;7440-23-5;200;mg/l;
+Nickel;7440-02-0;20;µg/l;Proben ab Hausinstallationen sind nach einem Vorlauf von 500 ml zu entnehmen.
+Nitrilotriessigsäure (NTA);;0.2;mg/l;
+Nitrat;14797-55-8;40;mg/l;
+Nitrit;14797-65-0;0.5;mg/l;
+Nitrit;;0.1;mg/l;Nach der Behandlung.
+Organische chemische Verbindung mit unbekann- ter Toxizität, aber bekannter chemischer Struktur, mit strukturelle Hinweise auf ein genotoxisches Potenzial;;0.1;µg/l;"Gilt für alle organischen Verbindungen, für die keine ausreichende Datenbasis zur Toxizität vorliegt und die der Kategorie «Substanzen mit genotoxischem Potenzi- al» zugeordnet werden. Ausgenommen sind aflatoxinähnliche Verbindungen, Azoxy-Verbindungen und N-Nitroso-Verbindungen.
+Weiter sind ausgenommen: nicht-essentielle Metalle und metallhaltige Verbindun- gen, Dioxine und dioxinähnliche Verbindungen, Steroide und Proteine."
+Organische chemische Verbindung mit unbekann- ter Toxizität, aber bekannter chemischer Struktur, ohne strukturelle Hinweise auf ein genotoxisches Potenzial;;10;µg/l;"Gilt für alle organischen Verbindungen, für die keine ausreichende Datenbasis zur Toxizität vorliegt und die einer der folgenden vier Kategorie zugeordnet werden:
+«Substanzen ohne genotoxisches Potenzial» mit hoher, mittlerer, geringer Toxizi- tät (Cramer Strukturklassen I, II und III) und Organophosphate.
+Ausgenommen: nicht-essentielle Metalle und metallhaltige Verbindungen, Dioxine und dioxinähnliche Verbindungen, Steroide und Proteine."
+Ozon;;50;µg/l;
+Perfluoroctansulfonat (PFOS);;0.3;µg/l;
+Perfluorhexansulfonat (PFHxS);;0.3;µg/l;
+Perfluoroctansäure (PFOA);;0.5;µg/l;
+Pestizide;;0.1;µg/l;"Als «Pestizide» gelten die in Artikel 2 Absatz 1 Buchstabe a der Verordnung des EDI vom 16. Dezember 20169 über Höchstgehalte an Pestizidrückständen in oder auf Erzeugnissen pflanzlicher und tierischer Herkunft (VPptH) definierten Wirk- stoffe sowie die für das Trinkwasser relevanten Metaboliten.
+Der Höchstwert gilt für jedes einzelne Pestizid. Für Aldrin, Dieldrin, Heptachlor und Heptachlorepoxid gilt ein Höchstwert von 0,030 μg/l."
+Pestizide (Total);;0.5;µg/l;"Als «Pestizide» gelten die in Artikel 2 Absatz 1 Buchstabe a VPptH definierten Wirkstoffe sowie die für das Trinkwasser relevanten Metaboliten.
+Der Begriff «Summe der Pestizide» bezeichnet die Gesamtheit aller im Rahmen des Kontrollverfahrens ermittelten und quantifizierten Pestizide."
+Phosphat;14265-44-2;1;mg/l;"Nur in warmem Trinkwasser; berechnet als Phosphor."
+Selen;7782-49-2;10;µg/l;
+Silber;7440-22-4;0.1;mg/l;
+Silikat;;5;mg/l;"Zugesetzt; berechnet als Silizium."
+Silikat;;10;mg/l;"Zugesetzt, während höchstens 3 Monaten zur Schutzschichtbildung; berechnet als Silizium."
+Stoffe gemäss Anhang 2 der Bedarfsgegenstände- verordnung des EDI vom 16. Dezember 201610;;LMS/20;mg/l;Die Migrationsgrenzwerte (SMLs) dieser Stoffe dürfen die Werte in Anhang 2 der Bedarfsgegenständeverordnung des EDI geteilt durch 20 (SMLWasser=SMLLebensmittel/20) nicht übersteigen, jedoch keinesfalls den Wert von 0.5 mg/l ausgedrückt als gesamter organischer Kohlenstoff (s. Anhang 3, Gesamter organischer Kohlenstoff). Dieser Wert (0.5 mg/l) kommt auch bei Stoffen zur Anwendung, für die in Anhang 2 der Bedarfsgegenständeverordnung keine spezifischen Migrationsgrenzwerte vorgesehen sind.
+Sulfat;14808-79-8;250;mg/l;Auf aggressive Wässer ist der Höchstwert nicht anwendbar.
+Tetra- und Trichlorethylen;;10;µg/l;Total Konzentrationen der spezifizierten Parameter.
+Tetrachlormethan;;2;µg/l;
+Trihalomethane (Total) THM;;50;µg/l;Summe von Chloroform, Bromoform, Dibromchlormethan und Bromdichlorme- than. Eine Untersuchung des Trinkwassers im Verteilnetz ist nicht erforderlich, wenn die THM-Konzentration nach abgeschlossener Aufbereitung maximal 10 μg/l beträgt.
+Uran;7440-61-1;30;µg/l;
+Zink;7440-66-6;5;mg/l;
+Gesamter organischer Kohlenstoff (TOC, Total Organic Carbon);;1;mg/l;Keine ungewöhnlichen Veränderungen. Die Erhöhung der Konzentration des ins Haus eintretenden Wassers darf höchstens 0,5 mg C/l entsprechen.
+Leitfähigkeit;;800;µS cm-1 bei 25 °C;Auf aggressive Wässer ist der Richtwert nicht anwendbar.
+Oxidierbarkeit;;5;mg/l O2;
+pH;;6.8–8.2;pH-Einheiten;"Auf aggressive Wässer ist der Richtwert nicht anwendbar.
+Bei in Flaschen oder Behältnisse abgefülltem Wasser, das von Natur aus reich an Kohlendioxid ist bzw. dem Kohlendioxid zugefügt wurde, kann die Unter- grenze auf 4,5 pH-Einheiten gesenkt werden."
+Sulfid;18496-25-8;organoleptisch nicht nachweisbar;;
+Trübung;;1;NTU;Im Verteilnetz
+Radon;;100;Bq/l;
+Tritium;;100;Bq/l;"Erhöhte Tritiumwerte können auf das Vorhandensein anderer künstlicher Radionuklide hindeuten. Liegt die Tritiumkonzentration über dem für sie festgelegten Parameterwert, so ist eine Analyse im Hinblick auf das Vorhan-
+densein anderer künstlicher Radionuklide erforderlich."
+Richtwert Gesamtdosis (RD);;0.1;mSv/Jahr;"Unter Ausschluss von Tritium, Kalium-40, Radon und Abbauprodukten von Radon.
+Die Überwachung von Trinkwasser im Hinblick auf die RD ist erforderlich, wenn eine Quelle künstlicher oder erhöhter natürlicher Radioaktivität vorhan- den ist und anhand anderer repräsentativer Überwachungsprogramme oder anderer Untersuchungen nicht nachgewiesen werden kann, dass die RD unter
+legten Parameterwert (Radon und Tritium) liegt."

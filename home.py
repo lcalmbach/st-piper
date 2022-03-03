@@ -11,12 +11,12 @@ from fontus import User, Project
 
 import const
 import helper
+import login
 
 lang = {}
 def set_lang():
     global lang
     lang = helper.get_language(__name__, st.session_state.config.language)
-
 
 def get_crypt_context():
     return CryptContext(
@@ -164,6 +164,19 @@ def show_account_form():
                 context = get_crypt_context()
                 ok, message = user.save_password(context.hash(pwd1))
             message_type = 'success' if ok else 'warning'
+    
+    st.markdown("#### Delete Account")
+    with st.form('delete_account'):
+        st.markdown("Account and all associated datasets will be deleted. Enter your email-address to confirm this operation.")
+        email = st.text_input("Acccount Email")
+        
+        if st.form_submit_button(label='Delete account'):
+            if email == st.session_state.config.user.email:
+                ok, message = st.session_state.config.user.delete()
+                    
+                message_type = 'success' if ok else 'warning'
+            else:
+                message, message_type = "Enter your correct email address", True
 
     #if key was pressed
     message_type = 'success' if ok else 'warning'
@@ -172,11 +185,6 @@ def show_account_form():
 
 def show_create_account_form():
     st.info("Not implemented yet")
-
-
-def show_logout_form():
-    st.session_state.config.logged_in_user = None
-    helper.flash_text(lang["logout_confirmation"], 'success')
 
 
 def show_info():
@@ -208,5 +216,14 @@ def show_info():
 
 def show_menu():
     set_lang()
-    show_info()
+
+    MENU_OPTIONS = lang['menu_options']
+    
+    menu_actions = [show_info,
+                    show_account_form]
+    if not st.session_state.config.is_logged_in():
+        menu_actions[-1] = login.show_create_account_form
+    menu_action = st.sidebar.selectbox('Options', MENU_OPTIONS)
+    id = MENU_OPTIONS.index(menu_action)
+    menu_actions[id]()
     

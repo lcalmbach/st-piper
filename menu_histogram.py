@@ -104,13 +104,16 @@ def show_menu():
     df = st.session_state.config.row_value_df
     
     if menu_action == menu_options[0]:
-        cfg = cn.histogram_cfg
-        cfg['parameter'] = get_parameter()
-        par_col = st.session_state.config.key2col()[cn.PARAMETER_COL]
-        df = df[df[par_col] == cfg['parameter']]
+        cfg= st.session_state.config.user.read_config(cn.HISTOGRAM_ID,'default')
+        st.write(cfg)
+        cfg['stations'] = helper.get_stations(default=cfg['stations'],filter="")
+        cfg['parameter'] = helper.get_parameter(default=cfg['parameter'], label='Parameter', filter='')
+        
+        par_col = st.session_state.config.project.get_parameter_dict()[cfg['parameter']]
         cfg = get_config(df, cfg)
         filters = (lang['station'], lang['year'])
-        df = show_filter(df, filters)
-        
-        show_histogram(df, cfg)
+        # df = show_filter(df, filters)
+        data = st.session_state.config.project.get_observations([cfg['parameter']], cfg['stations'])
+        show_histogram(data, cfg)
+        st.session_state.config.user.save_config(cn.HISTOGRAM_ID, 'default', cfg)
 

@@ -5,11 +5,22 @@
         "de": ["Home", "Projekte", "Daten", "Grafiken","Analysen","Rechner", "Login"],
         "zh": ["家", "專案", "Data", "情節","分析","計算機", "登錄"]
     },
+    "logout": {
+        "en": "Logout", 
+        "de": "Logout", 
+        "zh": "註銷"
+    }, 
     "app_created_by": {
         "en": "App created by",
         "de": "Software von",
         "zh": "創建者的應用"
     },
+    "curr_project": {
+        "en": "Current project",
+        "de": "Projekt",
+        "zh": "當前專案"
+    },
+    
     "version": {
         "en": "Version",
         "de": "Version",

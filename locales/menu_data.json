@@ -1,0 +1,25 @@
+{
+    
+    "menu_options": {
+        "en": ["Stations", "Parameters"],
+        "de": ["Stations", "Parameters"],
+        "zh": ["Stations", "Parameters"]
+    },
+    "menu_intro": {
+        "en": ["explain station stats",
+            "explain parameter_stats",
+            "explain trend",
+            "explain outlier",
+            "explain saturation"],
+        "de": ["explain station stats",
+            "explain parameter_stats",
+            "explain trend",
+            "explain outlier",
+            "explain saturation"],
+        "zh": ["explain station stats",
+            "explain parameter_stats",
+            "explain trend",
+            "explain outlier",
+            "explain saturation"]
+    }
+}

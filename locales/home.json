@@ -1,8 +1,8 @@
 {
     "menu_options": {
-        "en": ["Home", "Projects", "Plots", "Analysis", "Calculators", "Login"],
-        "de": ["Home", "Projects", "Plots", "Analysis", "Calculators", "Login"],
-        "zh": ["Home", "Projects", "Plots", "Analysis", "Calculators", "Login"]
+        "en": ["Home", "Account settings"],
+        "de": ["Home", "Account settings"],
+        "zh": ["Home", "Account settings"]
     },
     "account_setting": {
         "en": "Account settings",
@@ -76,15 +76,6 @@
         "en": "You have been succcessfully logged in",
         "de": "You have been succcessfully logged in",
         "zh": "You have been succcessfully logged in"
-    },
-    "logout_confirmation": {
-        "en": "You have been successfully logged out",
-        "de": "You have been successfully logged out",
-        "zh": "You have been successfully logged out"
-    },
-    "logout_confirmation": {
-        "en": "You have been successfully logged out",
-        "de": "You have been successfully logged out",
-        "zh": "You have been successfully logged out"
     }
+    
 }
