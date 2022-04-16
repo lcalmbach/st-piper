@@ -32,9 +32,9 @@ def load_parameters(project):
     ok = db.save_db_table("temp_parameters", df, [])
     st.info(ok)
 
-def load_data(project):
+def load_data(project, del_char):
     filename = f'./data/{project}_data.csv'
-    df = pd.read_csv(filename, sep=";")
+    df = pd.read_csv(filename, sep=del_char)
     ok = db.save_db_table("temp_data", df, [])
     st.info(ok)
 
@@ -60,8 +60,8 @@ project = st.sidebar.text_input("Project")
 if st.sidebar.button("Load data"):
     #load_columns(project)
     #load_parameters(project)
-    #load_data(project)
+    load_data(project,",")
     #load_metadata()
-    load_guidelines()
-
+    # load_guidelines()
+    
 st.write(project)

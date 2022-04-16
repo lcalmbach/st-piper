@@ -1,0 +1,39 @@
+{
+    "plot_type": {
+        "en": "Plot type",
+        "de": "Plot type",
+        "zh": "Plot type"
+    },
+
+    "menu_options": {
+        "en": ["Time series", "Scatter", "Maps", "Piper", "Histogram", "Schoeller", "Boxplot"],
+        "de": ["Time series", "Scatter", "Maps", "Piper", "Histogram", "Schoeller", "Boxplot"],
+        "zh": ["Time series", "Scatter", "Maps", "Piper", "Histogram", "Schoeller", "Boxplot"]
+    },
+
+    "menu_options_piper": {
+        "en": ["Show Piper plot", "Plot settings"],
+        "de": ["Show Piper plot", "Plot settings"],
+        "zh": ["Show Piper plot", "Plot settings"]
+    },
+    "menu_options_scatter": {
+        "en": ["Show scatter plot"],
+        "de": ["Show scatter plot"],
+        "zh": ["Show scatter plot"]
+    },
+    "menu_options_boxplot": {
+        "en": ["Show boxplot"],
+        "de": ["Show boxplot"],
+        "zh": ["Show boxplot"]
+    },
+    "menu_options_histogram": {
+        "en": ["Show histogram"],
+        "de": ["Show histogram"],
+        "zh": ["Show histogram"]
+    },
+    "menu_options_timeseries": {
+        "en": ["Time series (multiple parameters)", "Time series (multiple stations)", "Plot settings"],
+        "de": ["Time series (multiple parameters)", "Time series (multiple stations)", "Plot settings"],
+        "zh": ["Time series (multiple parameters)", "Time series (multiple stations)", "Plot settings"]
+    }
+}

@@ -1,7 +1,8 @@
 import streamlit as st
 from st_aggrid import AgGrid
 import pandas as pd
-from fontus import Guideline, Parameter
+from fontus.guideline import Guideline
+from fontus.parameter import Parameter
 
 import const as cn
 import helper
@@ -11,7 +12,7 @@ import database as db
 lang = {}
 def set_lang():
     global lang
-    lang = helper.get_language(__name__, st.session_state.config.language)
+    lang = helper.get_language(__name__, st.session_state.language)
 
 
 def exceedance_analysis():
@@ -43,7 +44,7 @@ def exceedance_analysis():
         #with layout_cols[0]:
         return helper.show_table(df_sum,cols, settings)
 
-    cfg= st.session_state.config.user.read_config(cn.EXCEEDANCE_ANALYSIS_ID,'default')
+    cfg= st.session_state.user.read_config(cn.EXCEEDANCE_ANALYSIS_ID,'default')
     cfg['guideline'] = helper.get_guideline(cfg['guideline'])
     cfg['prj_parameter'] = helper.get_parameter(cfg['prj_parameter'])
     parameter = Parameter(cfg['prj_parameter'])
@@ -52,7 +53,7 @@ def exceedance_analysis():
     st.markdown(f"**Guideline: {guideline.title}**")
     if standard != None:
         st.markdown(f"Detected standard: {parameter.name}: **{standard['max_value']}** {standard['unit']}")
-        sql = qry['exceedance_list'].format(standard['max_value'], st.session_state.config.project.key,parameter.id)
+        sql = qry['exceedance_list'].format(standard['max_value'], st.session_state.project.key,parameter.id)
         df, ok, err_msg = db.execute_query(query=sql, conn=st.session_state.conn)
         grid_response = get_table(df)
         show_summary_table(df)
@@ -70,7 +71,7 @@ def exceedance_analysis():
                 standard = guideline.get_standard(sel_standard_id)
 
         if standard != {}:
-            sql = qry['exceedance_list'].format(standard['max_value'], st.session_state.config.project.key, parameter.id)
+            sql = qry['exceedance_list'].format(standard['max_value'], st.session_state.project.key, parameter.id)
             df, ok, err_msg = db.execute_query(query=sql, conn=st.session_state.conn)
             grid_response = get_table(df)
             show_summary_table(df)

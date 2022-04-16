@@ -23,7 +23,7 @@ def set_lang():
     global legend_options
     global lang
     
-    lang = helper.get_language(__name__, st.session_state.config.language)
+    lang = helper.get_language(__name__, st.session_state.language)
     group_by_options = [None, lang['station']]
     legend_options = [None, lang['station']]
 
@@ -39,12 +39,12 @@ def get_cfg(cfg: dict, df: pd.DataFrame):
 
 def show_filter(df: pd.DataFrame):
     with st.sidebar.expander(lang['filter']):
-        station_options = st.session_state.config.get_station_list()
+        station_options = st.session_state.get_station_list()
         sel_stations = st.multiselect(label=lang['stations'], options=station_options)
         if len(sel_stations)>0:
-            df = df[(df[st.session_state.config.station_col].isin(sel_stations)) & (df['alk_pct'] > 0)]
-        #if st.session_state.config.col_is_mapped(cn.SAMPLE_DATE_COL):
-        #    date_col = st.session_state.config.key2col()[cn.SAMPLE_DATE_COL]
+            df = df[(df[st.session_state.station_col].isin(sel_stations)) & (df['alk_pct'] > 0)]
+        #if st.session_state.col_is_mapped(cn.SAMPLE_DATE_COL):
+        #    date_col = st.session_state.key2col()[cn.SAMPLE_DATE_COL]
         ##    df[date_col] = pd.to_datetime(df[date_col], format='%d.%m.%Y', errors='ignore')
         #    min_date = df[date_col].min().to_pydatetime().date()
         #    max_date = df[date_col].max().to_pydatetime().date()
@@ -57,31 +57,65 @@ def show_filter(df: pd.DataFrame):
     return df
 
 def get_data(cfg):
-    cfg['parameters'] = cn.MAJOR_IONS
+    x, unmatched_cat = st.session_state.project.master_par_id_2_par_id([cn.BICARBONATE_ID])
+    prj=st.session_state.project
+    cfg['alk_source'] = 2 #1 use hco3, 2: use HCO3 + CO3
+    cfg['na_k'] = 1  # use Na+K
+    if cfg['alk_source']==1: # use hco3, co3
+        anions, unmatched = prj.master_par_id_2_par_id([cn.BICARBONATE_ID, cn.CARBONATE_ID, cn.CHLORID_ID, cn.SULFATE_ID])
+    elif cfg['alk_source']==2: # use alk, remove hco3, co3
+        anions, unmatched = prj.master_par_id_2_par_id([cn.ALKALINITY_ID, cn.CHLORID_ID, cn.SULFATE_ID])
+            
+    if cfg['na_k']==0:
+        cations, unmatched = prj.master_par_id_2_par_id([cn.CALCIUM_ID, cn.SODIUM_ID, cn.MAGNESIUM_ID])
+    else:
+        cations, unmatched = prj.master_par_id_2_par_id([cn.CALCIUM_ID, cn.SODIUM_ID, cn.POTASSIUM_ID, cn.MAGNESIUM_ID])
     
-    data = st.session_state.config.project.get_observations(cfg['parameters'], cfg['stations'])
+    # remove not matching parameters
+    data = st.session_state.project.get_observations(cations + anions, cfg['stations'])
     data = pd.pivot_table(data,
         values='numeric_value',
         index=['station_key','station_id', 'sampling_date'],
         columns='parameter_id',
-        aggfunc=np.mean
+        aggfunc=np.max
     ).reset_index()
-    columns = st.session_state.config.project.get_parameter_name_list(cn.MAJOR_IONS, 'formula')
-    columns = [f"{item}_meqpl" for item in columns]
-    data = helper.add_meqpl_columns(data, cn.MAJOR_IONS, columns)
+    data = data[(data[prj.par_id(cn.CALCIUM_ID)] > 0) & (data[prj.par_id(cn.SODIUM_ID)] > 0) & (data[prj.par_id(cn.ALKALINITY_ID)] > 0)]
+
+    # convert major ions to meq/L
+    x = st.session_state.project.parameters_df
+    major_ions = st.session_state.project.get_parameter_name_list(cations + anions, 'short_name_en')
+    meqpl_ions = [f"{item}_meqpl" for item in major_ions]
+    data = helper.add_meqpl_columns(data, cations + anions, meqpl_ions)
+    if cfg['na_k'] == 1:
+        data['Na_meqpl'] = data['Na_meqpl'] + data['K_meqpl']
+        data = data.drop(columns='K_meqpl', axis=1)
+        cations.pop(2)
+
+    cations_names = st.session_state.project.get_parameter_name_list(cations, 'short_name_en')
+    meqpl_cations = [f"{item}_meqpl" for item in cations_names]
+    anions_names = st.session_state.project.get_parameter_name_list(anions, 'short_name_en')
+    meqpl_anions = [f"{item}_meqpl" for item in anions_names]
+
+    #calculate meq% for anions and cations seperately
+    pct_cations = [f"{item}_pct" for item in cations_names]
+    pct_anions = [f"{item}_pct" for item in anions_names]
+    
+    data = helper.add_pct_columns(data, meqpl_cations, pct_cations, sum_col='sum_cations_meqpl')
+    data = helper.add_pct_columns(data, meqpl_anions, pct_anions, sum_col='sum_anions_meqpl')
+    return data, pct_cations, pct_anions
 
 
 def show_piper_plot():
-    cfg= st.session_state.config.user.read_config(cn.PIPER_ID, 'default')
+    cfg= st.session_state.user.read_config(cn.PIPER_ID, 'default')
     cfg['stations'] = helper.get_stations(default=cfg['stations'], filter="")
-    data = get_data(cfg)
+    data, cfg['cation_cols'], cfg['anion_cols'] = get_data(cfg)
     cfg = get_cfg(cfg, data)
     
     piper = Piper(data, cfg)
     p = piper.get_plot()
     st.bokeh_chart(p)
     #helper.show_save_file_button(p, 'key1')
-    st.session_state.config.user.save_config(cn.PIPER_ID, 'default', cfg)
+    st.session_state.user.save_config(cn.PIPER_ID, 'default', cfg)
 
 def show_menu():
     set_lang()

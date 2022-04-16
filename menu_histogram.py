@@ -11,20 +11,20 @@ from map import Map
 lang = {}
 def set_lang():
     global lang
-    lang = helper.get_language(__name__, st.session_state.config.language)
+    lang = helper.get_language(__name__, st.session_state.language)
 
 
 def show_filter(df: pd.DataFrame, filters:tuple):
     def filter_station(df):
-        station_col = st.session_state.config.key2col()[cn.STATION_IDENTIFIER_COL]
-        station_options = st.session_state.config.get_station_list()
+        station_col = st.session_state.key2col()[cn.STATION_IDENTIFIER_COL]
+        station_options = st.session_state.get_station_list()
         sel_stations = st.multiselect(label=lang['stations'], options=station_options)
         if len(sel_stations)>0:
             df = df[df[station_col].isin(sel_stations)]
         return df, sel_stations
     
     def filter_date(df):
-        date_col = st.session_state.config.key2col()[cn.SAMPLE_DATE_COL]
+        date_col = st.session_state.key2col()[cn.SAMPLE_DATE_COL]
         df[date_col] = pd.to_datetime(df[date_col], format='%d.%m.%Y', errors='ignore')
         min_date = df[date_col].min().to_pydatetime().date()
         max_date = df[date_col].max().to_pydatetime().date()
@@ -36,7 +36,7 @@ def show_filter(df: pd.DataFrame, filters:tuple):
         return df, min_date, max_date
     
     def filter_year(df):
-        date_col = st.session_state.config.key2col()[cn.SAMPLE_DATE_COL]
+        date_col = st.session_state.key2col()[cn.SAMPLE_DATE_COL]
         df[date_col] = pd.to_datetime(df[date_col], format='%d.%m.%Y', errors='ignore')
         min_year = df[date_col].min().to_pydatetime().year
         max_year = df[date_col].max().to_pydatetime().year
@@ -59,15 +59,16 @@ def show_filter(df: pd.DataFrame, filters:tuple):
 
 def get_unit(df):
     unit=''
-    if st.session_state.config.col_is_mapped(cn.UNIT_COL):
-        unit_col = st.session_state.config.key2col()[cn.UNIT_COL]
+    if st.session_state.col_is_mapped(cn.UNIT_COL):
+        unit_col = st.session_state.key2col()[cn.UNIT_COL]
         unit = df.iloc[0][unit_col]
     return unit
 
+
 def get_config(df, cfg):
-    cfg['value_col'] = st.session_state.config.key2col()[cn.VALUE_NUM_COL]
-    x_min = df[cfg['value_col']].min()
-    x_max = df[cfg['value_col']].max()
+    # todo!
+    x_min = df['numeric_value'].min()
+    x_max = df['numeric_value'].max()
     
     with st.sidebar.expander(lang['settings']):
         cols = st.columns(2)
@@ -86,34 +87,34 @@ def get_config(df, cfg):
         cfg = cfg
     return cfg
 
+
 def get_parameter():
-    parameter_options = st.session_state.config.parameter_map_df.index
+    parameter_options = st.session_state.parameter_map_df.index
     result = st.sidebar.selectbox(label=lang['parameter'], options=parameter_options)
     return result
+
 
 def show_histogram(df:pd.DataFrame, cfg:dict):
     histo = Histogram(df, cfg)
     p = histo.get_plot()
     st.bokeh_chart(p)
 
+
 def show_menu():
     set_lang()
     menu_options = lang["menu_options"]
     menu_action = st.sidebar.selectbox(label=lang['options'], options=menu_options)
     
-    df = st.session_state.config.row_value_df
-    
     if menu_action == menu_options[0]:
-        cfg= st.session_state.config.user.read_config(cn.HISTOGRAM_ID,'default')
-        st.write(cfg)
+        cfg= st.session_state.user.read_config(cn.HISTOGRAM_ID,'default')
+
         cfg['stations'] = helper.get_stations(default=cfg['stations'],filter="")
         cfg['parameter'] = helper.get_parameter(default=cfg['parameter'], label='Parameter', filter='')
         
-        par_col = st.session_state.config.project.get_parameter_dict()[cfg['parameter']]
-        cfg = get_config(df, cfg)
         filters = (lang['station'], lang['year'])
         # df = show_filter(df, filters)
-        data = st.session_state.config.project.get_observations([cfg['parameter']], cfg['stations'])
+        data = st.session_state.project.get_observations(filter_parameters=[cfg['parameter']], filter_stations=cfg['stations'])
+        cfg = get_config(data, cfg)
         show_histogram(data, cfg)
-        st.session_state.config.user.save_config(cn.HISTOGRAM_ID, 'default', cfg)
+        st.session_state.user.save_config(cn.HISTOGRAM_ID, 'default', cfg)
 

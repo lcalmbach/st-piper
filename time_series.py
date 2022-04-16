@@ -33,7 +33,7 @@ class Time_series:
                    plot_width = self.cfg['plot_width'], 
                    plot_height=self.cfg['plot_height'])
         p.title.align = "center"
-        p.yaxis.axis_label = 'Concentration (mg/L)'
+        p.yaxis.axis_label = self.cfg['y_axis_title']
         if not self.cfg['y_axis_auto']:
             p.y_range = Range1d(self.cfg['y_axis_start'], self.cfg['y_axis_end'])
         if not self.cfg['time_axis_auto']:
@@ -47,8 +47,8 @@ class Time_series:
             df = self.data[self.data[self.cfg['legend_col']] == item]
             df = df.rename(columns={"sampling_date": 'date'})
             clr = next(color)
-            l = p.line(x='date', y='numeric_value', line_color=clr, line_width = 2, alpha=self.cfg['fill_alpha'], source=df)
-            m = p.scatter(x='date', y='numeric_value', source=df, marker=cn.MARKERS[i], 
+            l = p.line(x='date', y=self.cfg['y_col'], line_color=clr, line_width = 2, alpha=self.cfg['fill_alpha'], source=df)
+            m = p.scatter(x='date', y=self.cfg['y_col'], source=df, marker=cn.MARKERS[i], 
                 size=self.cfg['symbol_size'], color=clr, alpha=self.cfg['fill_alpha'])
             legend_items.append((item,[l,m]))
             i+=1

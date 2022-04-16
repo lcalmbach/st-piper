@@ -9,7 +9,7 @@ import station
 import menu_parameter
 import const as cn
 import helper
-from fontus import Project
+from fontus.project import Project
 from query import qry
 import database as db
 
@@ -17,7 +17,7 @@ import database as db
 lang = {}
 def set_lang():
     global lang
-    lang = helper.get_language(__name__, st.session_state.config.language)
+    lang = helper.get_language(__name__, st.session_state.language)
 
 
 def check_data_format(df):
@@ -41,7 +41,7 @@ def nwis_test():
 
 
 def show_project_form(project:Project):
-    if not (st.session_state.config.is_logged_in()):
+    if not (st.session_state.is_logged_in()):
         st.info(lang['must_be_logged_in'])
     else:
         ok, message = True, ''
@@ -71,7 +71,7 @@ def show_project_form(project:Project):
             if form.form_submit_button(label=lang['save']):
                 ok, message = project.save()
                 st.write(message)
-                st.session_state.config.projects_df = st.session_state.config.get_projects()
+                st.session_state.projects_df = st.session_state.get_projects()
         
         if message > '':
             type = 'success' if ok else 'warning'
@@ -84,7 +84,7 @@ def import_data():
     project_id = helper.select_project_from_grid()
     if project_id > 0:
         project = Project(project_id)
-        st.session_state.config.project = project
+        st.session_state.project = project
         project.configure_import()
 
 def export_data():
@@ -107,7 +107,7 @@ def show_menu():
     set_lang()
     MENU_OPTIONS = lang['menu_options']
     menu_action = st.sidebar.selectbox('Options', MENU_OPTIONS)
-    if not st.session_state.config.is_logged_in():
+    if not st.session_state.user.is_logged_in():
         st.info("You need to be logged in to create, upload and manage projects.")
     else:
         menu_actions = [edit_project

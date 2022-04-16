@@ -13,16 +13,16 @@ from helper import get_language, flash_text, bokeh_palettes, show_save_file_butt
 lang = {}
 def set_lang():
     global lang
-    lang = get_language(__name__, st.session_state.config.language)
+    lang = get_language(__name__, st.session_state.language)
 
 
 def get_filter(df:pd.DataFrame):
     with st.sidebar.expander(lang['filter']):
-        lst_stations = list(df[st.session_state.config.station_col].unique())
+        lst_stations = list(df[st.session_state.station_col].unique())
         sel_stations = st.multiselect(label=lang['station'], options=lst_stations)
     
     if len(sel_stations)> 0:
-        df = df[df[st.session_state.config.station_col].isin(sel_stations)]
+        df = df[df[st.session_state.station_col].isin(sel_stations)]
     else:
         sel_stations = lst_stations
     return df, sel_stations
@@ -70,11 +70,11 @@ def get_settings(cfg, data):
 
 
 def show_scatter_plot():
-    cfg= st.session_state.config.user.read_config(cn.SCATTER_ID,'default')
+    cfg= st.session_state.user.read_config(cn.SCATTER_ID,'default')
     cfg['stations'] = helper.get_stations(default=cfg['stations'], filter="")
     cfg['x_par'] = helper.get_parameter(cfg['x_par'], label='X-Parameter', filter='')
     cfg['y_par'] = helper.get_parameter(cfg['y_par'], label='Y-Parameter', filter='')
-    data = st.session_state.config.project.get_observations([cfg['x_par'], cfg['y_par']], cfg['stations'])
+    data = st.session_state.project.get_observations([cfg['x_par'], cfg['y_par']], cfg['stations'])
     data = pd.pivot_table(data,
         values='numeric_value',
         index=['station_key','station_id', 'sampling_date'],
@@ -92,9 +92,9 @@ def show_scatter_plot():
                 AgGrid(df_stats)
     else:
         if len(sel_stations) == 0:
-            sel_stations = data[st.session_state.config.station_col].unique()
+            sel_stations = data[st.session_state.station_col].unique()
         for station in sel_stations:
-            df = data[data[st.session_state.config.station_col] == station]
+            df = data[data[st.session_state.station_col] == station]
             if len(df)>0:
                 cfg['plot_title'] = station
                 scatter = Scatter(df, cfg)
@@ -105,7 +105,7 @@ def show_scatter_plot():
                         AgGrid(df_stats)
             else:
                 st.info(lang['no_record_found_4station'].format(station))
-    st.session_state.config.user.save_config(cn.SCATTER_ID, 'default', cfg)
+    st.session_state.user.save_config(cn.SCATTER_ID, 'default', cfg)
 
 def show_menu():
     set_lang()

@@ -11,7 +11,7 @@ import helper
 lang = {}
 def set_lang():
     global lang
-    lang = helper.get_language(__name__, st.session_state.config.language)
+    lang = helper.get_language(__name__, st.session_state.language)
 
 
 def get_fmw(formula):
@@ -19,7 +19,7 @@ def get_fmw(formula):
         return substance.mass
 
 def transform_molar_weight():
-    cfg= st.session_state.config.user.read_config(cn.TRANSFORM_MOLAR_WEIGHT_ID,'default')
+    cfg= st.session_state.user.read_config(cn.TRANSFORM_MOLAR_WEIGHT_ID,'default')
     def show_result():
         text = f"Conversion {cfg['formula_in']} -> {cfg['formula_out']}:"
         st.markdown(text)
@@ -70,7 +70,7 @@ def transform_molar_weight():
         show_result()
     elif status == 'insufficient':
         helper.flash_text(message, "warning")
-    st.session_state.config.user.save_config(cn.TRANSFORM_MOLAR_WEIGHT_ID, 'default', cfg)
+    st.session_state.user.save_config(cn.TRANSFORM_MOLAR_WEIGHT_ID, 'default', cfg)
 
 
 def sar_calculator():
@@ -114,8 +114,9 @@ def sar_calculator():
         st.text_input("SAR", f"{result:.1f}")
         st.text_input("Classification", get_sar_classification(result))
         df = get_sar_interpretation_df()
-        st.markdown("SAR Classificatio ([reference](http://turf.okstate.edu/water-quality/sar-calculator))")
-        AgGrid(get_sar_interpretation_df())
+        with st.expander('Classification'):
+            AgGrid(get_sar_interpretation_df(), height=240)
+            st.markdown("[reference](http://turf.okstate.edu/water-quality/sar-calculator)")
 
     cols = st.columns(2)
     with cols[0]:

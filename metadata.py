@@ -27,31 +27,3 @@ class Metadata():
     def key2par(self):
         result = zip(list(self.metadata_df.index), list(self.metadata_df['name']))
         return dict(result)
-
-    def unit_conversion(self, par_id, unit_in, unit_out):
-        def calc_concentration_conversion(par):
-            fact = {'g/L': 1e3, 'μg/l)': 1e-3, 'ng/l':1e-6, 
-                    'mol/l': par['fmw'] * 1e3, 'mmol/l': par['fmw'],'μmol/l': par['fmw'] * 1e-3, 'nmol/L': par['fmw'] * 1e-6,
-                    'meq/l': par['fmw'] * par['valence'], 'μeq/l': par['fmw'] * par['valence'] * 1e-3
-            }
-            result = fact[unit_in] / fact[unit_out]
-            return result
-        
-        def calc_length_conversion():
-            fact = {'km': 1e3, 'cm': 1e-2, 'mm':1e-3, 'μm':1e-4
-            }
-            result = fact[unit_in] / fact[unit_out]
-            return result
-
-        print(unit_in, unit_out)
-        par = self.metadata_df[self.metadata_df['id']==par_id].iloc[0]
-        print(par)
-        unit_in = par['unit'] if unit_in == None else unit_in
-
-        if par['unit_cat'] in (cn.MOL_CONCENTRATION_CAT,cn.SIMPLE_CONCENTRATION_CAT):
-            result = calc_concentration_conversion(par)
-        elif par['unit_cat'] == cn.LENGTH_CAT:
-            result = calc_length_conversion()
-        else:
-            result = 1
-        return result

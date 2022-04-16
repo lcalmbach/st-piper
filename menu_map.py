@@ -20,20 +20,20 @@ from map import Map
 lang = {}
 def set_lang():
     global lang
-    lang = helper.get_language(__name__, st.session_state.config.language)
+    lang = helper.get_language(__name__, st.session_state.language)
 
 
 def show_filter(df: pd.DataFrame, filters: list, cfg: dict):
     with st.sidebar.expander(f"🔎 {lang['filter']}"):
         if lang['station'].lower() in filters:
-            station_col = st.session_state.config.key2col()[cn.STATION_IDENTIFIER_COL]
-            station_options = st.session_state.config.get_station_list()
+            station_col = st.session_state.key2col()[cn.STATION_IDENTIFIER_COL]
+            station_options = st.session_state.get_station_list()
             sel_stations = st.multiselect(label=lang['stations'], options=station_options)
             if len(sel_stations)>0:
                 df = df[df[station_col].isin(sel_stations)]
         
-        if lang['date'].lower() in filters and st.session_state.config.col_is_mapped(cn.SAMPLE_DATE_COL):
-            date_col = st.session_state.config.key2col()[cn.SAMPLE_DATE_COL]
+        if lang['date'].lower() in filters and st.session_state.col_is_mapped(cn.SAMPLE_DATE_COL):
+            date_col = st.session_state.key2col()[cn.SAMPLE_DATE_COL]
             df[date_col] = pd.to_datetime(df[date_col], format='%d.%m.%Y', errors='ignore')
             min_date = df[date_col].min().to_pydatetime().date()
             max_date = df[date_col].max().to_pydatetime().date()
@@ -51,15 +51,15 @@ def show_filter(df: pd.DataFrame, filters: list, cfg: dict):
                 compare_value = float(st.text_input(label=lang['value'], value='0'))
             if operator != None:
                 if operator == '>':
-                    df = df[df[st.session_state.config.value_col] > compare_value]
+                    df = df[df[st.session_state.value_col] > compare_value]
                 elif operator == '<':
-                    df = df[df[st.session_state.config.value_col] < compare_value]
+                    df = df[df[st.session_state.value_col] < compare_value]
                 elif operator == '=':
-                    df = df[df[st.session_state.config.value_col] == compare_value]
+                    df = df[df[st.session_state.value_col] == compare_value]
                 elif operator == '>=':
-                    df = df[df[st.session_state.config.value_col] >= compare_value]
+                    df = df[df[st.session_state.value_col] >= compare_value]
                 elif operator == '<=':
-                    df = df[df[st.session_state.config.value_col] <= compare_value]
+                    df = df[df[st.session_state.value_col] <= compare_value]
 
     return df
 
@@ -72,7 +72,7 @@ def get_parameter_map_cfg(cfg, df):
         cfg['prop_size_method'] = st.radio(labal=lang['prop_color_size'], options=lst_options).lower()
         lst_stat_functions=[lang['min'], lang['max'], lang['mean']]
         cfg['aggregation'] = st.radio(label=lang['aggregation'], options=lst_stat_functions, help=lang['aggregation_station_help']).lower()
-        max_val = df[st.session_state.config.value_col].mean() + df[st.session_state.config.value_col].std() * 2
+        max_val = df[st.session_state.value_col].mean() + df[st.session_state.value_col].std() * 2
         cfg['max_value'] = st.number_input(label=lang['max_value'] , value=max_val)
         if cfg['prop_size_method'] == lang['size'].lower():
             cfg['max_prop_size'] = st.number_input(label=lang['max_radius'], value=cfg['max_prop_size'])
@@ -85,21 +85,22 @@ def get_parameter_map_cfg(cfg, df):
     return cfg
 
 def show_locations_map():
-    cfg= st.session_state.config.user.read_config(cn.MAP_ID,'default')
-    df = st.session_state.config.project.station_data()
-    cfg['long']= st.session_state.config.project.longitude_col
-    cfg['lat']= st.session_state.config.project.latitude_col
+    cfg= st.session_state.user.read_config(cn.MAP_ID,'default')
+    df = st.session_state.project.station_data()
+    cfg['long']= st.session_state.project.longitude_col
+    cfg['lat']= st.session_state.project.latitude_col
     map = Map(df, cfg)
     p = map.get_plot()
     st.bokeh_chart(p)
     helper.show_save_file_button(p, 'key1')
-    st.session_state.config.user.save_config(cn.MAP_ID, 'default', cfg)
+    st.session_state.user.save_config(cn.MAP_ID, 'default', cfg)
 
 def show_parameters_map():
-    cfg= st.session_state.config.user.read_config(cn.MAP_ID,'default')
-    cfg['parameter'] = helper.select_parameter(sidebar_flag=True)
-    df = st.session_state.config.row_value_df
-    df = df[df[st.session_state.config.parameter_col] == cfg['parameter']]
+    cfg = st.session_state.user.read_config(cn.MAP_ID,'default')
+    cfg['parameter'] = helper.get_parameter(cfg['parameter'], label='Parameter', filter='')
+    # here its broken
+    df = st.session_state.row_value_df
+    df = df[df[cn.PARAMETER_ID] == cfg['parameter']]
     filter_fields = ['station','date', 'value']
     df = show_filter(df,filter_fields, cfg)
     cfg = get_parameter_map_cfg(cfg, df)
@@ -109,7 +110,7 @@ def show_parameters_map():
     st.markdown(f"**{cfg['parameter']}, {dic[cfg['aggregation']]} value for each station.**")
     st.bokeh_chart(p)
     #helper.show_save_file_button(p, 'key1')
-    st.session_state.config.user.save_config(cn.MAP_ID, 'default', cfg)
+    st.session_state.user.save_config(cn.MAP_ID, 'default', cfg)
 
 def show_menu():
     set_lang()

@@ -7,7 +7,7 @@ import database as db
 from query import qry 
 from passlib.context import CryptContext
 import random
-from fontus import User
+from fontus.user import User
 
 import const
 import helper

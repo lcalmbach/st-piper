@@ -1,0 +1,167 @@
+{
+    "menu_options": {
+        "en": ["Show scatter plot"],
+        "de": ["Show scatter plot"],
+        "zh": ["Show scatter plot"]
+    },
+    "options": {
+        "en": "Options",
+        "de": "Options",
+        "zh": "Options"
+    },
+    "group_by_options": {
+        "en": [null, "Station", "Year"],
+        "de": [null, "Station", "Year"],
+        "zh": [null, "Station", "Year"]
+    },
+    "legend_options": {
+        "en": [null, "Station", "Year"],
+        "de": [null, "Station", "Year"],
+        "zh": [null, "Station", "Year"]
+    },
+    "x_parameter": {
+        "en": "X-Parameter",
+        "de": "X-Parameter",
+        "zh": "X-Parameter"
+    },
+    "y_parameter": {
+        "en": "Y-Parameter",
+        "de": "Y-Parameter",
+        "zh": "Y-Parameter"
+    },
+    "parameter": {
+        "en": "Parameter",
+        "de": "Parameter",
+        "zh": "Parameter"
+    },
+    "station": {
+        "en": "Station",
+        "de": "Station",
+        "zh": "Station"
+    },
+    "settings": {
+        "en": "Settings",
+        "de": "Settings",
+        "zh": "Settings"
+    },
+    "legend": {
+        "en": "Legend",
+        "de": "Legend",
+        "zh": "Legend"
+    },
+    "marker_size": {
+        "en": "Marker size",
+        "de": "Marker size",
+        "zh": "Marker size"
+    },
+    "marker_alpha": {
+        "en": "Marker alpha",
+        "de": "Marker alpha",
+        "zh": "Marker alpha"
+    },
+    "group_plots_by": {
+        "en": "Group plots by",
+        "de": "Group plots by",
+        "zh": "Group plots by"
+    },
+    "axis_auto": {
+        "en": "axis auto",
+        "de": "axis auto",
+        "zh": "axis auto"
+    },
+    "x_axis_max": {
+        "en": "X-axis end",
+        "de": "X-axis end",
+        "zh": "X-axis end"
+    },
+    "y_axis_max": {
+        "en": "Y-axis end",
+        "de": "Y-axis end",
+        "zh": "Y-axis end"
+    },
+    "x_axis_min": {
+        "en": "X-axis start",
+        "de": "X-axis start",
+        "zh": "X-axis start"
+    },
+    "y_axis_min": {
+        "en": "Y-axis start",
+        "de": "Y-axis start",
+        "zh": "Y-axis start"
+    },
+    "color_palette": {
+        "en": "Color-palette",
+        "de": "Color-palette",
+        "zh": "Color-palette"
+    },    
+    "show_corr_line": {
+        "en":  "Show_corr_line",
+        "de":  "Show_corr_line",
+        "zh":  "Show_corr_line"
+    },
+    "corr_line_pattern": {
+        "en":  "Correlation line pattern",
+        "de":  "Correlation line pattern",
+        "zh":  "Correlation line pattern"
+    },
+    "corr_line_color": {
+        "en":  "Correlation line color",
+        "de":  "Correlation line color",
+        "zh":  "Correlation line color"
+    },
+    "show_h_line": {
+        "en":  "Show horizontal line",
+        "de":  "Show horizontal line",
+        "zh":  "Show horizontal line"
+    },
+    "show_v_line": {
+        "en":  "Show vertical line",
+        "de":  "Show vertical line",
+        "zh":  "Show vertical line"
+    },
+    "h_line_pattern": {
+        "en":  "Horizontal line pattern",
+        "de":  "Horizontal line pattern",
+        "zh":  "Horizontal line pattern"
+    },
+    "v_line_pattern": {
+        "en":  "Vertical line pattern",
+        "de":  "Vertical line pattern",
+        "zh":  "Vertical line pattern"
+    },
+    "h_line_color": {
+        "en":  "Horizontal line color",
+        "de":  "Horizontal line color",
+        "zh":  "Horizontal line color"
+    },
+    "v_line_color": {
+        "en":  "Vertical line color",
+        "de":  "Vertical line color",
+        "zh":  "Vertical line color"
+    },
+    "v_line_intercept": {
+        "en":  "X axis intercept",
+        "de":  "X axis intercept",
+        "zh":  "X axis intercept"
+    },
+    "h_line_intercept": {
+        "en":  "Y-axis intercept",
+        "de":  "Y-axis intercept",
+        "zh":  "Y-axis intercept"
+    },
+    "statistics": {
+        "en":  "Statistics",
+        "de":  "Statistics",
+        "zh":  "Statistics"
+    },
+    "filter": {
+        "en":  "Filter",
+        "de":  "Filter",
+        "zh":  "Filter"
+    },
+    "no_record_found_4station": {
+        "en":  "No records found for station {}",
+        "de":  "No records found for station {}",
+        "zh":  "No records found for station {}"
+    }
+}

@@ -2,20 +2,20 @@ from logging import NullHandler
 import streamlit as st
 import const as cn
 
-import piper_menu
-import time_series_menu
-import map_menu
+import menu_piper
+import menu_time_series
+import menu_map
 import menu_histogram
 import menu_boxplot
-import scatter_menu
-import schoeller_menu
+import menu_scatter
+import menu_schoeller
 import menu_boxplot
 from helper import get_language, flash_text
 
 lang = {}
 def set_lang():
     global lang
-    lang = get_language(__name__, st.session_state.config.language)
+    lang = get_language(__name__, st.session_state.language)
 
 def show_menu():
     set_lang()
@@ -23,17 +23,17 @@ def show_menu():
     MENU_OPTIONS = lang['menu_options']
     menu_action = st.sidebar.selectbox(lang['plot_type'], MENU_OPTIONS)
     if menu_action == MENU_OPTIONS[0]:
-        time_series_menu.show_menu()
+        menu_time_series.show_menu()
     elif menu_action == MENU_OPTIONS[1]:
-        scatter_menu.show_menu()
+        menu_scatter.show_menu()
     elif menu_action == MENU_OPTIONS[2]:
-        map_menu.show_menu()
+        menu_map.show_menu()
     elif menu_action == MENU_OPTIONS[3]:
-        piper_menu.show_menu()
+        menu_piper.show_menu()
     elif menu_action == MENU_OPTIONS[4]:
         menu_histogram.show_menu()
     elif menu_action == MENU_OPTIONS[5]:
-        schoeller_menu.show_menu()
+        menu_schoeller.show_menu()
     elif menu_action == MENU_OPTIONS[6]:
         menu_boxplot.show_menu()
     else:

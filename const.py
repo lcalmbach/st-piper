@@ -36,7 +36,7 @@ CTYPE_SAMPLE = 'sa'
 CTYPE_VAL_META = 'md'
 CTYPE_PARAMETER = 'pa'
 
-STATION_IDENTIFIER_COL = 'Station identifier'
+STATION_IDENTIFIER_COL = 'station_key'
 GEOPOINT_COL = 'Geopoint'
 LATITUDE_COL = 'Latitude'
 LONGITUDE_COL = 'Longitude'
@@ -90,9 +90,10 @@ GUIDELINE_ROOT = './guidelines/'
 PROJECT_FILE = 'projects.json'
 
 COMPARE_OPTIONS = ['>', '<', '=', '>=', '<=', '!=']
-SPLASH_IMAGE = "water-2630618-wide.jpg"
+SPLASH_IMAGE = "./static/water-2630618-wide.jpg"
 LOTTIE_URL = 'https://assets2.lottiefiles.com/packages/lf20_B6txqj.json'
 HELP_SITE = 'https://lcalmbach.github.io/fontus-help/'
+HELP_ICON = "./static/help1600.png"
 MAX_LEGEND_ITEMS = 20
 
 DEFAULT_PROJECT = 1
@@ -130,6 +131,14 @@ CHLORID_ID = 8
 ALKALINITY_ID = 10
 BICARBONATE_ID = 11
 CARBONATE_ID = 12
+SAMPLING_DATE_ID = 24
+LONGITUDE_ID = 3
+LATITUDE_ID = 2
+STATION_IDENTIFIER_ID = 1
+COND_25_ID = 17
+WATER_TEMP_ID = 19
+SAMPLE_IDENTIFIER_ID = 25
+NUMERIC_VALUE_ID = 26
 
 MAJOR_IONS = [
     CALCIUM_ID ,
@@ -143,4 +152,25 @@ MAJOR_IONS = [
     CARBONATE_ID,
 ]
 
+MAJOR_ANIONS = [
+    SULFATE_ID, 
+    CHLORID_ID, 
+    ALKALINITY_ID, 
+    BICARBONATE_ID, 
+    CARBONATE_ID,
+]
 
+MAJOR_CATIONS = [
+    CALCIUM_ID ,
+    MAGNESIUM_ID,
+    SODIUM_ID, 
+    POTASSIUM_ID, 
+]
+
+#observation fields
+PARAMETER_ID = 'parameter_id'
+STATION_ID = 'station_id'
+
+DEFAULT_PROJECT_ID = 1
+DEFAULT_USER_ID = 1
+DEFAULT_DATE_FORMAT = 'mm/dd/yyyy'

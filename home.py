@@ -7,7 +7,8 @@ import database as db
 from query import qry 
 from passlib.context import CryptContext
 import random
-from fontus import User, Project
+from fontus.user import User
+from fontus.project import Project
 
 import const
 import helper
@@ -16,7 +17,7 @@ import login
 lang = {}
 def set_lang():
     global lang
-    lang = helper.get_language(__name__, st.session_state.config.language)
+    lang = helper.get_language(__name__, st.session_state.language)
 
 def get_crypt_context():
     return CryptContext(
@@ -91,18 +92,15 @@ def show_login_form():
         email = st.text_input('username')
         pwd = st.text_input('password', type='password')
         col1, col2 = st.columns((1,12))
-        st.session_state.logged_in = False
         with col1:
             if st.form_submit_button(label='Login'):     
                 action = 'login'           
                 if is_valid_password(email, pwd):
-                    st.session_state.config.logged_in_user = email
-                    st.session_state.logged_in = True
                     user = User(email)
                     if user != None:
-                        st.session_state.config.logged_in_user = user.email
-                        st.session_state.config.language = user.language
-                        st.session_state.config.user = user
+                        st.session_state.logged_in_user = user.email
+                        st.session_state.language = user.language
+                        st.session_state.user = user
                         message = f"Welcome back {user.first_name}"
                 else:
                     ok=False
@@ -134,7 +132,7 @@ def show_account_form():
     ok = False
     st.markdown("#### Account Settings")
     with st.form('login_form'):
-        email = st.session_state.config.logged_in_user
+        email = st.session_state.logged_in_user
         user = User(email)
         user.first_name = st.text_input('First name', user.first_name)
         user.last_name = st.text_input('Last name', user.last_name)
@@ -171,8 +169,8 @@ def show_account_form():
         email = st.text_input("Acccount Email")
         
         if st.form_submit_button(label='Delete account'):
-            if email == st.session_state.config.user.email:
-                ok, message = st.session_state.config.user.delete()
+            if email == st.session_state.user.email:
+                ok, message = st.session_state.user.delete()
                     
                 message_type = 'success' if ok else 'warning'
             else:
@@ -190,12 +188,12 @@ def show_create_account_form():
 def show_info():
     def set_language():
         languages = cn.LANGAUAGE_DICT
-        id = list(languages.keys()).index(st.session_state.config.language)
-        old_id = st.session_state.config.language
-        st.session_state.config.language = st.sidebar.selectbox(lang['select_language'], list(languages.keys()),
+        id = list(languages.keys()).index(st.session_state.language)
+        old_id = st.session_state.language
+        st.session_state.language = st.sidebar.selectbox(lang['select_language'], list(languages.keys()),
                     format_func=lambda x: languages[x], index=id)
         # rerender entire script if language has changed
-        if st.session_state.config.language != old_id:
+        if st.session_state.language != old_id:
             st.experimental_rerun()
 
     st.image(f"./{cn.SPLASH_IMAGE}")
@@ -203,14 +201,14 @@ def show_info():
     text = helper.merge_sentences((lang['intro_body']))
     st.markdown(text, unsafe_allow_html=True)
 
-    if not(st.session_state.config.is_logged_in()):
+    if not(st.session_state.user.is_logged_in()):
         set_language()
     
-    projects = st.session_state.config.project_dict
+    projects = st.session_state.project_dict
     prj_id = st.selectbox(lang["select_project"], projects.keys(),
                 format_func=lambda x: projects[x])
     prj = Project(prj_id)
-    st.session_state.config.project = prj
+    st.session_state.project = prj
     st.markdown(f"**{prj.title}**")
     st.markdown(prj.description)
 
@@ -218,12 +216,10 @@ def show_menu():
     set_lang()
 
     MENU_OPTIONS = lang['menu_options']
-    
     menu_actions = [show_info,
                     show_account_form]
-    if not st.session_state.config.is_logged_in():
+    if not st.session_state.user.is_logged_in():
         menu_actions[-1] = login.show_create_account_form
-    menu_action = st.sidebar.selectbox('Options', MENU_OPTIONS)
+    menu_action = st.sidebar.selectbox(lang["options"], MENU_OPTIONS)
     id = MENU_OPTIONS.index(menu_action)
     menu_actions[id]()
-    

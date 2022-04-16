@@ -37,10 +37,10 @@ class Piper():
     def get_tranformed_data(self):
         def transform_to_xy(df, type):
             if type == 'cations':
-                pct_array = df[['ca_pct', 'na_pct', 'mg_pct']].to_numpy()
+                pct_array = df[self.cfg['cation_cols']].to_numpy()
                 offset = 0
             else:
-                pct_array = df[['alk_pct', 'cl_pct', 'so4_pct']].to_numpy()
+                pct_array = df[self.cfg['anion_cols']].to_numpy()
                 offset = 100 + gap
             df_xy = pd.DataFrame()
             x = 0
@@ -410,7 +410,7 @@ class Piper():
 
     def draw_markers(self, df):
         i = 0
-        station_col = st.session_state.config.key2col()[cn.STATION_IDENTIFIER_COL]
+        station_col = cn.STATION_IDENTIFIER_COL
         items = list(df[station_col].dropna().unique())
         if len(items) > cn.MAX_LEGEND_ITEMS:
             warning = f'Plot has {len(items)} items, only the first {cn.MAX_LEGEND_ITEMS} will be shown. Use filters to further reduce the number of legend-items'
@@ -418,7 +418,7 @@ class Piper():
             items = items[:cn.MAX_LEGEND_ITEMS]
             
         for station in items:
-            df_filtered = df[df[station_col] == station]
+            df_filtered = df[df[cn.STATION_IDENTIFIER_COL] == station]
             colors = ['red','green','blue','orange','yellow','red','green','blue','orange','yellow','red','green','blue','orange','yellow']
             markers = ['circle','rect','triangle','cross','circle','rect','triangle','cross''circle','rect','triangle','cross']
             #for index,row in df_filtered.iterrows():
@@ -457,7 +457,7 @@ class Piper():
                            tools=[HoverTool()],
                            x_range=(-figure_padding_left, 200 + gap + figure_padding_right))
         
-        #('Station', f"@{{{st.session_state.config.station_col}}}"),
+        #('Station', f"@{{{st.session_state.station_col}}}"),
         #("Ca", "@ca_pct")
         self.plot.add_tools(HoverTool(
                 tooltips=[

@@ -14,9 +14,9 @@ class Boxplot:
         self.data = df
 
     def get_plot(self):
+        # Find the quartiles and IQR foor each category
+    
         df = self.data
-        cats = self.cfg['box_group_values']
-        # find the quartiles and IQR for each category
         groups = df.groupby('group')
         q1 = groups.quantile(q=0.25)
         q2 = groups.quantile(q=0.5)
@@ -28,42 +28,53 @@ class Boxplot:
         # find the outliers for each category
         def outliers(group):
             cat = group.name
-            return group[(group.score > upper.loc[cat]['score']) | (group.score < lower.loc[cat]['score'])]['score']
+            return group[(group.score > upper.loc[cat][0]) | (group.score < lower.loc[cat][0])]['score']
         out = groups.apply(outliers).dropna()
 
-        # prepare outlier data for plotting, we need coordinates for every outlier.
-        if not out.empty:
-            outx = list(out.index.get_level_values(0))
-            outy = list(out.values)
+        # Prepare outlier data for plotting, we need coordinate for every outlier.
+        outx = []
+        outy = []
+        cats = df['group'].unique()
+        for cat in cats:
+            # only add outliers if they exist
+            if not out.loc[cat].empty:
+                for value in out[cat]:
+                    outx.append(cat)
+                    outy.append(value)
 
-        p = figure(tools="", background_fill_color="white", x_range=cats, toolbar_location=None)
+        p = figure(tools="save", background_fill_color=self.cfg['background_fill_color'], title="", x_range=cats)
 
-        # if no outliers, shrink lengths of stems to be no longer than the minimums or maximums
+        # If no outliers, shrink lengths of stems to be no longer than the minimums or maximums
         qmin = groups.quantile(q=0.00)
         qmax = groups.quantile(q=1.00)
-        upper.score = [min([x,y]) for (x,y) in zip(list(qmax.loc[:,'score']),upper.score)]
-        lower.score = [max([x,y]) for (x,y) in zip(list(qmin.loc[:,'score']),lower.score)]
+        upper.score = [min([x,y]) for (x,y) in zip(list(qmax.iloc[:,0]),upper.score) ]
+        lower.score = [max([x,y]) for (x,y) in zip(list(qmin.iloc[:,0]),lower.score) ]
 
         # stems
-        p.segment(cats, upper.score, cats, q3.score, line_color="black")
-        p.segment(cats, lower.score, cats, q1.score, line_color="black")
+        p.segment(cats, upper.score, cats, q3.score, line_width=2, line_color="black")
+        p.segment(cats, lower.score, cats, q1.score, line_width=2, line_color="black")
 
         # boxes
-        p.vbar(cats, 0.7, q2.score, q3.score, fill_color="blue", line_color="black")
-        p.vbar(cats, 0.7, q1.score, q2.score, fill_color="blue",  fill_alpha=0.6, line_color="black")
+        p.rect(cats, (q3.score+q2.score)/2, 0.7, q3.score-q2.score,
+            fill_color=self.cfg['upper_box_fill_color'], fill_alpha=self.cfg['box_alpha'], line_width=2, line_color="black")
+        p.rect(cats, (q2.score+q1.score)/2, 0.7, q2.score-q1.score,
+            fill_color=self.cfg['lower_box_fill_color'], fill_alpha=self.cfg['box_alpha'], line_width=2, line_color="black")
 
         # whiskers (almost-0 height rects simpler than segments)
         p.rect(cats, lower.score, 0.2, 0.01, line_color="black")
         p.rect(cats, upper.score, 0.2, 0.01, line_color="black")
 
         # outliers
-        if not out.empty:
-            p.circle(outx, outy, size=6, color="orange", fill_alpha=0.6)
+        p.circle(outx, outy, size=6, color="#F38630", fill_alpha=self.cfg['symbol_alpha'])
 
         p.xgrid.grid_line_color = None
-        p.ygrid.grid_line_color = "lightgrey"
-        p.ygrid.grid_line_dash = "dashed"
-        p.grid.grid_line_width = 1
-        p.xaxis.major_label_text_font_size="12px"
-
+        p.ygrid.grid_line_color = self.cfg['grid_line_color']
+        p.grid.grid_line_width = self.cfg['grid_line_width']
+        p.grid.grid_line_dash = self.cfg['grid_line_dash']
+        
+        p.xaxis.major_label_text_font_size = self.cfg['x_axis_major_label_text_font_size']
+        
+        p.yaxis.axis_label = self.cfg['y_axis_title']
+        p.yaxis.major_label_text_font_size = self.cfg['y_axis_major_label_text_font_size']
+        p.yaxis.axis_label_text_font_size = self.cfg['axis_label_text_font_size']
         return p

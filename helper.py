@@ -14,7 +14,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import pycountry
 from st_aggrid import GridOptionsBuilder, AgGrid, DataReturnMode,GridUpdateMode
-
+from query import qry
 
 def flash_text(text:str, type:str):
     placeholder = st.empty()
@@ -197,7 +197,7 @@ def nd2numeric(df):
     df.columns = col_name
     return df
 
-def select_parameter(sidebar_flag: bool):
+def select_parameter_obsolet(sidebar_flag: bool):
     parameter_options = list(st.session_state.config.parameter_map_df.index)
     parameter_options.sort()
     if sidebar_flag:
@@ -350,9 +350,32 @@ def get_filter(filters):
             minmax = st.date_input("Date", min_value=min_date, max_value=max_date,value = (min_date,max_date))
             if minmax !=  (min_date,max_date):
                 expression = "{expression} AND " if expression > '' else ""
-                expression += f"sampling_date >= '{minmax(0)}' and sampling_date <= '{minmax(1)}'"
+                expression += f"sampling_date >= '{minmax[0]}' and sampling_date <= '{minmax[1]}'"
     
     return expression
+
+def get_station(default: int, filter:str):
+    station_dict=st.session_state.config.project.get_station_list(allow_none=False)
+    if default in list(station_dict.values()):
+        id = list(station_dict.values()).index(default)
+    else:
+        id = 0
+    station_id = st.sidebar.selectbox(label="Station", options=list(station_dict.keys()),
+                                        format_func=lambda x:station_dict[x],
+                                        index=id)
+    return station_id
+
+def get_date(station_id: int, default):
+    date_dict=st.session_state.config.project.get_date_list(station_id=station_id,allow_none=False, )
+    if default in list(date_dict.values()):
+        id = list(date_dict.values()).index(default)
+    else:
+        id = 0
+    sampling_date = st.sidebar.selectbox(label="Sampling date", options=list(date_dict.keys()),
+                                        format_func=lambda x:date_dict[x],
+                                        index=id)
+    return sampling_date
+
 
 def get_stations(default: list, filter:str):
     station_dict=st.session_state.config.project.get_station_list(allow_none=False)
@@ -385,8 +408,31 @@ def get_guideline(default: list):
     return sel_guideline
 
 def add_meqpl_columns(data, parameters, columns):
-    st.write(parameters)
     for par_id in parameters:
         id = parameters.index(par_id)
         col = columns[id]
-        fact = st.session_state.config.lookup_parameters.unit_conversion(par_id, None, 'meq/L')
+        fact = st.session_state.config.project.unit_conversion(par_id, None, 'meq/L')
+        data[col] = data[par_id] * fact
+
+    return data
+
+def add_pct_columns(data:pd.DataFrame, parameters:list, new_columns:list, sum_col: str):
+    """
+    converts columns into percent, e.g. meq > meq%. 
+    
+    Args:
+        data (pd.DataFrame): dataframe holding columns to be converted
+        parameters (list): list of parameter ids
+        columns (list): list of new column names
+        sum_col(str):   name of sum column
+    Returns:
+        _type_: _description_
+    """
+
+    data[sum_col] = data[parameters].sum(axis=1)
+    for par in parameters:
+        id = parameters.index(par)
+        new_col = new_columns[id]
+        data[new_col] = np.where(data[sum_col]==0, 0, data[par] / data[sum_col] * 100)
+
+    return data
