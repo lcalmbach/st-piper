@@ -1,0 +1,3 @@
+MARKERS = ['circle','square','triangle','diamond','inverted_triangle','hex','asterisk','circle_cross','circle_dot',
+            'circle_x','circle_y','cross','dash','diamond_cross','diamond_dot','dot','hex_dot','plus','square_cross',
+            'square_dot','square_pin','square_x','star','star_dot','triangle_dot','triangle_pin','x','y']

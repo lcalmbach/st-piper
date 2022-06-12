@@ -15,7 +15,7 @@ qry = {
     """,
     
     'update_project': """UPDATE public.project
-	SET title='{}', description='{}', row_is='{}', date_format='{}', separator='{}', encoding='{}', url_source='{}', is_public={}
+	SET title='{}', description='{}', row_is='{}', date_format='{}', separator='{}', encoding='{}', url_source='{}', is_public={}, has_separate_station_file={}
 	WHERE id={};
     """,
 
@@ -39,60 +39,64 @@ qry = {
         or t2.user_id = {}
         order by title""",
     
-    'station_data': """select 
-	{0}
+    'station_data': """select {0}
 	, to_char(min(t2.sampling_date), '{2}') as first_sample
 	, to_char(max(sampling_date), '{2}') as last_sample
 	, count(*) as number_of_samples
     from public.{1}_station t1 
-    inner join (Select station_id,sampling_date from public.{1}_data group by station_id,sampling_date) t2 on t2.station_id = t1.id
+    inner join (Select station_id, sampling_date from public.{1}_observation 
+                    group by station_id,sampling_date) t2 on t2.station_id = t1.id
     group by {0}
     """,
 
     'station_samples': """select 
-    station_key, sampling_date, count(*) as observations
-    from public.{0}_data t1 
+    {0}, count(*) as observations
+    from public.{1}_observation t1 
     where 
-        station_id = {1}
+        station_id = {2}
     group by 
-        station_key,sampling_date
+        {0}
     order by 
-        station_key,sampling_date
+        {0}
     """,
     
     'sample_observations': """
-    select 
-        sampling_date
-        ,parameter
-        ,casnr
-        ,t1.unit
-        ,value
-        ,numeric_value
-        ,detect_limit
-        ,group1
-        ,group2
+    select {0}, station_id
     from 
-        public.{0}_data t1
-        inner join public.{0}_parameter t2 on t2.id = t1.parameter_id
+        public.{1}_observation t1
+        --inner join public.{1}_parameter t2 on t2.id = t1.parameter_id
     where 
-        station_id = {1} and sampling_date = '{2}'
+        station_id = {2} and sampling_date = '{3}'
     """,
 
     'parameter_data': """select id, parameter_name, casnr, group1, group2
         from public.{}_parameter
         order by group1, group2""",
     
-    'parameter_observations': """select * from public.{}_data where parameter_id = {} 
-{} 
-order by station_key, sampling_date""",
+    'parameter_observations':  """select
+	t2."station_identifier", t1."sampling_date", t3."parameter_name", t1."unit", t1."value", t1."value_numeric",t1."group",t1."general_parameter_group", t1."station_id", t1."parameter_id"
+from 
+	public.{0}_observation t1
+	inner join public.{0}_station t2 on t2.id = t1.station_id
+	inner join public.{0}_parameter t3 on t3.id = t1.parameter_id
+where t1."parameter_id" = {1} {2}
+order by t1."station_identifier", t1."sampling_date"
+    """,
+    
+    'station_list': "select id, station_identifier from public.{}_station order by station_identifier",
 
-    'station_list': "select id, identifier from public.{}_station order by identifier",
-
-    'min_max_sampling_date': "select min(sampling_date) as min_date, max(sampling_date) as max_date from public.{}_data",
+    'min_max_sampling_date': "select min(sampling_date) as min_date, max(sampling_date) as max_date from public.{}_observation",
 
     'parameter_list': "select id, parameter_name from public.{}_parameter {} order by parameter_name",
 
-    'observations': "select * from public.{}_data where 1=1 {}",
+    # obsolete
+    # 'observations': "select * from public.{}_observation where 1=1 {}",
+
+    'observations': """Select t1.*, t2.station_identifier
+    from public.{0}_observation t1
+    inner join public.{0}_station t2 on t2.id = t1.station_id
+    where 1=1 {1}
+    """,
 
     'get_analysis_config': "select * from public.user_project_config where user_id = {} and analysis_id = {} and setting_name='{}'",
 
@@ -102,35 +106,45 @@ order by station_key, sampling_date""",
 
     'guideline_detail': "select * from public.guideline where id = {}",
 
-    'guideline_items': "select id, parameter, casnr, sys_par_id, min_value, max_value, comments, unit from public.guideline_item where guideline_id = {}",
+    'guideline_items': "select id, parameter, casnr, master_parameter_id, min_value, max_value, comments, unit from public.guideline_item where guideline_id = {}",
 
-    'parameter_detail': """select t1.id,t1.parameter_name,t1.casnr,t1.sys_par_id,t1.group1,t1.group2, t2.name_en as sys_name, t2.casnr as sys_casnr, 
+    'parameter_detail': """select t1.id,t1.parameter_name,t1.casnr,t1.master_parameter_id,t1.group1,t1.group2, t2.name_en as sys_name, t2.casnr as sys_casnr, 
             t2.formula as sys_formula, t2.fmw as sys_fmw, t2.valence as sys_valence, t2.unit_cat as sys_unit_cat, t2.unit as sys_unit
         from 
             public.{}_parameter t1
-            left join public.meta_master_parameter t2 on t2.id = t1.sys_par_id
+            left join public.master_parameter t2 on t2.id = t1.master_parameter_id
         where t1.id = {}""",
     
-    'exceedance_list': """select t2.identifier as station, TO_CHAR(sampling_date :: DATE, 'dd/mm/yyyy') as sampling_date, t3.parameter_name, t1.unit, t1.value, 
-            t1.numeric_value, {0} as standard, case when t1.numeric_value > {0} then 'yes' else 'no' end as exceedance
+    'exceedance_list': """select t2.station_identifier
+            , TO_CHAR(sampling_date :: DATE, 'dd/mm/yyyy') as sampling_date
+            , t3.parameter_name
+            , t1.unit
+            , t1.value
+            , t1.value_numeric
+            , {0} as standard
+            , case when t1.value_numeric > {0} then 'yes' else 'no' end as exceedance
         from
-            public.{1}_data t1
+            public.{1}_observation t1
             inner join public.{1}_station t2 on t2.id = t1.station_id
             inner join public.{1}_parameter t3 on t3.id = t1.parameter_id
         where parameter_id = {2}""",
         
     'standard_parameter_list': "select id, parameter from public.guideline_item where guideline_id = {} order by parameter ",
 
-    'sys_parameters': "select * from public.meta_master_parameter",
+    'sys_parameters': "select * from public.master_parameter",
 
     'project_parameters': """
         SELECT 
             t1.*, t2.name_en, t2.short_name_en, t2.formula, t2.formula_valence, t2.fmw, t2.valence, t2.unit_cat, t2.unit as default_unit 
         FROM 
             public.{}_parameter t1 
-            left join public.meta_master_parameter t2 on t2.id = t1.sys_par_id""",
+            left join public.master_parameter t2 on t2.id = t1.master_parameter_id""",
 
-    'date_list4station':"""select sampling_date as date, to_char(sampling_date, 'DD.MM.YYYY') as fmt_date from public.{}_data
+    'project_columns': """
+        select * FROM  {}_column t1
+        """,
+
+    'date_list4station':"""select sampling_date as date, to_char(sampling_date, 'DD.MM.YYYY') as fmt_date from public.{}_observation
         where station_id = {}
         group by sampling_date
         order by sampling_date
@@ -138,7 +152,44 @@ order by station_key, sampling_date""",
 
     'station': """select * from public.{}_station where id = {}""",
 
-    'station_fields_ordered': "select * from public.{}_parameter where parameter_type_id = 13 order by sort_id"
+    'station_fields_ordered': "select * from public.{}_parameter where parameter_type_id = 13 order by sort_id",
 
-        
-}
+    'column_config': """
+        select 
+	        t1.column_name, t1.id, t1.master_parameter_id, t1.type_id, t1.data_type_id, t2.key as master_parameter_key
+        from 
+	        public.{}_column t1
+	        left join public.master_parameter t2 on t2.id = t1.master_parameter_id""",
+
+    'parameters_config': "select * from public.{}_parameter",
+
+    'master_columns': "select * from public.master_parameter order by name_en",
+
+    'lookup_values': "SELECT id, {0} as name FROM public.lookup_values where category_id = {1} order by {0}",
+
+    'mandatory_parameters': "select id, name_{} as name from public.master_parameter where is_mandatory and type = '{}'",
+
+    'update_parameter_id': """update public.{0}_temp t1 set "parameter_id" = t2."id"
+        from 
+            public.{0}_parameter t2
+        where 
+            t2."{1}" = t1."{2}";
+        """,
+
+    'update_station_id': """update public.{0}_temp t1 set "station_id" = t2."id"
+        from 
+            public.{0}_station t2
+        where 
+            t2."{1}" = t1."{2}";
+        """,
+    'truncate_table': """TRUNCATE TABLE public.{} RESTART IDENTITY;""",
+
+    'update_num_value_col':"""
+        update public.{0}_temp set "{1}" = "{2}" ::DECIMAL
+        where isnumeric("{2}");
+
+        update public.{0}_temp set "{1}" = (substring("{2}",2,char_length("{2}")) ::DECIMAL) / 2
+        where substring("{2}",1,1)='<' and isnumeric(substring("{2}",2,char_length("{2}")));
+    """
+    }
+    

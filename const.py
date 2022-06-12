@@ -1,4 +1,5 @@
 import math
+from enum import Enum
 
 TEST_DATASET =  "./datasets/test_data.csv"
 MARKERS = ['circle','square','triangle','diamond','inverted_triangle','hex','asterisk','circle_cross','circle_dot',
@@ -31,44 +32,34 @@ NOT_USED = 'Not used'
 NOT_MAPPED = 'Not mapped'
 SEPARATORS = [';',',','\t']
 
-CTYPE_STATION = 'st'
-CTYPE_SAMPLE = 'sa'
-CTYPE_VAL_META = 'md'
-CTYPE_PARAMETER = 'pa'
+CTYPE_STATION = 13
+CTYPE_SAMPLE = 14
+CTYPE_VAL_META = 15
+CTYPE_PARAMETER = 12
 
-STATION_IDENTIFIER_COL = 'station_key'
-GEOPOINT_COL = 'Geopoint'
-LATITUDE_COL = 'Latitude'
-LONGITUDE_COL = 'Longitude'
-SAMPLING_DEPTH_COL = 'Depth'
+STATION_IDENTIFIER_COL = 'station_identifier'
+LATITUDE_COL = 'latitude'
+LONGITUDE_COL = 'longitude'
+STATION_ELEVATION_COL = 'station_elevation'
 OTHER_STATION_COL = 'Other station column'
 COLOR_COL = '_color'
 PROP_SIZE_COL = '_prop_size'
-STATION_COLUMNS_OPTIONS = [STATION_IDENTIFIER_COL, GEOPOINT_COL, LATITUDE_COL,
-    LONGITUDE_COL, SAMPLING_DEPTH_COL, OTHER_STATION_COL, NOT_USED]
 
-SAMPLE_IDENTIFIER_COL = 'Sample identifier'
-SAMPLE_DATE_COL = 'Sampling date'
-SAMPLE_TIME_COL = 'Sampling time'
-OTHER_SAMPLE_COL = 'Other sample column' 
-SAMPLE_COLUMN_OPTIONS = [SAMPLE_IDENTIFIER_COL,SAMPLE_DATE_COL,SAMPLE_TIME_COL,OTHER_SAMPLE_COL, NOT_USED]
+SAMPLE_IDENTIFIER_COL = 'sample_identifier'
+SAMPLE_DATE_COL = 'sampling_date'
+SAMPLE_TIME_COL = 'sampling_time'
 
-PARAMETER_COL = 'Parameter'
-CASNR_COL = 'CAS-Nr'
-DL_COL = 'Detection limit'
-VALUE_NUM_COL = 'Numeric value'
-
-ND_FLAG_COL = '_nd_flag'
-ND_QUAL_COL = '<DL qualifier'
-ND_QUAL_VALUE_COL = '<DL qualifier + numeric value'
+PARAMETER_COL = 'parameter_name'
+CASNR_COL = 'case_nr'
+MDL_COL = 'method_detection_limit'
+VALUE_COL = 'value'
+VALUE_NUM_COL = 'value_numeric'
+ND_FLAG_COL = 'nd_flag'
+ND_QUAL_COL = '<mdl_qualifier'
 UNIT_COL = 'Unit'
 METHOD_COL = 'Method'
-COMMENT_COL = 'Comment'
 CATEGORY_COL = 'Parameter group'
-META_COLUMN_OPTIONS = [NOT_USED, PARAMETER_COL, CASNR_COL,
-                       DL_COL, VALUE_NUM_COL, ND_QUAL_COL,
-                       ND_QUAL_VALUE_COL, UNIT_COL, METHOD_COL,
-                       COMMENT_COL, CATEGORY_COL]
+META_COLUMN_OPTIONS = []
 
 PAR_CALCIUM = 'ca'
 PAR_SODIUM = 'na'
@@ -131,14 +122,26 @@ CHLORID_ID = 8
 ALKALINITY_ID = 10
 BICARBONATE_ID = 11
 CARBONATE_ID = 12
-SAMPLING_DATE_ID = 24
-LONGITUDE_ID = 3
-LATITUDE_ID = 2
-STATION_IDENTIFIER_ID = 1
-COND_25_ID = 17
-WATER_TEMP_ID = 19
-SAMPLE_IDENTIFIER_ID = 25
-NUMERIC_VALUE_ID = 26
+
+PARKEY2ID_DICT = {
+    'SAMPLE_IDENTIFIER_ID': 1,
+    'SAMPLE_DATE_ID': 24,
+    'SAMPLE_TIME_ID': 'sampling_time',
+
+    'LONGITUDE_ID': 3,
+    'LATITUDE_ID': 2,
+    'STATION_IDENTIFIER_ID': 1,
+    
+    'NUMERIC_VALUE_ID': 26,
+    'VALUE_ID': 39,
+    'UNIT': 40,
+    'MDL': 41,
+    'PARAMETER':21,
+
+    'COND_25_ID': 17,
+    'WATER_TEMP_ID': 19,
+    'SAMPLE_IDENTIFIER_ID': 25
+    }
 
 MAJOR_IONS = [
     CALCIUM_ID ,
@@ -170,7 +173,64 @@ MAJOR_CATIONS = [
 #observation fields
 PARAMETER_ID = 'parameter_id'
 STATION_ID = 'station_id'
-
-DEFAULT_PROJECT_ID = 1
-DEFAULT_USER_ID = 1
 DEFAULT_DATE_FORMAT = 'mm/dd/yyyy'
+DEFAULT_USER_ID = 1
+DEFAULT_PROJECT_ID = 1
+
+class Codes(Enum):
+    USER_PROJECT_PERMISSION = 1
+    ROW_FORMAT = 2
+    UNIT_CATEGORY = 3
+    PARAMETER_TYPE = 4
+    DATATYPE = 5
+
+class Date_types(Enum):
+    STR = 16
+    INT = 17
+    FLOAT = 18
+    BOOL=19
+    DATETIME=20
+    LOOKUP_LIST=21
+
+# master parameters
+class MP(Enum):
+    SAMPLE_NR = 25
+    NUMERIC_VALUE = 26
+    GENERAL_STATION_PARAMETER = 27
+    GENERAL_SAMPLE_PARAMETER = 28
+    TOP_OF_CASING = 32
+    YEAR_OF_CONSTRUCTION = 33
+    YEAR_OF_DECOMMISSION = 34
+    CAS_NUMBER = 36
+    PARAMETER_GROUP = 37
+    GENERAL_METADATA = 38
+    VALUE = 39
+    UNIT = 40
+    PARAMETER = 21
+    PH = 20
+    SAMPLING_DATE = 24
+    STATION_IDENTIFIER =  1
+    LATITUDE = 2
+    LONGITUDE= 3
+    GENERAL_OBSERVATION_PARAMETER = 29
+    METHOD_DETECTION_LIMIT = 23
+    CONDUCTIVITY_25C = 17
+    TDS = 18
+    CALCIUM = 4
+    SODIUM = 5
+    POTASSIUM =  6
+    MAGNESIUM =  7
+    ALKALINITY = 10
+    CHLORIDE= 8
+    SULFATE = 9
+    BICARBONATE = 11
+    CARBONATE = 12
+    NITRATE = 13
+    IRON = 14
+    MANGANESE = 15
+    ARSENIC = 16
+    TEMPERATURE = 19
+    WELL_DEPTH = 30
+    GROUND_ELEVATION = 31
+
+AGG_GRID_COL_HEIGHT = 30

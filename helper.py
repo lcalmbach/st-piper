@@ -13,8 +13,12 @@ import smtplib, ssl
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import pycountry
+import os
 from st_aggrid import GridOptionsBuilder, AgGrid, DataReturnMode,GridUpdateMode
 from query import qry
+import database as db
+
+from deprecated import deprecated
 
 def flash_text(text:str, type:str):
     placeholder = st.empty()
@@ -153,7 +157,7 @@ def percentile(n):
     return percentile_
 
 def date_filter(df, cols):
-    date_col = st.session_state.config.key2col()[cn.SAMPLE_DATE_COL]
+    date_col = st.session_state.key2col()[cn.SAMPLE_DATE_COL]
     min_date = df[date_col].min()
     max_date = df[date_col].max()
     with cols[0]:
@@ -198,7 +202,7 @@ def nd2numeric(df):
     return df
 
 def select_parameter_obsolet(sidebar_flag: bool):
-    parameter_options = list(st.session_state.config.parameter_map_df.index)
+    parameter_options = list(st.session_state.parameter_map_df.index)
     parameter_options.sort()
     if sidebar_flag:
         sel_parameter = st.sidebar.selectbox('Parameter', parameter_options)
@@ -224,6 +228,7 @@ def color_gen(palette, n):
     yield from itertools.cycle(palettes[palette])
 
 def aggregate_data(source: pd.DataFrame, group_cols: list, val_col: str, agg_func: str):
+    st.write(source)
     df = source[group_cols + [val_col]]
     if agg_func == 'mean':
         df = df.groupby(group_cols).mean()
@@ -242,7 +247,24 @@ def get_base64_encoded_image(image_path):
     with open(image_path, "rb") as img_file:
         return base64.b64encode(img_file.read()).decode('utf-8')
 
+def get_lang(lang:str, py_file: str) -> dict:
+    """
+    extract the language dict from a json file located in ./locales folder of the package folder
+    every module requireing language support requests a locales subfolder in its package folder
+    """
 
+    path = os.path.dirname(py_file)
+    path=os.path.join(path, 'locales')
+    file_name_no_ext = os.path.splitext(os.path.basename(py_file))[0]
+    lang_file = os.path.join(path, file_name_no_ext + '.json')
+    with open(lang_file, 'r', encoding='utf8') as myfile:
+        data=myfile.read()
+    lang_df = pd.DataFrame(json.loads(data)).reset_index()
+    land_df = lang_df[lang_df['index']==lang]
+    lang_dict = land_df.iloc[0].to_dict()
+    return lang_dict
+
+@deprecated
 def get_language(py_file: str, lang:str):
     """ 
     extract the language dict from a json file located in ./locales folder
@@ -271,7 +293,7 @@ class Mail:
         self.port = 465
         self.smtp_server_domain_name = "smtp.gmail.com"
         self.sender_mail = "lcalmbach@gmail.com"
-        self.password = "d@d63 rocks!"
+        self.password = "pink rhin0!"
 
     def send(self, emails, subject, content):
         ssl_context = ssl.create_default_context()
@@ -319,43 +341,28 @@ def show_table(df: pd.DataFrame, cols, settings):
     selected_df = pd.DataFrame(selected)
     return selected_df
 
-def select_project_from_grid():
-    df = st.session_state.config.projects_df[['id', 'title']]
-    settings = {}
-    settings['height'] = 200
-    settings['width'] = "400px"
-    settings['selection_mode']='single'
-    settings['fit_columns_on_grid_load'] = True
-    settings['update_mode']=GridUpdateMode.SELECTION_CHANGED
-    cols = []
-    cols.append({'name': 'id', 'type':["numericColumn","numberColumnFilter","customNumericFormat"], 'precision':0, 'hide':True})
-    sel_row = show_table(df,cols,settings)
-    if len(sel_row)>0:
-        return int(sel_row.iloc[0]['id'])
-    else:
-        return -1
 
 def get_filter(filters):
     expression = ''
     with st.sidebar.expander('🔎 Filter'):
         if 'stations' in filters:
-            station_dict=st.session_state.config.project.get_station_list(allow_none=False)
+            station_dict=st.session_state.project.get_station_list(allow_none=False)
             stations = st.multiselect(label="Stations", options=list(station_dict.keys()),
                                         format_func=lambda x:station_dict[x])
             if len(stations)>0:
                 stations = ",".join(map(str, stations))
                 expression = f"station_id in ({stations})"
         if 'sampling_date' in filters:
-            min_date, max_date = st.session_state.config.project.min_max_date()
+            min_date, max_date = st.session_state.project.min_max_date()
             minmax = st.date_input("Date", min_value=min_date, max_value=max_date,value = (min_date,max_date))
-            if minmax !=  (min_date,max_date):
-                expression = "{expression} AND " if expression > '' else ""
+            if minmax !=  (min_date, max_date):
+                expression = f"{expression} AND " if expression > '' else ""
                 expression += f"sampling_date >= '{minmax[0]}' and sampling_date <= '{minmax[1]}'"
     
     return expression
 
 def get_station(default: int, filter:str):
-    station_dict=st.session_state.config.project.get_station_list(allow_none=False)
+    station_dict=st.session_state.project.get_station_list(allow_none=False)
     if default in list(station_dict.values()):
         id = list(station_dict.values()).index(default)
     else:
@@ -366,7 +373,7 @@ def get_station(default: int, filter:str):
     return station_id
 
 def get_date(station_id: int, default):
-    date_dict=st.session_state.config.project.get_date_list(station_id=station_id,allow_none=False, )
+    date_dict=st.session_state.project.get_date_list(station_id=station_id,allow_none=False, )
     if default in list(date_dict.values()):
         id = list(date_dict.values()).index(default)
     else:
@@ -378,21 +385,21 @@ def get_date(station_id: int, default):
 
 
 def get_stations(default: list, filter:str):
-    station_dict=st.session_state.config.project.get_station_list(allow_none=False)
+    station_dict=st.session_state.project.get_station_list(allow_none=False)
     stations = st.sidebar.multiselect(label="Stations", options=list(station_dict.keys()),
                                         format_func=lambda x:station_dict[x],
                                         default = default)
     return stations
 
 def get_parameters(default: list, filter: str):
-    parameter_dict = st.session_state.config.project.get_parameter_dict(allow_none=False, filter="")
+    parameter_dict = st.session_state.project.get_parameter_dict(allow_none=False, filter="")
     sel_parameters = st.sidebar.multiselect(label='Parameter', options=list(parameter_dict.keys()), 
                                             format_func=lambda x:parameter_dict[x], 
                                             default=default)
     return sel_parameters
 
 def get_parameter(default: int, filter: str = '', label: str = 'Parameter'):
-    parameter_dict = st.session_state.config.project.get_parameter_dict(allow_none=False, filter=filter)
+    parameter_dict = st.session_state.project.get_parameter_dict(allow_none=False, filter=filter)
     id = list(parameter_dict.keys()).index(default)
     sel_parameter = st.sidebar.selectbox(label=label, options=list(parameter_dict.keys()), 
                                             format_func=lambda x:parameter_dict[x], 
@@ -400,10 +407,9 @@ def get_parameter(default: int, filter: str = '', label: str = 'Parameter'):
     return sel_parameter
 
 def get_guideline(default: list):
-    guideline_dict = st.session_state.config.get_guideline_dict()
-    default_id = list(guideline_dict.keys()).index(default)
-    sel_guideline = st.sidebar.selectbox(label='Guideline', options=list(guideline_dict.keys()), 
-                                            format_func=lambda x:guideline_dict[x], 
+    default_id = list(st.session_state.guideline_dict.keys()).index(default)
+    sel_guideline = st.sidebar.selectbox(label='Guideline', options=list(st.session_state.guideline_dict.keys()), 
+                                            format_func=lambda x:st.session_state.guideline_dict[x], 
                                             index=default_id)
     return sel_guideline
 
@@ -411,7 +417,7 @@ def add_meqpl_columns(data, parameters, columns):
     for par_id in parameters:
         id = parameters.index(par_id)
         col = columns[id]
-        fact = st.session_state.config.project.unit_conversion(par_id, None, 'meq/L')
+        fact = st.session_state.project.unit_conversion(par_id, None, 'meq/L')
         data[col] = data[par_id] * fact
 
     return data
@@ -436,3 +442,76 @@ def add_pct_columns(data:pd.DataFrame, parameters:list, new_columns:list, sum_co
         data[new_col] = np.where(data[sum_col]==0, 0, data[par] / data[sum_col] * 100)
 
     return data
+
+def get_lookup_code_dict(category, lang: str)->dict:
+    """returns a dictionary for the lookup_codes table
+
+    Args:
+        category (int): see const.Codes enum
+        lang (str): languange (en, de, zh)
+
+    Returns:
+        dict: id, name key-values
+    """
+    sql = qry['lookup_values'].format(lang, category.value)
+    df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
+    result = dict(zip(df['id'], df['name']))
+    return result
+
+def load_data_from_file(uploaded_file: st.uploaded_file_manager.UploadedFile, preview: bool)->pd.DataFrame:
+    """
+    reads a csv file and returns the data in a dataframe
+
+    Args:
+        uploaded_file (st.uploaded_file_manager.UploadedFile): uploaded file
+        preview (bool): check if you want to see a preview of the file (todo: remove)
+
+    Returns:
+        pd.DataFrame: content of csv file
+    """
+    df = pd.read_csv(uploaded_file, 
+        sep=st.session_state.project.separator, 
+        encoding=st.session_state.project.encoding)
+    flash_text(f"File was loaded: {len(df)} rows, {len(list(df.columns))} columns.", "success")
+    if preview:
+        with st.expander('Preview'):
+            st.write(df.head(100))
+    return df
+
+
+def df2dict(df:pd.DataFrame, key: str, value: str, select_option: bool=True)->dict:
+    """
+    returns a dict that can be used in selectboxes. 
+
+    Args:
+        df (pd.DataFrame): dataframe includind the columns key and value also specified in the input
+        key (str): column name of key in dataframe
+        value (str): column name of value in dataframe
+        select_option (bool): if true, a -1;<select> entry is added if selection is not mandatory
+
+    Returns:
+        dict: key/val dict
+    """
+
+    d = dict(zip(list(df[key]), list(df[value])))
+    if select_option:
+        result = {-1: '<Select>'}
+        result.update(d)
+    else:
+        result = d
+    return result
+
+
+def get_table_download_link(df: pd.DataFrame, message: str, filename: str='downloaded.csv') -> str:
+    """
+    Generates a link allowing the data in a given panda dataframe to be downloaded
+
+    :param df:          table with data
+    :param message:     link text e.g. "click here to download file"
+    :return:            link string including the data
+    """
+
+    csv = df.to_csv(index=False)
+    b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
+    href = f'<a href="data:file/csv;base64,{b64}" download="{filename}">{message}</a>'
+    return href

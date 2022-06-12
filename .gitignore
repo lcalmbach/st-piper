@@ -1,2 +1,9 @@
 env
+.vscode
+__pycache__
 use-cases.md
+docu
+import
+archive
+test*.*
+imp_*.py
