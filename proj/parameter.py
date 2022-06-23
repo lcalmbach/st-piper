@@ -20,7 +20,7 @@ class Parameter():
             self.casnr = df.iloc[0]['casnr']
             self.group1 = df.iloc[0]['group1']
             self.group2 = df.iloc[0]['group1']
-            self.sys_par_id = df.iloc[0]['sys_par_id']
+            self.sys_par_id = df.iloc[0]['master_parameter_id']
         else:
             self.id = -1
             self.title = None

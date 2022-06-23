@@ -6,6 +6,8 @@ import database as db
 from proj.user import User
 from proj.project import Project
 import const as cn
+import database as db
+from query import qry
 
 
 def get_guideline_dict()->pd.DataFrame:
@@ -20,5 +22,8 @@ def init():
     st.session_state.language = st.session_state.user.language
     st.session_state.project_dict, st.session_state.project_df = st.session_state.user.get_user_projects()
     st.session_state.guideline_dict = get_guideline_dict()
+    st.session_state.enums = {}
+
+
 
 

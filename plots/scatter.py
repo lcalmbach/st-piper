@@ -66,7 +66,7 @@ class Scatter:
             plot.xaxis.axis_label = f"{x_col} (mg/L)"
             return plot
 
-        par_dict = st.session_state.config.project.get_parameter_dict()
+        par_dict = st.session_state.project.get_parameter_dict()
         x_col = par_dict[self.cfg['x_par']]
         y_col = par_dict[self.cfg['y_par']]
         plot = init_plot(x_col, y_col)

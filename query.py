@@ -61,41 +61,41 @@ qry = {
     """,
     
     'sample_observations': """
-    select {0}, station_id
+    select {0}
     from 
         public.{1}_observation t1
-        --inner join public.{1}_parameter t2 on t2.id = t1.parameter_id
+        inner join public.{1}_parameter t2 on t2.id = t1.parameter_id
     where 
-        station_id = {2} and sampling_date = '{3}'
+        t1.station_id = {2} and t1.sampling_date = '{3}'
     """,
 
-    'parameter_data': """select id, parameter_name, casnr, group1, group2
+    'parameter_data': """select *
         from public.{}_parameter
-        order by group1, group2""",
+        order by group1, parameter_name""",
     
-    'parameter_observations':  """select
-	t2."station_identifier", t1."sampling_date", t3."parameter_name", t1."unit", t1."value", t1."value_numeric",t1."group",t1."general_parameter_group", t1."station_id", t1."parameter_id"
-from 
-	public.{0}_observation t1
-	inner join public.{0}_station t2 on t2.id = t1.station_id
-	inner join public.{0}_parameter t3 on t3.id = t1.parameter_id
-where t1."parameter_id" = {1} {2}
-order by t1."station_identifier", t1."sampling_date"
+    'parameter_observations':  """select {0}, t1.parameter_id, t1.station_id
+        from 
+            public.{1}_observation t1
+            inner join public.{1}_station t2 on t2.id = t1.station_id
+            inner join public.{1}_parameter t3 on t3.id = t1.parameter_id
+        where 
+            t1."parameter_id" = {2} {3}
+        order by 
+            t2."station_identifier", t1."sampling_date"
     """,
     
     'station_list': "select id, station_identifier from public.{}_station order by station_identifier",
 
     'min_max_sampling_date': "select min(sampling_date) as min_date, max(sampling_date) as max_date from public.{}_observation",
-
+''
     'parameter_list': "select id, parameter_name from public.{}_parameter {} order by parameter_name",
 
-    # obsolete
-    # 'observations': "select * from public.{}_observation where 1=1 {}",
 
-    'observations': """Select t1.*, t2.station_identifier
-    from public.{0}_observation t1
-    inner join public.{0}_station t2 on t2.id = t1.station_id
-    where 1=1 {1}
+    'observations': """Select {0}
+        from public.{1}_observation t1
+            inner join public.{1}_station t2 on t2.id = t1.station_id
+            inner join public.{1}_parameter t3 on t3.id = t1.parameter_id
+        where 1=1 {2}
     """,
 
     'get_analysis_config': "select * from public.user_project_config where user_id = {} and analysis_id = {} and setting_name='{}'",
@@ -165,7 +165,7 @@ order by t1."station_identifier", t1."sampling_date"
 
     'master_columns': "select * from public.master_parameter order by name_en",
 
-    'lookup_values': "SELECT id, {0} as name FROM public.lookup_values where category_id = {1} order by {0}",
+    'lookup_values': "SELECT id, {0} as name FROM public.lookup_value where category_id = {1} order by {0}",
 
     'mandatory_parameters': "select id, name_{} as name from public.master_parameter where is_mandatory and type = '{}'",
 
@@ -190,6 +190,8 @@ order by t1."station_identifier", t1."sampling_date"
 
         update public.{0}_temp set "{1}" = (substring("{2}",2,char_length("{2}")) ::DECIMAL) / 2
         where substring("{2}",1,1)='<' and isnumeric(substring("{2}",2,char_length("{2}")));
-    """
-    }
+    """,
+
+    'parameter_group_list': """select distinct "group{0}" from public.{1}_parameter order by group{0}"""
     
+}

@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import dataretrieval.nwis as nwis
 from st_aggrid import GridUpdateMode
-import numpy as np
 
 #import menu_parameter
 import const as cn
@@ -38,7 +37,13 @@ def nwis_test():
     st.write(wellDf[['p00025','p00003','p00010']])
 
 
-def show_project_form(project:Project):
+def show_project_form(project:Project, can_edit: bool):
+    """Displays form for editing the project metadata: name, description, parameters required for the import
+
+    Args:
+        project (Project): project instance
+        can_edit (bool): flag to determine if save button is shown
+    """
     ok, message = True, ''
     form = st.form(key='proj')
     with form:
@@ -59,33 +64,36 @@ def show_project_form(project:Project):
         with cols[1]:
             id = cn.ENCODINGS.index(project.encoding)
             project.encoding = st.selectbox(label=lang['file_encoding'], options=cn.ENCODINGS, index=id)
-            format_options = [lang['value_per_row'], lang['sample_per_row']]
-            id = format_options.index(project.row_is)
-            project.row_is = st.selectbox(label=lang['data_format'], options=format_options, index=id)
+            
+            format_options = helper.get_lookup_code_dict(category=cn.ENUMS.import_row_format, lang=st.session_state.language)
+            id = list(format_options.keys()).index(project.row_is)
+            project.row_is = st.selectbox(label=lang['data_format'], options=list(format_options.keys()), 
+                format_func=lambda x:format_options[x],
+                index=id)
 
         if form.form_submit_button(label=lang['save']):
-            ok, message = project.save()
-            st.session_state.projects_df = st.session_state.user.get_projects()
+            if can_edit:
+                ok, message = project.save()
+                st.session_state.projects_df = st.session_state.user.get_projects()
+            else:
+                helper.flash_text(lang['save_warning'], 'warning')
     
     if message > '':
         type = 'success' if ok else 'warning'
         helper.flash_text(message, type) 
 
-def find_project():
-    st.write('todo!')
-
 def import_data():
     st.session_state.project.import_data()
     
 def define_import():
-    st.session_state.imp.select_step()
+    st.session_state.project.imp.select_step()
 
 def export_data():
     st.write('todo!')
 
 def create_project():
     project = Project(-1)
-    show_project_form(project)
+    show_project_form(project, can_edit=True)
 
 def select_project_from_grid():
     df = st.session_state.project_df[['id', 'title']]
@@ -94,7 +102,7 @@ def select_project_from_grid():
     settings['width'] = "400px"
     settings['selection_mode']='single'
     settings['fit_columns_on_grid_load'] = True
-    settings['update_mode']=GridUpdateMode.SELECTION_CHANGED
+    settings['update_mode'] = GridUpdateMode.SELECTION_CHANGED
     cols = []
     cols.append({'name': 'id', 'type':["numericColumn","numberColumnFilter","customNumericFormat"], 'precision':0, 'hide':True})
     sel_row = helper.show_table(df,cols,settings)
@@ -109,7 +117,7 @@ def edit_project():
     project_id = select_project_from_grid()
     if project_id > 0:
         project = Project(project_id)
-        show_project_form(project)
+        show_project_form(project= project, can_edit=project.get_user_permission(st.session_state.user.id)==cn.PERMISSION.Write.value)
 
 
 def show_menu():

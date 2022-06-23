@@ -1,7 +1,5 @@
-import encodings
 import streamlit as st
 import pandas as pd
-from pathlib import Path
 from st_aggrid import AgGrid
 
 import const as cn
@@ -18,18 +16,22 @@ DATA_ROW_FORMATS = ['one value per row', 'one sample per row']
 lang = {}
 def set_lang():
     global lang
-    lang = helper.get_language(__name__, st.session_state.language)
+    lang = helper.get_lang(lang=st.session_state.language, py_file=__file__)
 
 class Project():
     def __init__(self, id: int):
         ok = self.set_project_info(id)
         self.has_config_settings = False
-        self._station_fields = None
-        self._sample_fields = None
-        self._observation_fields = None
+        self.has_separate_station_file = False
+        self._station_fields = []
+        self._sample_fields = []
+        self._observation_fields = []
+        self._parameter_metadata_fields = []
+        self._parameter_group1 = []
+        self._parameter_group2 = []
 
     def master_parameter_2_col_name(self, master_parameter_id: int, col_type: int):
-        """translates a master parameter name to a column name 
+        """Translates a master parameter name to a column name 
 
         Args:
             master_parameter_key (str): master parameter name expression, e.g. 'PARAMETER'
@@ -84,7 +86,7 @@ class Project():
             self.has_separate_station_file = df.iloc[0]['has_separate_station_file']
             self.parameters_df, ok, err_msg = get_parameters()
             self.columns_df, ok, err_msg = get_columns()
-            if self.row_is == DATA_ROW_FORMATS[0]:
+            if self.row_is == cn.DATA_FORMAT.ValuePerRow.value:
                 from .value_per_row_import import ValuePerRowImport
                 self.imp = ValuePerRowImport(self)
             else:
@@ -96,7 +98,7 @@ class Project():
             self.id = -1
             self.title = 'Enter a title'
             self.description= 'Enter a description'
-            self.row_is = 'one value per row'
+            self.row_is = cn.DATA_FORMAT.SamplePerRow.value
             self.date_format = '%Y/%m/%d'
             self.separator = ';'
             self.encoding = 'utf8'
@@ -133,39 +135,56 @@ class Project():
 
     @property
     def station_fields(self):
-        def get_station_fields():
-            fields = list(self.columns_df.query(f'type_id == {cn.CTYPE_STATION}')['field_name'])
-            result = '"id","' +  '","'.join(fields) + '"'
-            return result
-
-        if self._station_fields == None:
-            self._station_fields = get_station_fields()
+        if self._station_fields == []:
+            self._station_fields = ["id"] +  list(self.columns_df.query(f'type_id == {cn.CTYPE_STATION}')['field_name'])
         return self._station_fields
     
     @property
     def sample_fields(self):
-        def get_sample_fields():
-            fields = list(self.columns_df.query(f'(type_id == {cn.CTYPE_SAMPLE}) and (not field_name.isnull())')['field_name'])
-            result = '"' + '","'.join(fields) + '"'
-            return result
-
-        if self._sample_fields == None:
-            self._sample_fields = get_sample_fields()
+        if self._sample_fields == []:
+            self._sample_fields = list(self.columns_df.query(f'(type_id == {cn.CTYPE_SAMPLE}) and (not field_name.isnull())')['field_name'])
         return self._sample_fields
     
     @property
     def observation_fields(self):
-        def get_observation_fields():
-            fields = list(self.columns_df.query(f'(type_id == {cn.CTYPE_VAL_META}) and (not field_name.isnull())')['field_name'])
-            result = '"' + '","'.join(fields) + '"'
-            return result
-
-        if self._observation_fields == None:
-            self._observation_fields = get_observation_fields()
+        if self._observation_fields == []:
+            self._observation_fields = list(self.columns_df.query(f'(type_id  == {cn.CTYPE_OBSERVATION}) and (not field_name.isnull())')['field_name'])
         return self._observation_fields
+    
+    @property
+    def parameter_metadata_fields(self):
+        if self._parameter_metadata_fields == []:
+            self._parameter_metadata_fields = list(self.columns_df.query(f'(type_id == {cn.CTYPE_VAL_META}) and (not field_name.isnull())')['field_name'])
+        return self._parameter_metadata_fields
+    
+    @property
+    def parameter_group1(self):
+        if self._parameter_group1 == []:
+            sql = qry['parameter_group_list'].format(1, self.key)
+            df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
+            self._parameter_group1 = list(df['group1'])
+        return self._parameter_group1
+    
+    @property
+    def parameter_group2(self):
+        if self._parameter_group2 == []:
+            sql = qry['parameter_group_list'].format(2, self.key)
+            df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
+            self._parameter_group2 = list(df['group2'])
+        return self._parameter_group2
        
 
     # functions ------------------------------------------------------------
+
+    def observation_display_order_expression(self, prefix:str)->str:
+        result = ''
+        if 'group2' in self.parameter_metadata_fields:
+            result = f'order by {prefix}.group2, {prefix}.group1, {prefix}.parameter_name'
+        elif 'group1' in self.parameter_metadata_fields:
+            result = f'order by {prefix}.group1, {prefix}.parameter_name'
+        else:
+            result = f'order by {prefix}.parameter_name'
+        return result
 
     def get_station_df(self, station_id: int):
         sql = qry['station'].format(self.key, station_id)
@@ -183,7 +202,7 @@ class Project():
         Returns:
             int: project parameterid
         """
-        result = self.parameters_df[self.parameters_df['sys_par_id'] == master_par_id]
+        result = self.parameters_df[self.parameters_df['master_parameter_id'] == master_par_id]
         if len(result) > 0:
             return int(result.index.values[0])
         else:
@@ -199,7 +218,7 @@ class Project():
         Returns:
             int: project parameterid
         """
-        result = self.parameters_df[self.parameters_df['sys_par_id'] == master_par_id]
+        result = self.parameters_df[self.parameters_df['master_parameter_id'] == master_par_id]
         if len(result) > 0:
             return int(result.iloc[0][field])
         else:
@@ -246,8 +265,8 @@ class Project():
             result.append(self.parameters_df.loc[par_id][fieldname])
         return result
 
-    
-    
+
+
     def master_par_id_2_par_id(self,par_list: list):
         """converts a list of system parameter id (metadata table) to the mapped parameter id of the current project
 
@@ -261,7 +280,7 @@ class Project():
         result=[]
         unmatched=[]
         for sys_par_id in par_list:
-            par_id = self.parameters_df[self.parameters_df['sys_par_id']==sys_par_id]
+            par_id = self.parameters_df[self.parameters_df['master_parameter_id']==sys_par_id]
             # if the parameter has been mapped
             if len(par_id) > 0:
                 result.append(int(par_id.index.values[0]))
@@ -309,147 +328,40 @@ class Project():
 
         return ok, message
 
-    def import_data(self):
-        st.write(self.row_is)
-        if self.row_is=="one value per row":
-            self.import_value_per_row_import()
-        else:
-            self.import_value_per_row_import()
-    
-    def import_value_per_row_import(self):
-        def verify_file_columns(df_config, df_data)->bool:
-            ok, msg = True, []
-            # verify if each predefined column name is included in the import file
-            for col in list(df_config['column_name']):
-                if not(col in list(df_data.columns)):
-                    msg.append(f"column '{col}' could not be found")
-                    ok=False
-            return ok, msg
-
-        def  update_station_id():
-            """
-            updates the station_id column in the observation table based on the station_name column in the
-            project station table which mast match the station column in the observation table.
-            """
-            source_key = self.master_parameter_2_col_name(MP.STATION_IDENTIFIER.value, cn.CTYPE_SAMPLE)
-            sql = qry['update_station_id'].format(self.key, cn.STATION_IDENTIFIER_COL, source_key)
-            ok, err_msg = db.execute_non_query(sql,st.session_state.conn)
-        
-        def  update_parameter_id():
-            source_key = self.master_parameter_2_col_name(MP.PARAMETER.value, cn.CTYPE_VAL_META)
-            sql = qry['update_parameter_id'].format(self.key, cn.PARAMETER_COL, source_key)
-            ok, err_msg = db.execute_non_query(sql,st.session_state.conn)
-
-        def insert_observation_data():
-            df_cols = self.observation_columns_df()
-            df_cols = df_cols.query(f"( type_id != {cn.CTYPE_STATION} ) and ( field_name.notnull() )")
-            source_fields = '"' + '","'.join(list(df_cols['column_name'])) + '","station_id", "parameter_id"'
-            target_fields = '"' + '","'.join(list(df_cols['field_name'])) + '","station_id", "parameter_id"'
-            cmd = f"insert into {self.key}_observation ({target_fields}) select {source_fields} from {self.key}_temp"
-            ok, err_msg = db.execute_non_query(cmd,st.session_state.conn)
-            return ok, err_msg
-        
-        def insert_station_data():
-            df_cols = self.station_columns_df()
-            df_cols = df_cols.query(f"( type_id == {cn.CTYPE_STATION} ) and ( field_name.notnull() )")
-            source_fields = '"' + '","'.join(list(df_cols['column_name'])) + '"'
-            target_fields = '"' + '","'.join(list(df_cols['field_name'])) + '"'
-            cmd = f"insert into {self.key}_station ({target_fields}) select {source_fields} from {self.key}_temp"
-            ok, err_msg = db.execute_non_query(cmd,st.session_state.conn)
-            return ok, err_msg
-
-        def update_num_value_col():
-            """
-            This function fills the numeric value column: for numeric values in the value column, this value is reported
-            <X (non detects) are replaced by half of the value. e.g. <1.0 becomes 0.5
-            """
-            
-            num_value_col = self.master_parameter_2_col_name(MP.NUMERIC_VALUE.value, cn.CTYPE_VAL_META)
-            value_col = self.master_parameter_2_col_name(MP.VALUE.value, cn.CTYPE_VAL_META)
-            sql = qry['update_num_value_col'].format(self.key, num_value_col, value_col)
-            ok, err_msg = db.execute_non_query(sql,st.session_state.conn)
-            return ok, err_msg
-
-        station_file = st.file_uploader(label="Station data", type='csv', help='Station file must be added during the first upload and whenever there were changes in station data')
-        observation_file = st.file_uploader(label="Observation data, csv", type='csv', help='csv file with the oberved values')
-        import_mode_options = ['Keep existing records', 'Delete existing records prior to import']
-        import_mode = st.radio(label="Data append mode",
-            options=import_mode_options,
-            help="All data from the import file will be appended. If some records already exist in the database you should select the option: 'Delete existing records prior to the import'")
-        if st.button('upload data', disabled=(observation_file == None and station_file == None)):  
-            if station_file:
-                with st.spinner(text='Loading station data'):
-                    if import_mode == import_mode_options[1]:
-                        ok, err_msg = truncate_table(f"{self.key}_station")
-                    df_station = helper.load_data_from_file(station_file, preview=True)
-                    st.success('station data was loaded')
-                    try:    
-                        ok, msg = verify_file_columns(df_config=self.station_columns_df(), df_data=df_station)
-                        if not ok:
-                            raise ValueError(f'The following columns could not be found or contain invalid data: {msg}')
-                        else:
-                            st.success('Station data was verified')
-                        db.save_db_table(table_name=f'{self.key}_temp', df=df_station, fields=[])
-                        ok, err_msg = insert_station_data()
-                        if not ok:
-                            raise ValueError(f'Station could not be inserted into table: {err_msg}')
-                        else:
-                            st.success('Station data was inserted in data table')
-                    except ValueError as e:
-                        st.warning(e)
-                    except:
-                        st.warning('An error occurred while reading the station data')
-
-            if observation_file:
-                with st.spinner(text='Loading observation data'):
-                    if import_mode == import_mode_options[1]:
-                        ok, err_msg = truncate_table(f"{self.key}_observation")
-                    df_observation = helper.load_data_from_file(observation_file, preview=True)
-                    df_observation['parameter_id'] = 0
-                    df_observation['station_id'] = 0
-                    col = self.date_column
-                    df_observation[col] = pd.to_datetime(df_observation[col])
-                    st.success('observation data was loaded')
-                    ok, msg = verify_file_columns(df_config=self.observation_columns_df(), df_data=df_observation)
-                    try:
-                        st.success('observation data was verified')
-                        db.save_db_table(table_name=f'{self.key}_temp', df=df_observation, fields=[])
-                        update_station_id()
-                        update_parameter_id()
-                        ok, err_msg = update_num_value_col()
-                        ok, err_msg = insert_observation_data()
-                        
-                    except:
-                        st.warning(f'Errors were found in observations data file: {msg}')
-            
-
-    def import_sample_per_row_import(self):
-        pass
 
     def station_data(self):
-        sql = qry['station_data'].format(self.station_fields, self.key, self.db_date_format)
+        fields = helper.list_to_csv_string(self.station_fields)
+        sql = qry['station_data'].format(fields, self.key, self.db_date_format)
         df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
         return df
     
     def station_samples(self, station_id):
-        sql = qry['station_samples'].format(self.sample_fields, self.key, station_id)
+        fields = helper.list_to_csv_string(self.sample_fields)
+        sql = qry['station_samples'].format(fields, self.key, station_id)
         df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
         return df
     
     def parameter_data(self):
         sql = qry['parameter_data'].format(self.key)
+        st.write(sql)
         df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
         return df
 
     def sample_observations(self, station_id, sample_date):
-        fields = f"{self.observation_fields},{self.sample_fields}"
-        sql = qry['sample_observations'].format(fields, self.key, station_id, sample_date)
+        of_list = helper.list_to_csv_string(value_list=self.observation_fields, prefix='t1', add_quotes=False)
+        sf_list = helper.list_to_csv_string(value_list=self.parameter_metadata_fields, prefix='t2', add_quotes=False)
+        sql = qry['sample_observations'].format(f"{of_list},{sf_list}", self.key, station_id, sample_date)
+        sql += ' ' + self.observation_display_order_expression('t2')
         df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
         return df
     
     def parameter_observations(self, parameter_id:int, filter: str):
+        observation_list = helper.list_to_csv_string(value_list=self.observation_fields, prefix='t1', add_quotes=False)
+        sample_list =  helper.list_to_csv_string(value_list=self.sample_fields, prefix='t1', add_quotes=False)
+        station_list = helper.list_to_csv_string(value_list=self.station_fields, prefix='t2', add_quotes=False)
+        parameter_list = helper.list_to_csv_string(value_list=self.parameter_metadata_fields, prefix='t3', add_quotes=False)
         filter = " AND " + filter if filter > '' else ''
-        sql = qry['parameter_observations'].format(self.key, parameter_id, filter)
+        sql = qry['parameter_observations'].format(f"{station_list},{sample_list},{observation_list},{parameter_list}",self.key, parameter_id, filter)
         df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
         return df
     
@@ -495,7 +407,26 @@ class Project():
             filter = f" AND parameter_id in ({csv_parameters})"
         if len(csv_stations)>0:
             filter += f" AND station_id in ({csv_stations})"
-        sql = qry['observations'].format(self.key, filter)
+        fields = f"t1.sampling_date, t1.value_numeric, t1.detection_limit, t1.station_id, t1.parameter_id, t3.parameter_name, t2.station_identifier"
+        sql = qry['observations'].format(fields, self.key, filter)
         df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
         return df
 
+    def get_user_permission(self, user_id: int)->cn.PERMISSION:
+        """Evaluates the permission for this project of a specified user and returns the permission result (read, write, noPermission)
+
+        Args:
+            user_id (int): user id of user requesting access
+
+        Returns:
+            cn.Permission: permission
+        """
+        permission = cn.PERMISSION.NoPermission.value
+        if self.owner_id == user_id:
+            permission = cn.PERMISSION.Write.value
+        elif self.is_public:
+            permission = cn.PERMISSION.Read.value
+        return permission
+
+    def import_data(self):
+        self.imp.import_data()

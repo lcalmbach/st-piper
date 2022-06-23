@@ -257,6 +257,7 @@ def get_lang(lang:str, py_file: str) -> dict:
     path=os.path.join(path, 'locales')
     file_name_no_ext = os.path.splitext(os.path.basename(py_file))[0]
     lang_file = os.path.join(path, file_name_no_ext + '.json')
+    # st.write(lang_file)
     with open(lang_file, 'r', encoding='utf8') as myfile:
         data=myfile.read()
     lang_df = pd.DataFrame(json.loads(data)).reset_index()
@@ -443,7 +444,7 @@ def add_pct_columns(data:pd.DataFrame, parameters:list, new_columns:list, sum_co
 
     return data
 
-def get_lookup_code_dict(category, lang: str)->dict:
+def get_lookup_code_dict(category: int, lang: str)->dict:
     """returns a dictionary for the lookup_codes table
 
     Args:
@@ -515,3 +516,26 @@ def get_table_download_link(df: pd.DataFrame, message: str, filename: str='downl
     b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
     href = f'<a href="data:file/csv;base64,{b64}" download="{filename}">{message}</a>'
     return href
+
+def list_to_csv_string(value_list:list, prefix: str='', add_quotes: bool=False, sep: str=',')->str:
+    """Adds a prefix to each item of a list. Optionally, quotes are added to each item. This is used to generate 
+    db query strings when fields from more than one table are queries and identical field names may appear in both tables. 
+    example select t1.name, t2.name from xxx as t1, yyy ...
+
+    Args:
+        value_list (list): list of field names
+        prefix (str): prefix expression, '' if no prefix should be added
+        add_quotes (bool): if true, quotes are added to the fields first -> name > t1.name
+        sep (str): separator character, default is ','
+
+    Returns:
+        str: _description_
+    """
+
+    prefix =prefix + '.' if prefix > '' else prefix
+    if add_quotes:
+        result = [f'{prefix}"{x}"' for x in value_list]
+    else:
+         result = [f'{prefix}{x}' for x in value_list]
+    result = ','.join(result)
+    return result

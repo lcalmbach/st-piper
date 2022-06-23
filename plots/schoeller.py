@@ -11,8 +11,14 @@ from scipy.stats.stats import pearsonr
 import helper
 import const as cn
 
+lang = {}
+def set_lang():
+    global lang
+    lang = helper.get_lang(lang=st.session_state.language, py_file=__file__)
+
 class Schoeller:
     def __init__(self, df: pd.DataFrame, cfg: dict):
+        set_lang()
         self.identifier_col = 'sampling_date'
         self.cfg = cfg
         self.data = self.transform_data(df)
@@ -60,7 +66,7 @@ class Schoeller:
             if self.cfg['y_auto'] == False:
                 plot.y_range = Range1d(float(self.cfg['y_axis_min']), float(self.cfg['y_axis_max']))
             plot.title.align = "center"
-            plot.yaxis.axis_label = f"Concentration (meq/L)"
+            plot.yaxis.axis_label = f"{lang['concentration']} (meq/L)"
             plot.xaxis.axis_label = ""
             
             return plot

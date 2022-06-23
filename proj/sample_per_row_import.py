@@ -16,19 +16,17 @@ from .project import Project
 lang = {}
 def set_lang():
     global lang
-    lang = helper.get_lang(st.session_state.language, __file__)
+    lang = helper.get_lang(lang=st.session_state.language, py_file=__file__)
     
 SAMPLE_FORMATS = ['one value per row', 'one sample per row']
 
 
 class SamplePerRowImport(FontusImport):
     def __init__(self, prj: Project):
-        self.project = prj
+        super().__init__(prj)
         self.station_columns = {}
         self.sample_columns = {}
         self.metadata_columns = {}
-        self.step = 0
-
 
     def load_new_dataset(self):
         def load_data():
@@ -284,3 +282,6 @@ class SamplePerRowImport(FontusImport):
             self.match_parameters(show_only_matched)
         elif self.step == 5:
             self.pivot_table()
+    
+    def import_data():
+        pass

@@ -42,16 +42,16 @@ class Time_series:
         color = itertools.cycle(palettes.Category20_20) #helper.color_gen(self.cfg['palette'], 10)
         i=0
         legend_items = []
-        for item in self.cfg['legend_items']:
-            st.write(self.data,self.cfg['legend_col'],item)
-            df = self.data[self.data[self.cfg['legend_col']] == item]
+        for item in self.cfg['parameters']:
+            index = self.cfg['parameters'].index(item)
+            #st.write(self.data,self.cfg['legend_col'],item)
+            df = self.data[self.data[self.cfg['legend_col']] == int(item)]
             df = df.rename(columns={"sampling_date": 'date'})
-            st.write(df)
             clr = next(color)
             l = p.line(x='date', y=self.cfg['y_col'], line_color=clr, line_width = 2, alpha=self.cfg['fill_alpha'], source=df)
             m = p.scatter(x='date', y=self.cfg['y_col'], source=df, marker = MARKERS[i], 
                 size=self.cfg['symbol_size'], color=clr, alpha=self.cfg['fill_alpha'])
-            legend_items.append((item,[l,m]))
+            legend_items.append((self.cfg['legend_items'][index],[l,m]))
             i+=1
         if 'hlines' in self.cfg:
             for lin in self.cfg['hlines']:

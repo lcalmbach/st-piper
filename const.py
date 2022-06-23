@@ -35,7 +35,7 @@ SEPARATORS = [';',',','\t']
 CTYPE_STATION = 13
 CTYPE_SAMPLE = 14
 CTYPE_VAL_META = 15
-CTYPE_PARAMETER = 12
+CTYPE_OBSERVATION = 12
 
 STATION_IDENTIFIER_COL = 'station_identifier'
 LATITUDE_COL = 'latitude'
@@ -234,3 +234,20 @@ class MP(Enum):
     GROUND_ELEVATION = 31
 
 AGG_GRID_COL_HEIGHT = 30
+
+class ENUMS(Enum):
+    user_permission=1
+    import_row_format = 2
+    unit_category = 3
+    parameter_type = 4
+    data_type = 5
+
+class PERMISSION(Enum):
+    Read = 1
+    Write = 2
+    Full = 3
+    NoPermission = 25
+
+class DATA_FORMAT(Enum):
+    ValuePerRow = 4
+    SamplePerRow = 5

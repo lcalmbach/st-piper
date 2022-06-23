@@ -67,14 +67,16 @@ def exceedance_analysis():
         st.markdown(f"No standard was found for {parameter.name}, this may happen in the case where a standard exists but could not be matched due to a invalid or missing CASNR or simply if the parameter is not included in the guideline. In the first case select the corresponding parameter manually, in the second case enter a value manually if it is known.")
         cols = st.columns([2,2,4])
         standard = {}
-        with cols[1]:
-            standard['max_value'] = st.text_input(f"Enter maximum tolerated value manually", value=0.000)
+        
         with cols[0]:
             parameter_dict=guideline.get_parameter_dict(allow_none=True)
             sel_standard_id = st.selectbox(label='Select from guideline', options=list(parameter_dict.keys()), 
                                             format_func=lambda x:parameter_dict[x])
             if sel_standard_id > 0:
                 standard = guideline.get_standard(sel_standard_id)
+
+        with cols[1]:
+            standard['max_value'] = st.text_input(f"Enter maximum tolerated value manually", value=standard['max_value'])
 
         if standard != {}:
             sql = qry['exceedance_list'].format(standard['max_value'], st.session_state.project.key, parameter.id)

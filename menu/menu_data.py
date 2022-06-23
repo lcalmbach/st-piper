@@ -51,15 +51,34 @@ def show_sample():
     sampling_date = datetime.strftime(date, st.session_state.project.date_format)
     st.markdown(f"#### Observations (sampling date: {sampling_date})")
     observation_df =  st.session_state.project.sample_observations(station_id, date)
-    observation_df = observation_df.drop('sampling_date',axis=1)
     
     settings['height'] = observations_table_height
     helper.show_table(observation_df,[], settings)
 
 def show_stations():
-    st.markdown(F"#### Stations")
-    
+    def filter_parameter_group(df):
+        filtered_df = df
+        if 'group2' in project.parameter_metadata_fields:
+            cols = st.columns(4)
+            with cols[0]:
+                options = ['Select parameter group'] + project.parameter_group1
+                g1 = st.selectbox('Parameter group1', options=options)
+                if g1 != options[0]:
+                    filtered_df = df[df['group1'] == g1]
+            with cols[1]:
+                options = ['Select parameter group'] + project.parameter_group2
+                g2 = st.selectbox('Parameter group2', options=options)
+                if g2 != options[0]:
+                    filtered_df = filtered_df[filtered_df['group2'] == g2]
+        elif 'group1' in project.parameter_metadata_fields:
+            options = ['Select parameter group'] + project.parameter_group1
+            g1 = st.selectbox('Parameter group1', options=options)
+            if g1 != options[0]:
+                filtered_df = df[df['group1'] == g1]
+        return filtered_df
+
     df = project.station_data()
+    st.markdown(F"#### Stations ({len(df)})")
     settings = {'height':400, 'selection_mode':'single', 'fit_columns_on_grid_load': False}
     cols=[]
     grid_response = helper.show_table(df,cols, settings)
@@ -67,24 +86,25 @@ def show_stations():
         st.markdown('Select a station to see more details on sampling events at this station')
 
     if len(grid_response)>0:
-        st.markdown(f"#### Samples")
         station_id = grid_response.iloc[0]['id']
         df = project.station_samples(station_id)
+        st.markdown(f"#### Samples ({len(df)})")
         grid_response = helper.show_table(df,cols, settings)
         with st.expander('Info'):
             st.markdown('Select a sample event to see more details on the analysis')
 
     if len(grid_response)>0:
-        st.markdown(f"#### Observations")
         sample_date = grid_response.iloc[0]['sampling_date']
         df = project.sample_observations(station_id, sample_date)
+        st.markdown(f"#### Observations ({len(df)})")
+        df = filter_parameter_group(df)
         cols.append({'name': 'station_id', 'type': 'int', 'precision': 0, 'hide':True})
         cols.append({'name': 'parameter_id', 'type': 'int', 'precision': 0, 'hide':True})
         grid_response = helper.show_table(df,cols, settings)
 
 def show_parameters():
     obs_filter = helper.get_filter(['stations', 'sampling_date'])
-    st.markdown(F"#### Parameters")
+    st.markdown(f"#### Parameters")
     df = project.parameter_data()
     cols = []
     cols.append({'name': 'id', 'type': 'int', 'precision': 0, 'hide':True})
@@ -99,16 +119,16 @@ def show_parameters():
         cols.append({'name': 'parameter_id', 'type': 'int', 'precision': 0, 'hide':True})
         cols.append({'name': 'is_non_detect', 'type': 'int', 'precision': 0, 'hide':True})
         grid_response = helper.show_table(df,cols, settings)
-    
-        cfg= st.session_state.user.read_config(cn.TIME_SERIES_ID,'default')
-        cfg['parameters'] = [grid_response.iloc[0]['parameter_id']]
-        cfg['legend_items'] = [grid_response.iloc[0]['parameter_name']]
-        cfg['stations'] = [grid_response.iloc[0]['station_id']]
-        cfg['plot_width'] = 800
-        cfg['plot_height'] = 300
-        df_filtered = df[(df['station_id']==grid_response.iloc[0]['station_id'])]
-        plot = Time_series(df_filtered, cfg).get_plot()
-        st.bokeh_chart(plot)
+        if len(grid_response)>0:
+            cfg= st.session_state.user.read_config(cn.TIME_SERIES_ID,'default')
+            cfg['parameters'] = [parameter_id]
+            cfg['legend_items'] = [grid_response.iloc[0]['parameter_name']]
+            cfg['stations'] = [grid_response.iloc[0]['station_id']]
+            cfg['plot_width'] = 800
+            cfg['plot_height'] = 300
+            df_filtered = df[(df['station_id']==grid_response.iloc[0]['station_id'])]
+            plot = Time_series(df_filtered, cfg).get_plot()
+            st.bokeh_chart(plot)
 
     if len(grid_response)>0:
         st.markdown(f"#### Sample")
@@ -118,7 +138,6 @@ def show_parameters():
         cols.append({'name': 'station_id', 'type': 'int', 'precision': 0, 'hide':True})
         cols.append({'name': 'parameter_id', 'type': 'int', 'precision': 0, 'hide':True})
         grid_response = helper.show_table(df,cols, settings)
-
 
 
 def show_trend():

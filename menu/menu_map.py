@@ -21,7 +21,7 @@ from const import MP
 lang = {}
 def set_lang():
     global lang
-    lang = helper.get_language(__name__, st.session_state.language)
+    lang = helper.get_lang(lang=st.session_state.language, py_file=__file__)
 
 
 def show_filter(df: pd.DataFrame, filters: list, cfg: dict):

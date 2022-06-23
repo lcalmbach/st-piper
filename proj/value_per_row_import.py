@@ -2,7 +2,7 @@ import encodings
 import streamlit as st
 import pandas as pd
 from st_aggrid import AgGrid
-
+import sys
 import const as cn
 from const import MP
 from const import Codes, Date_types
@@ -11,23 +11,21 @@ import helper
 import database as db
 from query import qry
 from .project import Project
+from .fontus_import import FontusImport
 
 lang = {}
 def set_lang():
     global lang
-    lang = helper.get_language(__name__, st.session_state.language)
+    lang = helper.get_lang(lang=st.session_state.language, py_file=__file__)
 
 
-class ValuePerRowImport():
-    def __init__(self, prj: Project):
-        self.project = prj
+class ValuePerRowImport(FontusImport):
+    def __init__(self, prj):
+        super().__init__(prj)
         self.columns_metadata_df = pd.DataFrame(['col','obj_type','par_type','unit', 'master_id'])
         self.parameter_metadata_df = pd.DataFrame(['col','par_type','unit', 'formula', 'formula_weight', 'valence'])
         self.update_mode_replace = False
-        self.step = 0
         self.step_success = False # next step may only be success_step +1 not higher
-        self.observation_df = pd.DataFrame()
-        self.station_df = pd.DataFrame()
 
     #@property
     #def step(self):
@@ -50,7 +48,7 @@ class ValuePerRowImport():
         Step 0: uploads the observation from a csv file and stores it to a dataframe
         """
 
-        st.session_state.imp.update_mode_replace = st.checkbox('Data load mode', help="when checked, all existing data will be removed before loading the new data. If unchecked, the uploaded data will be added to the data existing in the database.")
+        self.update_mode_replace = st.checkbox('Data load mode', help="when checked, all existing data will be removed before loading the new data. If unchecked, the uploaded data will be added to the data existing in the database.")
         station_file = st.file_uploader("file holding station data (csv, 1 row per value format)")
         if station_file is not None:
             self.station_df = helper.load_data_from_file(station_file, True)
@@ -353,4 +351,111 @@ class ValuePerRowImport():
             if st.button('Next', disabled=False): # not(self.step_success)
                 self.step +=1
         self.run_step()
+    
+    def import_data(self):
+        def verify_file_columns(df_config, df_data)->bool:
+            ok, msg = True, []
+            # verify if each predefined column name is included in the import file
+            for col in list(df_config['column_name']):
+                if not(col in list(df_data.columns)):
+                    msg.append(f"column '{col}' could not be found")
+                    ok=False
+            return ok, msg
+
+        def  update_station_id():
+            """
+            updates the station_id column in the observation table based on the station_name column in the
+            project station table which mast match the station column in the observation table.
+            """
+            source_key = self.master_parameter_2_col_name(MP.STATION_IDENTIFIER.value, cn.CTYPE_SAMPLE)
+            sql = qry['update_station_id'].format(self.key, cn.STATION_IDENTIFIER_COL, source_key)
+            ok, err_msg = db.execute_non_query(sql,st.session_state.conn)
         
+        def  update_parameter_id():
+            source_key = self.master_parameter_2_col_name(MP.PARAMETER.value, cn.CTYPE_VAL_META)
+            sql = qry['update_parameter_id'].format(self.key, cn.PARAMETER_COL, source_key)
+            ok, err_msg = db.execute_non_query(sql,st.session_state.conn)
+
+        def insert_observation_data():
+            df_cols = self.observation_columns_df()
+            df_cols = df_cols.query(f"( type_id != {cn.CTYPE_STATION} ) and ( field_name.notnull() )")
+            source_fields = '"' + '","'.join(list(df_cols['column_name'])) + '","station_id", "parameter_id"'
+            target_fields = '"' + '","'.join(list(df_cols['field_name'])) + '","station_id", "parameter_id"'
+            cmd = f"insert into {self.key}_observation ({target_fields}) select {source_fields} from {self.key}_temp"
+            ok, err_msg = db.execute_non_query(cmd,st.session_state.conn)
+            return ok, err_msg
+        
+        def insert_station_data():
+            df_cols = self.station_columns_df()
+            df_cols = df_cols.query(f"( type_id == {cn.CTYPE_STATION} ) and ( field_name.notnull() )")
+            source_fields = '"' + '","'.join(list(df_cols['column_name'])) + '"'
+            target_fields = '"' + '","'.join(list(df_cols['field_name'])) + '"'
+            cmd = f"insert into {self.key}_station ({target_fields}) select {source_fields} from {self.key}_temp"
+            ok, err_msg = db.execute_non_query(cmd,st.session_state.conn)
+            return ok, err_msg
+
+        def update_num_value_col():
+            """
+            This function fills the numeric value column: for numeric values in the value column, this value is reported
+            <X (non detects) are replaced by half of the value. e.g. <1.0 becomes 0.5
+            """
+            
+            num_value_col = self.master_parameter_2_col_name(MP.NUMERIC_VALUE.value, cn.CTYPE_VAL_META)
+            value_col = self.master_parameter_2_col_name(MP.VALUE.value, cn.CTYPE_VAL_META)
+            sql = qry['update_num_value_col'].format(self.key, num_value_col, value_col)
+            ok, err_msg = db.execute_non_query(sql,st.session_state.conn)
+            return ok, err_msg
+
+        station_file = st.file_uploader(label="Station data", type='csv', help='Station file must be added during the first upload and whenever there were changes in station data')
+        observation_file = st.file_uploader(label="Observation data, csv", type='csv', help='csv file with the oberved values')
+        import_mode_options = ['Keep existing records', 'Delete existing records prior to import']
+        import_mode = st.radio(label="Data append mode",
+            options=import_mode_options,
+            help="All data from the import file will be appended. If some records already exist in the database you should select the option: 'Delete existing records prior to the import'")
+        if st.button('upload data', disabled=(observation_file == None and station_file == None)):  
+            if station_file:
+                with st.spinner(text='Loading station data'):
+                    if import_mode == import_mode_options[1]:
+                        ok, err_msg = truncate_table(f"{self.key}_station")
+                    df_station = helper.load_data_from_file(station_file, preview=True)
+                    st.success('station data was loaded')
+                    try:    
+                        ok, msg = verify_file_columns(df_config=self.station_columns_df(), df_data=df_station)
+                        if not ok:
+                            raise ValueError(f'The following columns could not be found or contain invalid data: {msg}')
+                        else:
+                            st.success('Station data was verified')
+                        db.save_db_table(table_name=f'{self.key}_temp', df=df_station, fields=[])
+                        ok, err_msg = insert_station_data()
+                        if not ok:
+                            raise ValueError(f'Station could not be inserted into table: {err_msg}')
+                        else:
+                            st.success('Station data was inserted in data table')
+                    except ValueError as e:
+                        st.warning(e)
+                    except:
+                        st.warning('An error occurred while reading the station data')
+
+            if observation_file:
+                with st.spinner(text='Loading observation data'):
+                    if import_mode == import_mode_options[1]:
+                        ok, err_msg = truncate_table(f"{self.key}_observation")
+                    df_observation = helper.load_data_from_file(observation_file, preview=True)
+                    df_observation['parameter_id'] = 0
+                    df_observation['station_id'] = 0
+                    col = self.date_column
+                    df_observation[col] = pd.to_datetime(df_observation[col])
+                    st.success('observation data was loaded')
+                    ok, msg = verify_file_columns(df_config=self.observation_columns_df(), df_data=df_observation)
+                    try:
+                        st.success('observation data was verified')
+                        db.save_db_table(table_name=f'{self.key}_temp', df=df_observation, fields=[])
+                        update_station_id()
+                        update_parameter_id()
+                        ok, err_msg = update_num_value_col()
+                        ok, err_msg = insert_observation_data()
+                        
+                    except:
+                        st.warning(f'Errors were found in observations data file: {msg}')
+            
+
