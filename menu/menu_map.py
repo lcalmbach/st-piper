@@ -1,15 +1,14 @@
-from os import startfile
 from bokeh.models.tools import SaveTool
 import pandas as pd
 import numpy as np
 import streamlit as st
-from bokeh.io import export_png, export_svgs
+#from bokeh.io import export_png, export_svgs
 from bokeh.plotting import figure
-from bokeh.tile_providers import CARTODBPOSITRON, get_provider
-from bokeh.models import ColumnDataSource, GMapOptions, HoverTool
-from bokeh.core.enums import MarkerType, LineDash
+#from bokeh.tile_providers import CARTODBPOSITRON, get_provider
+#from bokeh.models import ColumnDataSource, GMapOptions, HoverTool
+#from bokeh.core.enums import MarkerType, LineDash
 from bokeh.models import ColumnDataSource, GMapOptions
-from bokeh.plotting import gmap
+# from bokeh.plotting import gmap
 from streamlit.delta_generator import MAX_DELTA_BYTES
 from datetime import datetime, timedelta
 
