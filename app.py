@@ -11,6 +11,7 @@ from proj.database import get_connection
 from menu import menu_home, menu_projects, menu_data, menu_plots, menu_analysis, menu_calculators, menu_login
 import os
 import session
+import db_config
 
 __version__ = '0.0.3' 
 __author__ = 'Lukas Calmbach'
@@ -61,8 +62,9 @@ def main():
         </small>
         """
 
-    st.session_state.conn = get_connection()
     st.set_page_config(page_title=APP_NAME, page_icon=APP_EMOJI, layout="wide", initial_sidebar_state="auto", menu_items=None)
+    st.session_state.conn = get_connection()
+    
     if 'project' not in st.session_state:
         session.init()
     lang = helper.get_lang(lang=st.session_state.language, py_file=os.path.realpath(__file__) )
