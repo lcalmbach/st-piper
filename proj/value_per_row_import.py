@@ -8,7 +8,7 @@ from const import MP
 from const import Codes, Date_types
 import helper
 
-import database as db
+import proj.database as db
 from query import qry
 from .project import Project
 from .fontus_import import FontusImport
@@ -402,7 +402,7 @@ class ValuePerRowImport(FontusImport):
             
             num_value_col = self.master_parameter_2_col_name(MP.NUMERIC_VALUE.value, cn.CTYPE_VAL_META)
             value_col = self.master_parameter_2_col_name(MP.VALUE.value, cn.CTYPE_VAL_META)
-            sql = qry['update_num_value_col'].format(self.key, num_value_col, value_col)
+            sql = qry['update_num_value_col'].format(self.key)
             ok, err_msg = db.execute_non_query(sql,st.session_state.conn)
             return ok, err_msg
 
@@ -447,15 +447,16 @@ class ValuePerRowImport(FontusImport):
                     df_observation[col] = pd.to_datetime(df_observation[col])
                     st.success('observation data was loaded')
                     ok, msg = verify_file_columns(df_config=self.observation_columns_df(), df_data=df_observation)
-                    try:
-                        st.success('observation data was verified')
-                        db.save_db_table(table_name=f'{self.key}_temp', df=df_observation, fields=[])
+                    #try:
+                    st.success('observation data was verified')
+                    ok, msg = db.save_db_table(table_name=f'{self.key}_temp', df=df_observation, fields=[])
+                    if ok:
                         update_station_id()
                         update_parameter_id()
                         ok, err_msg = update_num_value_col()
                         ok, err_msg = insert_observation_data()
                         
-                    except:
-                        st.warning(f'Errors were found in observations data file: {msg}')
+                    #except:
+                    #    st.warning(f'Errors were found in observations data file: {msg}')
             
 

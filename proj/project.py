@@ -1,13 +1,13 @@
 import streamlit as st
 import pandas as pd
 from st_aggrid import AgGrid
+from datetime import datetime
 
 import const as cn
-from const import MP
-from const import Codes, Date_types
+from const import MP, Codes, Date_types
 from .metadata import Metadata
 import helper
-import database as db
+import proj.database as db
 from query import qry
 from .fontus_import import FontusImport
 
@@ -23,12 +23,23 @@ class Project():
         ok = self.set_project_info(id)
         self.has_config_settings = False
         self.has_separate_station_file = False
+
         self._station_fields = []
         self._sample_fields = []
         self._observation_fields = []
         self._parameter_metadata_fields = []
         self._parameter_group1 = []
         self._parameter_group2 = []
+        self.source_date_format = '%d/%m/%Y'
+        self.display_date_format = '%d/%m/%Y'
+        self.stations_df, ok, err_msg  = self.get_stations()
+
+    def get_stations(self):
+        sql = qry['project_stations'].format(self.key)
+        df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
+        df = df.set_index('id')
+        return df, ok, err_msg 
+
 
     def master_parameter_2_col_name(self, master_parameter_id: int, col_type: int):
         """Translates a master parameter name to a column name 
@@ -39,7 +50,7 @@ class Project():
         """
         result = 0
         df = self.columns_df.query("type_id == @col_type and master_parameter_id == @master_parameter_id")
-        if len(df)>0:
+        if len(df) > 0:
             result = df.iloc[0]['column_name']
         return result
 
@@ -59,7 +70,7 @@ class Project():
             sql = qry['project_parameters'].format(self.key)
             df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
             df = df.set_index('id')
-            return df,ok, err_msg
+            return df, ok, err_msg
         
         def get_columns():
             sql = qry['project_columns'].format(self.key)
@@ -92,7 +103,7 @@ class Project():
             else:
                 from .sample_per_row_import import SamplePerRowImport
                 self.imp = SamplePerRowImport(self)
-
+            self.phreeqc_database =  df.iloc[0]['phreeqc_thermdb']
             return True
         else:
             self.id = -1
@@ -117,17 +128,7 @@ class Project():
         result = result.replace('m','mm')
         result = result.replace('Y','yyyy')
         return result
-        
-    #property 
-    def stations_columns_df(self):
-        return self.columns_df[self.columns_df['type_id']==cn.CTYPE_STATION]
     
-    def observation_columns_df(self):
-        return self.columns_df[self.columns_df['type_id'].isin([cn.CTYPE_SAMPLE, cn.CTYPE_VAL_META])]
-    
-    def station_columns_df(self):
-        return self.columns_df[self.columns_df['type_id']==cn.CTYPE_STATION]
-
     @property
     def date_column(self):
          df = self.columns_df[self.columns_df['master_parameter_id']==MP.SAMPLING_DATE.value]
@@ -175,6 +176,31 @@ class Project():
        
 
     # functions ------------------------------------------------------------
+
+    def get_parameter_list(self, type_id: int, attribute:str='column_name')->list:
+        columns = self.parameters_df.query('parameter_type_id == @type_id')
+        columns = list(columns[attribute])
+        return columns
+
+
+    def get_column_names_csv_list(self, type_id: int, sep:str=',', quotes:bool=True, prefix:str='')->str:
+        columns = self.parameters_df.query('parameter_type_id == @type_id')
+        columns = list(columns['column_name'])
+        if quotes:
+            columns = [f'{x}' for x in columns]
+        if prefix:
+            columns = [f'{prefix}.{x}' for x in columns]
+        columns = sep.join(columns)
+        return columns
+
+    def get_sample_number(self, date:datetime, station_id:int)->str:
+        sql = qry['sample_number_from_station_date'].format(self.key, station_id, date.strftime(cn.DATE_FORMAT_DB))
+        df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
+        return df.iloc[0]['sample_number']
+
+    def station_columns_df(self)->list:
+        df = self.parameters_df.query('parameter_type_id == @cn.CTYPE_STATION')
+        return 
 
     def observation_display_order_expression(self, prefix:str)->str:
         result = ''
@@ -330,27 +356,51 @@ class Project():
 
 
     def station_data(self):
-        fields = helper.list_to_csv_string(self.station_fields)
+        fields = helper.list_to_csv_string(self.station_fields, add_quotes=True)
         sql = qry['station_data'].format(fields, self.key, self.db_date_format)
         df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
         return df
     
     def station_samples(self, station_id):
-        fields = helper.list_to_csv_string(self.sample_fields)
+        fields = helper.list_to_csv_string(self.sample_fields, add_quotes=True)
         sql = qry['station_samples'].format(fields, self.key, station_id)
         df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
         return df
     
     def parameter_data(self):
         sql = qry['parameter_data'].format(self.key)
-        st.write(sql)
         df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
         return df
 
-    def sample_observations(self, station_id, sample_date):
-        of_list = helper.list_to_csv_string(value_list=self.observation_fields, prefix='t1', add_quotes=False)
-        sf_list = helper.list_to_csv_string(value_list=self.parameter_metadata_fields, prefix='t2', add_quotes=False)
-        sql = qry['sample_observations'].format(f"{of_list},{sf_list}", self.key, station_id, sample_date)
+
+    def stations_samples(self, filter: str)->pd.DataFrame:
+        """Returns a list of sample fields based on a user defined filter
+
+        Args:
+            filter (str): filter expression including 'WHERE'
+
+        Returns:
+            pd.DataFrame: Samples and number of observations
+        """
+        filter = f' where {filter}' if filter > '' else filter
+        sql = qry['station_samples'].format(self.key, filter)
+        df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
+        return df
+
+    def phreeqc_samples(self, filter: str)->pd.DataFrame:
+        sql = qry['sample_list'].format(self.key, filter)
+        df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
+        return df
+    
+    def phreeqc_observations(self, samples_number:str)->pd.DataFrame:
+        sql = qry['phreeqc_observations'].format(self.key, samples_number)
+        df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
+        return df
+
+    def sample_observations(self, sample_number:str):
+        of_list = self.get_column_names_csv_list(type_id=cn.ParTypes.VAL_META.value, quotes=True, prefix='t1')
+        pf_list = self.get_column_names_csv_list(type_id=cn.ParTypes.PARAMETER.value, quotes=True, prefix='t2')
+        sql = qry['sample_observations'].format(f"{pf_list},{of_list}", self.key, sample_number)
         sql += ' ' + self.observation_display_order_expression('t2')
         df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
         return df
@@ -361,10 +411,18 @@ class Project():
         station_list = helper.list_to_csv_string(value_list=self.station_fields, prefix='t2', add_quotes=False)
         parameter_list = helper.list_to_csv_string(value_list=self.parameter_metadata_fields, prefix='t3', add_quotes=False)
         filter = " AND " + filter if filter > '' else ''
-        sql = qry['parameter_observations'].format(f"{station_list},{sample_list},{observation_list},{parameter_list}",self.key, parameter_id, filter)
+        sql = qry['parameter_observations'].format(f"{station_list}, {sample_list}, {observation_list}, {parameter_list}", self.key, parameter_id, filter)
         df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
+        df['sampling_date'] = pd.to_datetime(df['sampling_date'])
         return df
     
+    def time_series(self,parameter_id: int, stations: list):
+        stations = [str(x) for x in stations]
+        stations_csv = ','.join(stations)
+        sql = qry['proj_time_series'].format(self.key, parameter_id, stations_csv)
+        df, ok, err_msg = db.execute_query(sql, st.session_state.conn)
+        return df
+
     def get_station_list(self, allow_none: bool=False):
         # station_key = self.key2col()[cn.STATION_IDENTIFIER_COL]
         sql = qry['station_list'].format(self.key)

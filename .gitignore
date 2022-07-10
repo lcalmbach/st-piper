@@ -3,7 +3,7 @@ env
 __pycache__
 use-cases.md
 docu
-import
+data_import
 archive
 test*.*
 imp_*.py

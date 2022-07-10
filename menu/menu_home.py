@@ -3,7 +3,7 @@ from st_aggrid import AgGrid
 import pandas as pd
 import const as cn
 import sys
-import database as db
+import proj.database as db
 from query import qry 
 from passlib.context import CryptContext
 import random
@@ -82,6 +82,7 @@ def reset_password(usr):
     else:
         message = f"User {usr} could not be found. Please verify spelling or create a new account."
     return ok, message
+
 
 def show_login_form():
     ok = True
@@ -181,6 +182,7 @@ def show_account_form():
     if message > '':
         helper.flash_text(message, message_type)
 
+
 def show_create_account_form():
     st.info("Not implemented yet")
 
@@ -209,7 +211,7 @@ def show_info():
                 format_func=lambda x: projects[x])
     prj = Project(prj_id)
     st.session_state.project = prj
-    st.markdown(f"**{prj.title}**")
+    st.markdown(f"**{lang['abstract']}**")
     st.markdown(prj.description)
 
 def show_menu():

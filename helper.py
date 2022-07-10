@@ -16,7 +16,7 @@ import pycountry
 import os
 from st_aggrid import GridOptionsBuilder, AgGrid, DataReturnMode,GridUpdateMode
 from query import qry
-import database as db
+import proj.database as db
 
 from deprecated import deprecated
 
@@ -228,7 +228,6 @@ def color_gen(palette, n):
     yield from itertools.cycle(palettes[palette])
 
 def aggregate_data(source: pd.DataFrame, group_cols: list, val_col: str, agg_func: str):
-    st.write(source)
     df = source[group_cols + [val_col]]
     if agg_func == 'mean':
         df = df.groupby(group_cols).mean()
@@ -539,3 +538,13 @@ def list_to_csv_string(value_list:list, prefix: str='', add_quotes: bool=False, 
          result = [f'{prefix}{x}' for x in value_list]
     result = ','.join(result)
     return result
+
+def get_domain(df:pd.DataFrame,col_name:str)->list:
+    min_y = df[col_name].min()
+    max_y = df[col_name].max()
+    return [min_y, max_y]
+
+def get_grid_height(df:pd.DataFrame, max_height: int):
+    h = len(df) * cn.AGG_GRID_COL_HEIGHT
+    h = max_height if h > max_height else h
+    return h

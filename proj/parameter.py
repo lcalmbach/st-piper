@@ -1,6 +1,6 @@
 import streamlit as st
 
-import database as db
+import proj.database as db
 from query import qry
 
 class Parameter():
@@ -26,3 +26,6 @@ class Parameter():
             self.title = None
             self.title_short = None
             self.description = None
+    
+    def __str__(self):
+        return f'Parameter({self.name},{self.casnr},{self.sys_par_id})'

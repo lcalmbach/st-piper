@@ -9,9 +9,9 @@ import db_config as dbcn
 mydb = ''
 
 def save_db_table(table_name: str, df: pd.DataFrame, fields: list)->bool:
-
     ok = False
     engine = sql.create_engine('postgresql+psycopg2://postgres:password@localhost:5432/fontus')
+    
     conn = engine.raw_connection()
     conn.cursor().execute("SET search_path TO 'imp'")
     try:
@@ -25,21 +25,7 @@ def save_db_table(table_name: str, df: pd.DataFrame, fields: list)->bool:
     except Exception as ex:
         print(ex)
     finally:
-        return ok
-
-
-def save_df2table(table_name: str, df: pd.DataFrame, fields: list):
-    """
-    Saves selected columns of a pandas dataframe to a database table
-    """
-
-    st.info(f'Appending rows from dataframe to table {table_name}')
-    ok = save_db_table(table_name, df, fields)
-    if ok:
-        st.info(f'Dataframe was appended to table {table_name}')
-    else:
-        st.error(f'Dataframe could not be appended to table {table_name}')
-    return df, ok
+        return ok, 'error saving dataframe to database table'
 
 
 def execute_non_query(cmd: str, conn: object) -> Tuple[bool,str]:
@@ -65,7 +51,7 @@ def execute_non_query(cmd: str, conn: object) -> Tuple[bool,str]:
     return ok, err_msg
 
 # @st.cache(suppress_st_warning=True)
-def execute_query(query: str, conn:object)->Tuple[bool,str]:
+def execute_query(query: str, conn:object)->Tuple[pd.DataFrame, bool,str]:
     """
     Executes a query and returns a dataframe with the results
     """

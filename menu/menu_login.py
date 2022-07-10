@@ -3,7 +3,7 @@ from st_aggrid import AgGrid
 import pandas as pd
 import const as cn
 import sys
-import database as db
+import proj.database as db
 from query import qry 
 from passlib.context import CryptContext
 import random

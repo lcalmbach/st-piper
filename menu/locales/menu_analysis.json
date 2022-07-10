@@ -1,9 +1,41 @@
 {
     
     "menu_options": {
-        "en": ["Exceedance analysis", "Trend analysis"],
-        "de": ["Exceedance analysis", "Trend analysis"],
-        "zh": ["Exceedance analysis", "Trend analysis"]
+        "en": ["Exceedance analysis", "Trend analysis", "Saturation analysis"],
+        "de": ["Exceedance analysis", "Trend analysis", "Saturation analysis"],
+        "zh": ["Exceedance analysis", "Trend analysis", "Saturation analysis"]
+    },
+
+    "detail_summary": {
+        "en": ["Detail", "Summary"],
+        "de": ["Detail", "Zusammenfassung"],
+        "zh": ["Detail", "Summary"]
+    },
+    "settings": {
+        "en": "Settings",
+        "de": "Einstellungen",
+        "zh": "Settings"
+    },
+    "show_regression_line": {
+        "en": "Show regression line",
+        "de": "Show regression line",
+        "zh": "Show regression line"
+    },
+    "show_sen_line": {
+        "en": "Show Sen line",
+        "de": "Show Sen line",
+        "zh": "Show Sen line"
+    },
+    "result_title": {
+        "en": "Mann-Kendall test for {} in station {}",
+        "de": "Mann-Kendall test for {} in station {}",
+        "zh": "Mann-Kendall test for {} in station {}"
+    },
+    "calc_sat_ind": {
+        "en": "Calculated saturation indices",
+        "de": "Calculated saturation indices",
+        "zh": "Calculated saturation indices"
     }
+
     
 }

@@ -1,7 +1,7 @@
 import pandas as pd
 from pathlib import Path
 from query import qry
-import database as db
+import proj.database as db
 from streamlit import session_state
 import const as cn
     

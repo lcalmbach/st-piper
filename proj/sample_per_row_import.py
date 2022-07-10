@@ -8,7 +8,7 @@ from const import MP
 from const import Codes, Date_types
 import helper
 
-import database as db
+import proj.database as db
 from query import qry
 from .fontus_import import FontusImport
 from .project import Project
@@ -27,6 +27,7 @@ class SamplePerRowImport(FontusImport):
         self.station_columns = {}
         self.sample_columns = {}
         self.metadata_columns = {}
+        self.settings={}
 
     def load_new_dataset(self):
         def load_data():
@@ -283,5 +284,144 @@ class SamplePerRowImport(FontusImport):
         elif self.step == 5:
             self.pivot_table()
     
-    def import_data():
-        pass
+    def import_data(self):
+        def verify_file_columns(df_config, df_data)->bool:
+            ok, msg = True, []
+            # verify if each predefined column name is included in the import file
+            for col in list(df_config['source_column_name']):
+                if not(col in list(df_data.columns)):
+                    msg.append(f"column '{col}' could not be found")
+                    ok=False
+            return ok, msg
+
+        def update_station_id():
+            """
+            updates the station_id column in the observation table based on the station_name column in the
+            project station table which mast match the station column in the observation table.
+            """
+            source_key = self.get_column_name(MP.STATION_IDENTIFIER.value)
+            sql = qry['update_station_id'].format(self.project.key, cn.STATION_IDENTIFIER_COL, source_key)
+            ok, err_msg = db.execute_non_query(sql,st.session_state.conn)
+            return ok, err_msg
+        
+        def  update_parameter_id():
+            sql = qry['update_parameter_id'].format(self.project.key, 'source_column_name', 'variable')
+            ok, err_msg = db.execute_non_query(sql,st.session_state.conn)
+            return ok, err_msg
+
+        def insert_observation_data():
+            sample_cols = self.get_column_df([cn.ParTypes.SAMPLE.value])
+            source_cols = list(sample_cols['source_column_name']) + ["detection_limit","value","unit","station_id","parameter_id","value_numeric","is_non_detect"]
+            target_cols = list(sample_cols['field_name']) + ["detection_limit","value","unit","station_id","parameter_id","value_numeric","is_non_detect"]
+            source_fields = '"' + '","'.join(source_cols) + '"'
+            target_fields = '"' + '","'.join(target_cols) + '"'
+            cmd = f"insert into {self.project.key}_observation ({target_fields}) select {source_fields} from {self.project.key}_temp"
+            ok, err_msg = db.execute_non_query(cmd,st.session_state.conn)
+            return ok, err_msg
+        
+        def insert_station_data():
+            source_cols = ["SAMPLE_FIELD_ID","detection_limit","value","unit","station_id","sampling_date","parameter_id","value_numeric","is_non_detect"]
+            target_cols = ["sample_number","detection_limit","value","unit","station_id","sampling_date","parameter_id","value_numeric","is_non_detect"]
+            source_fields = '"' + '","'.join(source_cols) + '"'
+            target_fields = '"' + '","'.join(target_cols) + '"'
+            cmd = f"insert into {self.project.key}_station ({target_fields}) select {source_fields} from {self.project.key}_temp"
+            ok, err_msg = db.execute_non_query(cmd,st.session_state.conn)
+            return ok, err_msg
+
+        def update_num_value_col():
+            """
+            This function fills the numeric value column: for numeric values in the value column, this value is reported
+            <X (non detects) are replaced by half of the value. e.g. <1.0 becomes 0.5
+            """
+            
+            num_value_col = 'value_numeric'
+            value_col = 'value'
+            sql = qry['update_num_value_col'].format(self.project.key, num_value_col, value_col)
+            ok, err_msg = db.execute_non_query(sql,st.session_state.conn)
+            return ok, err_msg
+        
+        def import_station_file():
+            with st.spinner(text='Loading station data'):
+                if import_mode == import_mode_options[1]:
+                    ok, err_msg = truncate_table(f"{self.project.key}_station")
+                df_station = helper.load_data_from_file(station_file, preview=True)
+                st.success('station data was loaded')
+                try:    
+                    ok, msg = verify_file_columns(df_config=self.station_columns_df(), df_data=df_station)
+                    if not ok:
+                        raise ValueError(f'The following columns could not be found or contain invalid data: {msg}')
+                    else:
+                        st.success('Station data was verified')
+                    db.save_db_table(table_name=f'{self.project.key}_temp', df=df_station, fields=[])
+                    ok, err_msg = insert_station_data()
+                    if not ok:
+                        raise ValueError(f'Station could not be inserted into table: {err_msg}')
+                    else:
+                        st.success('Station data was inserted in data table')
+                except ValueError as e:
+                    st.warning(e)
+                except:
+                    st.warning('An error occurred while reading the station data')
+
+        def import_observation_file():
+             with st.spinner(text='Loading observation data'):
+                if self.settings['append_mode'] == import_mode_options[1]:
+                    ok, err_msg = db.truncate_table(f"{self.project.key}_observation")
+                df_observation = helper.load_data_from_file(self.settings['observation_file'], preview=True)
+                
+                dt_col = self.get_column_name(MP.SAMPLING_DATE.value)
+                df_observation[dt_col] = pd.to_datetime(df_observation[dt_col], format=self.project.source_date_format)
+                
+                ok, msg = verify_file_columns(df_config=self.columns_df, df_data=df_observation)
+                if ok:
+                    st.success('observation data was verified')
+                id_vars = self.get_column_list(cn.ParTypes.STATION.value) + self.get_column_list(cn.ParTypes.SAMPLE.value)
+                value_vars = self.get_column_list(cn.ParTypes.OBSERVATION.value)
+                df_observation = pd.melt(df_observation, id_vars=id_vars, value_vars=value_vars,
+                    var_name=None, value_name='value', col_level=None)
+                df_observation['station_id'] = 0
+                df_observation['parameter_id'] = 0
+                df_observation['value_numeric'] = 0.0
+                df_observation['detection_limit'] = 0.0
+                df_observation['is_non_detect'] = False
+                df_observation['unit'] = ''
+
+                ok, msg = db.save_db_table(table_name=f'{self.project.key}_temp', df=df_observation, fields=[])
+                if ok:
+                    st.success('observation data was loaded')
+                    ok, msg = update_station_id()
+                
+                if ok:
+                    st.success('Station id was updated')
+                    ok, msg = update_parameter_id()
+                if ok:
+                    st.success('Parameter id was updated')
+                    ok, msg = update_num_value_col()
+                if ok:
+                    st.success('non detect fields were updated')
+                    ok, msg = insert_observation_data()
+                if ok:
+                    st.success(f'data was successfully converted and saved to database')
+                else:
+                    st.warning(f'Errors were found in observations data file: {msg}')
+
+        #-----------------------------------------------------------------------------
+        # Begin
+        #-----------------------------------------------------------------------------
+        
+        self.settings['station_file'] = None
+        if self.project.has_separate_station_file:
+            self.settings['station_file'] = st.file_uploader(label="Stationvv data", type='csv', help='Station file must be added during the first upload and whenever there were changes in station data')
+
+        self.settings['observation_file'] = st.file_uploader(label="Observation data, csv", type='csv', help='csv file with the oberved values')
+        import_mode_options = ['Keep existing records', 'Delete existing records prior to import']
+        append_mode = st.radio(label="Data append mode",
+            options=import_mode_options,
+            help="All data from the import file will be appended. If some records already exist in the database you should select the option: 'Delete existing records prior to the import'")
+        self.settings['append_mode'] = import_mode_options.index(append_mode)
+        if st.button('upload data', disabled=(self.settings['observation_file'] == None and self.settings['station_file'] == None)):  
+            if self.project.has_separate_station_file and self.settings['station_file']:
+                import_station_file() 
+            if self.settings['observation_file']:
+                import_observation_file()
+               

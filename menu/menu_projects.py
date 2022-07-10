@@ -8,7 +8,7 @@ import const as cn
 import helper
 from proj.project import Project
 from query import qry
-import database as db
+import proj.database as db
 
 
 lang = {}
@@ -83,7 +83,11 @@ def show_project_form(project:Project, can_edit: bool):
         helper.flash_text(message, type) 
 
 def import_data():
-    st.session_state.project.import_data()
+    project_id = select_project_from_grid()
+    
+    project = Project(project_id)
+    st.session_state.project = project
+    project.import_data()
     
 def define_import():
     st.session_state.project.imp.select_step()
@@ -122,15 +126,20 @@ def edit_project():
 
 def show_menu():
     set_lang()
-    MENU_OPTIONS = lang['menu_options']
-    menu_action = st.sidebar.selectbox('Options', MENU_OPTIONS)
+    
+    
     if not st.session_state.user.is_logged_in() and 1==2:
         st.info(lang['must_be_logged_in'])
     else:
-        menu_actions = [edit_project
-                        , create_project
-                        , define_import
-                        , import_data
-                        , export_data]
+        if st.session_state.project.has_separate_station_file:
+            pass
+        else:
+            MENU_OPTIONS = lang['menu_options']
+            menu_actions = [edit_project
+                            , create_project
+                            , define_import
+                            , import_data
+                            , export_data]
+        menu_action = st.sidebar.selectbox('Options', MENU_OPTIONS)
         id = MENU_OPTIONS.index(menu_action)
         menu_actions[id]()

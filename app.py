@@ -7,7 +7,7 @@ from streamlit_option_menu import option_menu  #https://pypi.org/project/streaml
 
 import helper
 import const as cn
-from database import get_connection
+from proj.database import get_connection
 from menu import menu_home, menu_projects, menu_data, menu_plots, menu_analysis, menu_calculators, menu_login
 import os
 import session
@@ -55,8 +55,8 @@ def main():
         <small>
         {lang['app_created_by']} <a href="mailto:{__author_email__}">{__author__}</a><br>
         version: {__version__} ({VERSION_DATE})<br>
-        {lang['curr_project']}: {st.session_state.project.short_name} <br>
-        {lang['logged_in_user']}: {st.session_state.user.email} <br>
+        {lang['curr_project']}: {st.session_state.project.short_name}<br>
+        {lang['logged_in_user']}: {st.session_state.user.full_name}<br>
         language: {st.session_state.language} <br>
         </small>
         """

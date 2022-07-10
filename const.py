@@ -74,6 +74,7 @@ PAR_TEMPERATURE = 'temp'
 PAR_COND = 'cond_25'
 PAR_PH = 'ph'
 
+DATE_FORMAT_DB = '%Y-%m-%d'
 DATE_FORMAT_LIST = ['%Y-%m-%d', '%Y/%m/%d', '%d.%m.%Y', '%d/%m/%Y']
 ENCODINGS = ['utf8', 'cp1252']
 DEFAULT_GUIDELINE = 'epa_mcl'
@@ -105,6 +106,7 @@ EXCEEDANCE_ANALYSIS_ID = 9
 TREND_ANALYSIS_ID = 10
 TRANSFORM_MOLAR_WEIGHT_ID = 11
 CALC_SAR_ID = 12
+SATURATION_ANALYSIS_ID=13
 
 SIMPLE_CONCENTRATION_CAT = 6
 MOL_CONCENTRATION_CAT = 7
@@ -183,6 +185,12 @@ class Codes(Enum):
     UNIT_CATEGORY = 3
     PARAMETER_TYPE = 4
     DATATYPE = 5
+
+class ParTypes(Enum):
+    OBSERVATION = 12
+    STATION = 13
+    VAL_META = 15
+    PARAMETER = 44
 
 class Date_types(Enum):
     STR = 16

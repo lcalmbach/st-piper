@@ -21,5 +21,23 @@
             "explain trend",
             "explain outlier",
             "explain saturation"]
+    },
+    
+    "station": {
+        "en": "station",
+        "de": "Station",
+        "zh": "station"
+    },
+    
+    "sample": {
+        "en": "sample number",
+        "de": "Probennahmenummer",
+        "zh": "sample number"
+    },
+
+    "sampling_date": {
+        "en": "sampling date",
+        "de": "Probennahme Datum",
+        "zh": "sampling date"
     }
 }

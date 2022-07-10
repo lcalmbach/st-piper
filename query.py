@@ -66,7 +66,7 @@ qry = {
         public.{1}_observation t1
         inner join public.{1}_parameter t2 on t2.id = t1.parameter_id
     where 
-        t1.station_id = {2} and t1.sampling_date = '{3}'
+        t1.sample_number = '{2}'
     """,
 
     'parameter_data': """select *
@@ -141,7 +141,7 @@ qry = {
             left join public.master_parameter t2 on t2.id = t1.master_parameter_id""",
 
     'project_columns': """
-        select * FROM  {}_column t1
+        select * FROM  {}_column
         """,
 
     'date_list4station':"""select sampling_date as date, to_char(sampling_date, 'DD.MM.YYYY') as fmt_date from public.{}_observation
@@ -185,13 +185,41 @@ qry = {
     'truncate_table': """TRUNCATE TABLE public.{} RESTART IDENTITY;""",
 
     'update_num_value_col':"""
-        update public.{0}_temp set "{1}" = "{2}" ::DECIMAL
-        where isnumeric("{2}");
+        update public.{0}_temp set "value_numeric" = "value" ::DECIMAL
+        where isnumeric("value");
 
-        update public.{0}_temp set "{1}" = (substring("{2}",2,char_length("{2}")) ::DECIMAL) / 2
-        where substring("{2}",1,1)='<' and isnumeric(substring("{2}",2,char_length("{2}")));
+        update public.{0}_temp set "value_numeric" = (substring("value",2,char_length("value")) ::DECIMAL) / 2
+        where substring("value",1,1)='<' and isnumeric(substring("value",2,char_length("value")));
+
+        update public.{0}_temp set 
+            "is_non_detect" = true,
+            "detection_limit" = (substring("value",2,char_length("value")) ::DECIMAL)
+        where substring("value",1,1)='<' and isnumeric(substring("value",2,char_length("value")));
     """,
 
-    'parameter_group_list': """select distinct "group{0}" from public.{1}_parameter order by group{0}"""
+    'parameter_group_list': """select distinct "group{0}" from public.{1}_parameter order by group{0}""",
+
+    'proj_time_series': """select sampling_date, value, value_numeric, unit, station_id, parameter_id
+        from public.{}_observation 
+        where parameter_id = {} and station_id in ({})
+        order by station_id, sampling_date""",
+    
+    'sample_list': """select t1.sampling_date, t1.sample_number, t2.station_identifier, count(*) as num_observations
+        from public.{0}_observation t1
+        inner join public.{0}_station t2 on t2.id = t1.station_id
+        {1}
+        group by t1.sampling_date, t1.sample_number, t2.station_identifier
+    """,
+
+    'phreeqc_observations': """select t1.sampling_date, t1.sample_number, t3.solution_master_species, t2.parameter_name, t1.value, t1.value_numeric, t1.unit, t1.station_id, t1.parameter_id
+        from public.{0}_observation t1
+        inner join public.{0}_parameter t2 on t2.id = t1.parameter_id
+        inner join public.master_parameter t3 on t3.id = t2.master_parameter_id
+        where t3.solution_master_species is not null and t1.sample_number = '{1}'
+        order by station_id, sampling_date""",
+
+    'sample_number_from_station_date': "select sample_number from public.{}_observation where station_id = {} and sampling_date = '{}' limit 1",
+
+    'project_stations': "select * from public.{}_station order by station_identifier"
     
 }

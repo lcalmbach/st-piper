@@ -1,17 +1,23 @@
 import streamlit as st
 
 from query import qry
-import database as db
+import proj.database as db
 import json
 import pandas as pd
 
 import helper
 import const as cn
 
+lang = {}
+def set_lang():
+    global lang
+    lang = helper.get_lang(lang=st.session_state.language, py_file=__file__)
+
 class User():
     def __init__(self, email):
         self.email = email
         self.set_user_info()
+        set_lang()
 
     def set_user_info(self):
         ok = False
@@ -26,6 +32,7 @@ class User():
             self.company = rec['company']
             self.country = rec['country']
             self.language = rec['language']
+            st.session_state.language = self.language
             self.default_project = rec['default_project']
         else:
             self.id = -1
@@ -36,6 +43,12 @@ class User():
             self.language = 'en'
             self.default_project = cn.DEFAULT_PROJECT
 
+    @property
+    def full_name(self):
+        if self.id <= 1:
+            return lang['not_logged_in']
+        else:
+            return f"{self.first_name} {self.last_name}"
 
     def save(self):
         sql = qry['update_user'].format(self.first_name, 

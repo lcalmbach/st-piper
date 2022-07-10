@@ -6,8 +6,8 @@
     },
     "account_setting": {
         "en": "Account settings",
-        "de": "Account settings",
-        "zh": "Account settings"
+        "de": "Konto Einstellungen",
+        "zh": "帳戶設置"
     },
     "intro_title": {
         "en": "Introduction",
@@ -15,16 +15,16 @@
         "zh": "介紹"
     },
     "intro_body": {
-        "en": ["Fontus is a data-exploration software specifically designed to be used with water quality datasets.", 
-                " It offers most of the numeric and graphics features required for the interpretation of hydrochemical data.", 
+        "en": ["Fontus is a data-exploration software designed to analyze water quality datasets.", 
+                " This program offers most of the numeric and graphics features required for the interpretation of hydrochemical data.", 
                 " You may explore one of the preconfigured datasets to familiarize yourself with the software.<br>",
-                " If you intend to upload your own data, you must have an account and be logged in.",
-                " Create an account for free using the `Create Account option` in the sidebar menu or login now to use all program options."],
-        "de": ["Das Programm Fontus ist eine Daten Explorations-Software, die speziell auf die Bedürfnisse von hydrochemischen Wasserdaten abgestimmt ist", 
+                " If you intend to upload your own data, you may create account and be logged in.",
+                " Create an account for free using the `Create Account option` in the sidebar menu or login now to access all program options."],
+        "de": ["Das Programm Fontus ist eine Daten-Explorations-Software, die speziell auf die Bedürfnisse von Analysen hydrochemischer Wasserdaten abgestimmt ist", 
                 " Seine Funktionialität umfasst viele Grafiken und numerischen Analysen-Techniken, welche in Standard Datananalyse Tools fehlen oder aufwändig nachgebaut werden müssen.", 
-                " Du kannst die Möglichkeiten der Software an zwei vorkonfigurierten Beipiel-DAtensätzen ausprobrobieren.<br>",
-                " Wenn du deine eigenen Daten explorieren möchtest, musst du ein Konto eröffnen und eingeloggt sein.",
-                " Create an account for free using the `Create Account option` in the sidebar menu or login now to use all program options."],
+                " Du kannst die Möglichkeiten der Software an zwei vorkonfigurierten Beispiel-Datensätzen ausprobrobieren.<br>",
+                " Wenn du deine eigenen Daten erkunden möchtest, musst du ein Konto eröffnen und eingeloggt sein.",
+                " Erstelle ein Konto kostenlos, indem du auf den Menubefehl `Konto Erstellen` klickst. Damti stehen dir alle Menuoptionen offen"],
         "zh": ["Fontus是一款數據探索軟體，專門設計用於水質數據集。.", 
                 "它提供了解釋水化學數據所需的大部分數位和圖形功能。", 
                 "您可以流覽其中一個預配置的數據集，以熟悉該軟體.<br>",
@@ -65,17 +65,22 @@
     "username": {
         "en": "Username",
         "de": "Username",
-        "zh": "Username"
+        "zh": "使用者名"
     },
     "password": {
         "en": "Password",
         "de": "Password",
-        "zh": "Password"
+        "zh": "密碼"
     },
     "login_confirmation": {
         "en": "You have been succcessfully logged in",
         "de": "You have been succcessfully logged in",
         "zh": "You have been succcessfully logged in"
+    },
+    "abstract": {
+        "en": "Project summary",
+        "de": "Zusammenfassung Projekt",
+        "zh": "專案概要"
     }
     
 }

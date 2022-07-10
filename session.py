@@ -2,11 +2,11 @@ import streamlit as st
 import pandas as pd
 
 from query import qry
-import database as db
+import proj.database as db
 from proj.user import User
 from proj.project import Project
 import const as cn
-import database as db
+import proj.database as db
 from query import qry
 
 
@@ -17,6 +17,7 @@ def get_guideline_dict()->pd.DataFrame:
     return result
 
 def init():
+    st.session_state.language = 'en'
     st.session_state.user = User(cn.DEFAULT_USER_ID)
     st.session_state.project = Project(cn.DEFAULT_PROJECT_ID)
     st.session_state.language = st.session_state.user.language
