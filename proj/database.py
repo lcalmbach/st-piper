@@ -5,8 +5,17 @@ import sqlalchemy as sql
 import pandas as pd
 from typing import Tuple
 import db_config as dbcn
-
+import const as cn
 mydb = ''
+
+def get_pg_connection():
+    """Reads the connection string and sets the sql_engine attribute."""
+
+    conn = psycopg2.connect(
+        host = cn.DB_HOST,
+        database=cn.DB_DATABASE,
+        user=cn.DB_USER,
+        password=cn.DB_PASS)
 
 def save_db_table(table_name: str, df: pd.DataFrame, fields: list)->bool:
     ok = False
