@@ -11,6 +11,6 @@ scipy==1.7.3
 chempy>=0.8.0
 pycountry==22.3.5
 passlib==1.7.4
-sqlalchemy=1.4.36
+sqlalchemy==1.4.36
 pyodbc==4.0.32
 pymannkendall==1.4.2
