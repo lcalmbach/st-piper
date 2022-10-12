@@ -11,6 +11,7 @@ from scipy.stats.stats import pearsonr
 import helper
 import const as cn
 
+
 class Scatter:
     def __init__(self, df: pd.DataFrame, cfg: dict):
         self.data = df
@@ -80,7 +81,7 @@ class Scatter:
                 size=self.cfg['symbol_size'], color=clr, alpha=self.cfg['fill_alpha'])
             plot.add_tools(HoverTool(
                 tooltips=[
-                    ('Station', f"@{'station_key'}"),
+                    ('Station', f"@{'station_identifier'}"),
                     (x_col, f"@{{{x_col}}}"),
                     # todo: columns must be renamed, since spaces are not allowed here 
                     (y_col, f"@{{{y_col}}}")

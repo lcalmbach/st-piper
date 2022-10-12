@@ -82,6 +82,7 @@ def show_project_form(project:Project, can_edit: bool):
         type = 'success' if ok else 'warning'
         helper.flash_text(message, type) 
 
+
 def import_data():
     project_id = select_project_from_grid()
     
@@ -89,6 +90,7 @@ def import_data():
     st.session_state.project = project
     project.import_data()
     
+
 def define_import():
     st.session_state.project.imp.select_step()
 

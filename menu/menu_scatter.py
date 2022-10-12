@@ -77,7 +77,7 @@ def show_scatter_plot():
     data = st.session_state.project.get_observations([cfg['x_par'], cfg['y_par']], cfg['stations'])
     data = pd.pivot_table(data,
         values='value_numeric',
-        index=['station_id', 'sampling_date'],
+        index=['station_identifier', 'sampling_date'],
         columns='parameter_name',
         aggfunc=np.mean
     ).reset_index()

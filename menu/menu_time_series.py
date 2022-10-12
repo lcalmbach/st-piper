@@ -6,6 +6,8 @@ from bokeh.io import export_png, export_svgs
 from bokeh.core.enums import MarkerType, LineDash
 import const as cn
 from plots.time_series import Time_series
+from bokeh.models.tickers import FixedTicker
+import bokeh.palettes as bpal 
 import helper
 
 
@@ -13,7 +15,6 @@ lang = {}
 def set_lang():
     global lang
     lang = helper.get_lang(lang=st.session_state.language, py_file=__file__)
-
 
 def show_time_series_multi_parameters():
     def get_data():
@@ -34,6 +35,7 @@ def show_time_series_multi_parameters():
             id = unit_options.index(cfg['par_unit'] ) if cfg['par_unit'] in unit_options else 0
             cfg['unit'] = st.selectbox('Unit',options=unit_options, index=id)
             cfg['y_axis_title'] = st.text_input('Y-axis title',value=cfg['y_axis_title'])
+            
             cfg['time_axis_auto'] = st.checkbox(label=lang['time_axis_auto'], value=True)
             if not cfg['time_axis_auto']:
                 if cfg['time_axis_start'] == 0:
@@ -46,13 +48,39 @@ def show_time_series_multi_parameters():
             if not cfg['y_axis_auto']:
                 cfg['y_axis_start'] = st.number_input(label=lang["y_axis_min"], value=cfg['y_axis_start'])
                 cfg['y_axis_end'] = st.number_input(label=lang["y_axis_max"], value=cfg['y_axis_end'])
-            palette_options = helper.bokeh_palettes(10)
-            cfg['palette'] = st.selectbox(label=lang["color_palette"], options=palette_options)
+                cfg['y_axis_tick_interval'] = st.number_input(label='Tick interval', value=cfg['y_axis_tick_interval'])
+            
+            cfg['plot_width'] = st.number_input(label='Plot width (pixel)', value=cfg['plot_width'])
+            cfg['plot_height'] = st.number_input(label='Plot height (pixel)', value=cfg['plot_height'])
+
+            palette_options = list(bpal.all_palettes) #helper.bokeh_palettes(10)
+            index = palette_options.index(cfg['palette'])
+            cfg['palette'] = st.selectbox(label=lang["color_palette"], options=palette_options, index=index)
+
+            if len(cfg['parameters']) == 1:
+                cfg['show_average_line'] = st.checkbox(label=lang["show_average_line"], value=False)
+                if cfg['show_average_line']:
+                    cfg['avg_line_col'] = st.color_picker(label="Average line color")
+                    cfg['avg_line_width'] = st.number_input(label="Average line width", min_value=1, max_value=10, value=cfg['avg_line_width'])
+                    cfg['avg_line_alpha'] = st.number_input(label="Average line opacity", min_value=0.1, max_value=1.0, value=cfg['avg_line_alpha'])
+                    dash_options = list(LineDash)
+                    index = dash_options.index(cfg['avg_line_dash'])
+                    cfg['avg_line_dash'] = st.selectbox(label="Average line dash", options=dash_options)
+                
+                percentile_band_options = lang["percentile_band_options"]
+                pct_index = st.selectbox(label=lang["show_percentile_band"], options=percentile_band_options, index=cfg['show_percentile_band'])
+                cfg['show_percentile_band'] = percentile_band_options.index(pct_index)
+                cfg['pct_band_color'] = st.color_picker(label="Band color", value=cfg['pct_band_color'])
+                cfg['pct_band_alpha'] = st.number_input(label="Band opacity", min_value=0.1, max_value=1.0, value=cfg['pct_band_alpha'])
+            else:
+                cfg['show_average_line'] = False
+                cfg['show_percentile_band'] = False
+
         return cfg
 
     cfg = st.session_state.user.read_config(cn.TIME_SERIES_ID, 'default')
     cfg['parameters'] = helper.get_parameters(default=cfg['parameters'], filter="")
-    cfg['stations'] = helper.get_stations(default=cfg['stations'],filter="")
+    cfg['stations'] = helper.get_stations(default=cfg['stations'], filter="")
     data = get_data()
     if len(data)>0:
         cfg = show_settings(cfg, data)

@@ -1,21 +1,21 @@
-from multiprocessing import connection
-import streamlit as st
+# from multiprocessing import connection
 import psycopg2
 import sqlalchemy as sql
 import pandas as pd
 from typing import Tuple
 import db_config as dbcn
-import const as cn
 mydb = ''
 
 def get_pg_connection():
     """Reads the connection string and sets the sql_engine attribute."""
 
     conn = psycopg2.connect(
-        host = cn.DB_HOST,
-        database=cn.DB_DATABASE,
-        user=cn.DB_USER,
-        password=cn.DB_PASS)
+        host = dbcn.DB_HOST,
+        database=dbcn.DB_DATABASE,
+        user=dbcn.DB_USER,
+        password=dbcn.DB_PASS)
+    return conn
+
 
 def save_db_table(table_name: str, df: pd.DataFrame, fields: list)->bool:
     ok = False
@@ -67,26 +67,13 @@ def execute_query(query: str, conn:object)->Tuple[pd.DataFrame, bool,str]:
     ok=False
     err_msg=''
     try:
-        ok = True
         result = pd.read_sql_query(query, conn)
+        ok = True
     except Exception as ex:
         #err_msg = ex.message
         result = pd.DataFrame()
     return result, ok, err_msg
 
-
-# @st.cache(suppress_st_warning=True)
-def get_connection():
-    """
-    Reads the connection string and sets the sql_engine attribute.
-    """
-
-    conn = psycopg2.connect(
-        host = dbcn.DB_HOST,
-        database=dbcn.DB_DATABASE,
-        user=dbcn.DB_USER,
-        password=dbcn.DB_PASS)
-    return conn
 
 def get_value(query, conn:psycopg2.extensions.connection) -> Tuple[str,bool,str]:
     df, ok, err_msg = execute_query(query, conn)
@@ -96,6 +83,7 @@ def get_value(query, conn:psycopg2.extensions.connection) -> Tuple[str,bool,str]
         ok=False
         result = None
     return result, ok, err_msg
+
 
 def truncate_table(table_name, conn:psycopg2.extensions.connection) -> Tuple[bool, str]:
     """trncates a table from the public schema
@@ -108,5 +96,5 @@ def truncate_table(table_name, conn:psycopg2.extensions.connection) -> Tuple[boo
         _type_: _description_
     """
     sql = f"TRUNCATE TABLE public.{table_name} RESTART IDENTITY;"
-    ok, err_msg = execute_non_query(sql)
+    ok, err_msg = execute_non_query(sql, conn)
     return ok, err_msg

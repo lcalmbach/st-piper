@@ -100,5 +100,20 @@
         "en": "Show Gridlines",
         "de": "Show Gridlines",
         "zh": "Show Gridlines"
+    },
+    "show_average_line": {
+        "en": "Show average line",
+        "de": "Show average line",
+        "zh": "Show average line"
+    },
+    "show_percentile_band": {
+        "en": "Show percentile band",
+        "de": "Show percentile band",
+        "zh": "Show percentile band"
+    },
+    "percentile_band_options": {
+        "en": ["None","5/95","10/90","25/75"],
+        "de": ["None","5/95","10/90","25/75"],
+        "zh": ["None","5/95","10/90","25/75"]
     }
 }

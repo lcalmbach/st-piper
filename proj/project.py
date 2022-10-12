@@ -19,7 +19,8 @@ def set_lang():
     lang = helper.get_lang(lang=st.session_state.language, py_file=__file__)
 
 class Project():
-    def __init__(self, id: int):
+    def __init__(self, id:int):
+        # if project is created, id is set to -1
         ok = self.set_project_info(id)
         self.has_config_settings = False
         self.has_separate_station_file = False
@@ -32,7 +33,11 @@ class Project():
         self._parameter_group2 = []
         self.source_date_format = '%d/%m/%Y'
         self.display_date_format = '%d/%m/%Y'
-        self.stations_df, ok, err_msg  = self.get_stations()
+        if id > 0:
+            self.stations_df, ok, err_msg  = self.get_stations() 
+        else:
+            self.stations_df = pd.DataFrame()
+
 
     def get_stations(self):
         sql = qry['project_stations'].format(self.key)
@@ -41,7 +46,7 @@ class Project():
         return df, ok, err_msg 
 
 
-    def master_parameter_2_col_name(self, master_parameter_id: int, col_type: int):
+    def master_parameter_2_col_name(self, master_parameter_id:int, col_type:int):
         """Translates a master parameter name to a column name 
 
         Args:
@@ -107,6 +112,7 @@ class Project():
             return True
         else:
             self.id = -1
+            self.key = ''
             self.title = 'Enter a title'
             self.description= 'Enter a description'
             self.row_is = cn.DATA_FORMAT.SamplePerRow.value
@@ -266,7 +272,7 @@ class Project():
             return result
 
         par = self.parameters_df.loc[par_id]
-        unit_in = par['unit'] if unit_in == None else unit_in
+        unit_in = par.loc['default_unit'][0] if unit_in == None else unit_in
         if par['unit_cat'] in (cn.MOL_CONCENTRATION_CAT,cn.SIMPLE_CONCENTRATION_CAT):
             result = calc_concentration_conversion(par)
         elif par['unit_cat'] == cn.LENGTH_CAT:

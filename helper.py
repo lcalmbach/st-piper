@@ -458,7 +458,8 @@ def get_lookup_code_dict(category: int, lang: str)->dict:
     result = dict(zip(df['id'], df['name']))
     return result
 
-def load_data_from_file(uploaded_file: st.uploaded_file_manager.UploadedFile, preview: bool)->pd.DataFrame:
+
+def load_data_from_file(uploaded_file, preview: bool)->pd.DataFrame:
     """
     reads a csv file and returns the data in a dataframe
 
@@ -469,9 +470,9 @@ def load_data_from_file(uploaded_file: st.uploaded_file_manager.UploadedFile, pr
     Returns:
         pd.DataFrame: content of csv file
     """
-    df = pd.read_csv(uploaded_file, 
-        sep=st.session_state.project.separator, 
-        encoding=st.session_state.project.encoding)
+    df = pd.read_csv(uploaded_file,
+                        sep=st.session_state.project.separator, 
+                        encoding=st.session_state.project.encoding)
     flash_text(f"File was loaded: {len(df)} rows, {len(list(df.columns))} columns.", "success")
     if preview:
         with st.expander('Preview'):
@@ -548,3 +549,8 @@ def get_grid_height(df:pd.DataFrame, max_height: int):
     h = len(df) * cn.AGG_GRID_COL_HEIGHT
     h = max_height if h > max_height else h
     return h
+
+def get_ticks(interval:float, minmax:tuple):
+    ticks = int((minmax[1]-minmax[0]) / interval) + 1
+    result = [x * interval for x in range(0, ticks)]
+    return result

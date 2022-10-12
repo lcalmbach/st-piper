@@ -7,7 +7,7 @@ from streamlit_option_menu import option_menu  #https://pypi.org/project/streaml
 
 import helper
 import const as cn
-from proj.database import get_connection
+from proj.database import get_pg_connection
 from menu import menu_home, menu_projects, menu_data, menu_plots, menu_analysis, menu_calculators, menu_login
 import os
 import session
@@ -28,10 +28,10 @@ GIT_REPO = 'https://github.com/lcalmbach/st-piper'
 @st.experimental_memo()
 def get_lottie():
     ok=True
-    r=''
     try:
         r = requests.get(cn.LOTTIE_URL).json()
     except:
+        r = ''
         ok = False
     return r, ok
 
@@ -40,6 +40,7 @@ def show_help_icon():
         cn.HELP_SITE, helper.get_base64_encoded_image(cn.HELP_ICON)
     )
     st.sidebar.markdown(help_html, unsafe_allow_html=True)
+
 
 def main():
     def show_app_name():
@@ -59,12 +60,13 @@ def main():
         {lang['curr_project']}: {st.session_state.project.short_name}<br>
         {lang['logged_in_user']}: {st.session_state.user.full_name}<br>
         language: {st.session_state.language} <br>
-        </small>
+        </small></div>
         """
 
     st.set_page_config(page_title=APP_NAME, page_icon=APP_EMOJI, layout="wide", initial_sidebar_state="auto", menu_items=None)
-    st.session_state.conn = get_connection()
-    
+    with open("static/style.css") as f:
+        st.markdown('<style>{}</style>'.format(f.read()), unsafe_allow_html=True)
+    st.session_state.conn = get_pg_connection()
     if 'project' not in st.session_state:
         session.init()
     lang = helper.get_lang(lang=st.session_state.language, py_file=os.path.realpath(__file__) )

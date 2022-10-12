@@ -141,7 +141,7 @@ def show_parameters():
             plot = Time_series(df_filtered, cfg).get_plot()
             st.bokeh_chart(plot)
 
-    if len(grid_response)>0:
+    if len(grid_response) > 0:
         station_id = grid_response.iloc[0]['station_id']
         sample_date = grid_response.iloc[0]['sampling_date']
         sample_date = datetime.strptime(sample_date, '%Y-%m-%dT%H:%M:%S')
@@ -150,8 +150,8 @@ def show_parameters():
         cols.append({'name': 'parameter_id', 'type': 'int', 'precision': 0, 'hide':True})
         settings['update_mode'] = GridUpdateMode.NO_UPDATE
 
-        st.markdown(f"#### {lang['sample']}")
-        st.markdown(f"lang['station']: *{project.stations_df.loc[station_id]['station_identifier']}*<br>{lang['sampling_date']}: *{sample_date.strftime(project.date_format)}*<br>sample_number: *{sample_number}*", unsafe_allow_html=True)
+        st.markdown(f"#### Selected {lang['sample']}")
+        st.markdown(f"{lang['station']}: *{project.stations_df.loc[station_id]['station_identifier']}*<br>{lang['sampling_date']}: *{sample_date.strftime(project.date_format)}*<br>sample_number: *{sample_number}*", unsafe_allow_html=True)
         show_observations_grid(sample_number, settings, cols)
 
 
